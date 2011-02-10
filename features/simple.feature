@@ -1,6 +1,6 @@
 Feature: Define stuff
 
-  Scenario: Define a key
+  Scenario: Define a relation with a composite primary key
     Given a file named "agreement.rb" with:
       """
       class Agreement
@@ -17,13 +17,27 @@ Feature: Define stuff
       require 'agreement'
 
       #Agreement.migrate
+
+      puts "Columns"
       puts Agreement.arel.columns.map { |c| [c.name, c.column.sql_type].join(", ") }.flatten.join("\n")
+      puts
+      puts "Primary Keys"
+      puts Agreement.arel.primary_keys.map { |c| c.name }.join("\n")
+      puts
+      puts "done"
       """
     When I run "ruby -I ../lib sample.rb"
     Then the output should contain:
       """
+      Columns
       recipient_id, varchar(255)
       entity_id, varchar(255)
+
+      Primary Keys
+      recipient_id
+      entity_id
+
+      done
       """
 
       # additional relations for this class such as deleted_at such that nulls are not necessary
