@@ -8,6 +8,5 @@ group :test do
   gem 'mysql2'
 end
 
-
 gem 'arel'
 gem 'orel', :path => '.'

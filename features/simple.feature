@@ -16,7 +16,7 @@ Feature: Define stuff
       require 'orel/test'
       require 'agreement'
 
-      #Agreement.migrate
+      Orel.migrate
 
       puts "Columns"
       puts Agreement.arel.columns.map { |c| [c.name, c.column.sql_type].join(", ") }.flatten.join("\n")
