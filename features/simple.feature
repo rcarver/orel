@@ -16,16 +16,17 @@ Feature: Define stuff
       require 'orel/test'
       require 'agreement'
 
-      Agreement.migrate
-      puts Agreement.arel.columns.inspect
+      #Agreement.migrate
+      puts Agreement.arel.columns.map { |c| [c.name, c.column.sql_type].join(", ") }.flatten.join("\n")
       """
     When I run "ruby -I ../lib sample.rb"
     Then the output should contain:
       """
-      [:recipient_id, :entity_id]
+      recipient_id, varchar(255)
+      entity_id, varchar(255)
       """
 
-
+      # additional relations for this class such as deleted_at such that nulls are not necessary
 
 
 #class Agreement
