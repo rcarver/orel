@@ -6,8 +6,8 @@ Feature: Define stuff
       class Agreement
         extend Orel::Relation
         heading do
-          key :recipient_id, String
-          key :entity_id, String
+          key :recipient_id, Orel::Domains::String
+          key :entity_id, Orel::Domains::String
         end
       end
       """
@@ -15,7 +15,6 @@ Feature: Define stuff
       """
       require 'orel/test'
       require 'agreement'
-
       Orel.migrate
 
       puts "Columns"
@@ -40,6 +39,45 @@ Feature: Define stuff
       done
       """
 
+  Scenario: Define a second relation to describe a deleted record
+    Given a file named "agreement.rb" with:
+      """
+      class User
+        extend Orel::Relation
+        heading do
+          key :id, Orel::Domains::Serial
+        end
+        heading :deleted do
+          att :deleted_at, Time
+        end
+      end
+      """
+    And a file named "sample.rb" with:
+      """
+      require 'orel/test'
+      require 'agreement'
+      Orel.migrate
+
+      puts "Columns"
+      puts User.arel(:deleted).columns.map { |c| [c.name, c.column.sql_type].join(", ") }.flatten.join("\n")
+      puts
+      puts "Primary Keys"
+      puts User.arel(:deleted).primary_keys.map { |c| c.name }.join("\n")
+      puts
+      puts "done"
+      """
+    When I run "ruby -I ../lib sample.rb"
+    Then the output should contain:
+      """
+      Columns
+      user_id, int(11)
+      deleted_at, datetime
+
+      Primary Keys
+      user_id
+
+      done
+      """
       # additional relations for this class such as deleted_at such that nulls are not necessary
 
 
@@ -60,6 +98,8 @@ Feature: Define stuff
 
     #key(:foo) :x_id, String
     #key(:foo) :y_id, String
+    #
+    #key[:foo] :x_id, String
 
   #end
 

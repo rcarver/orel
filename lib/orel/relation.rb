@@ -1,100 +1,95 @@
 module Orel
   module Relation
 
-    def arel
-      Arel::Table.new(table_name)
+    def self.extended(klass)
+      Orel.classes << klass
+    end
+
+    def arel(sub_name=nil)
+      Arel::Table.new(relation_name(sub_name))
     end
 
     def orel
-      @orel ||= Orel.new
+      @orel ||= Database.new
     end
 
-    def table_name
-      self.name.underscore
+    def sql
+      tables = orel.headings.map { |name, heading| Orel::Sql::Table.new(name, heading) }
+      Orel::Sql::Database.new(tables)
     end
 
-    def heading(&block)
-      orel.heading = Heading.new(self)
-      dsl = HeadingDSL.new(block)
-      dsl.apply(orel.heading)
+    def relation_name(sub_name=nil)
+      [self.name.underscore, sub_name].compact.join("_")
     end
 
-    def migrate
-      migrator = Migrator.new(orel.heading.create_statements(table_name))
-      migrator.migrate
+    def heading(sub_name=nil, &block)
+      heading = Heading.new
+      HeadingDSL.new(heading, block)
+      orel.headings[relation_name(sub_name)] = heading
     end
 
-    Orel = Struct.new(:heading)
+    # Supporting classes
 
-    class Migrator
-      def initialize(statements)
-        @statements = statements
+    # A database contains many relations, but we just
+    # track the headings that define those relations.
+    class Database
+      def initialize
+        @headings = {}
       end
-      def migrate
-        @statements.each { |s| Arel::Table.engine.connection.execute(s) }
-      end
+      attr_reader :headings
     end
 
+    # A heading defines the attributes in a relation.
+    # It includes 0 or more attributes and may also 
+    # group those attributes into keys.
     class Heading
-      def initialize(klass)
-        @klass = klass
+      def initialize
+        @attributes = []
+        @keys = []
       end
-      def set_primary_key(key)
-        @primary_key = key
-      end
-      def create_statements(table_name)
-        table = "CREATE TABLE #{table_name}"
-        [table] + @primary_key.create_statements(table_name)
-      end
+      attr_reader :attributes
+      attr_reader :keys
     end
 
+    # An attribute describes a field in a relation. It
+    # has a name and is further defined by its domain.
+    class Attribute
+      def initialize(name, domain)
+        @name = name
+        @domain = domain
+      end
+      attr_reader :name
+      attr_reader :domain
+    end
+
+    # A key is a set of 0 or more attributes that defines
+    # a uniqueness constraint.
     class Key
       def initialize(name)
         @name = name
-        @attributes = Set.new
+        @attributes = []
       end
       attr_reader :name
-      def <<(attribute)
-        @attributes << attribute
-      end
-      def create_statements(table_name)
-        attribute_names = @attributes.map { |a| a.name }
-        attrs = @attributes.map { |a| a.create_statements(table_name) }.flatten
-        attrs + ["ALTER TABLE #{table_name} ADD PRIMARY KEY #{name} (#{attribute_names.join(',')})"]
-      end
-      def alter_statements(table_name)
-        attribute_names = @attributes.map { |a| a.name }
-        attrs = @attributes.map { |a| a.create_statements(table_name) }.flatten
-        attrs + ["ALTER TABLE #{table_name} ADD PRIMARY KEY #{name} (#{attribute_names.join(',')})"]
-      end
+      attr_reader :attributes
     end
 
-    class Attribute < Struct.new(:name, :domain)
-      def create_statements(table_name)
-        ["ALTER TABLE #{table_name} ADD COLUMN #{name} #{type_def}"]
-      end
-      def type_def
-        if domain == String
-          "varchar(255) NOT NULL"
-        else
-          raise ArgumentError, "Unknown type #{domain.inspect}"
-        end
-      end
-    end
-
+    # This is the DSL that is used to build up a set of relations.
     class HeadingDSL
-      def initialize(block)
+      def initialize(heading, block)
+        @attributes = []
         @keys = {}
         instance_eval(&block)
+        @attributes.each { |a| heading.attributes << a }
+        @keys.values.each { |k| heading.keys << k }
       end
-      def apply(heading)
-        if pk = @keys.delete(:primary)
-          heading.set_primary_key(pk)
-        end
+      def key(name, domain)
+        @keys[:primary] ||= Key.new(:primary)
+        @keys[:primary].attributes << att(name, domain)
       end
-      def key(name, type)
-        @keys[:primary] ||= Key.new(:pk)
-        @keys[:primary] << Attribute.new(name, type)
+      def att(name, domain)
+        attribute = Attribute.new(name, domain.new)
+        @attributes << attribute
+        attribute
       end
     end
 
