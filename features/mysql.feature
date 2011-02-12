@@ -1,7 +1,7 @@
 Feature: Create MySQL tables from relational definitions
 
-  Scenario: Create a table with a auto increment integer key
-    Given a file named "agreement.rb" with:
+  Scenario: Create a table with an auto increment integer key
+    Given I have these class definitions:
       """
       class User
         extend Orel::Relation
@@ -10,30 +10,17 @@ Feature: Create MySQL tables from relational definitions
         end
       end
       """
-    And a file named "sample.rb" with:
+    When I use Orel to fill my database with tables
+    Then my database looks like:
       """
-      require 'orel/test'
-      require 'agreement'
-      Orel.drop_tables!
-      Orel.create_tables!
-
-      puts "begin"
-      User.sql.show_create_tables.each { |c| puts c }
-      puts "end"
-      """
-    When I run "ruby -I ../lib sample.rb"
-    Then the output should contain:
-      """
-      begin
       CREATE TABLE `user` (
         `id` int(11) NOT NULL AUTO_INCREMENT,
         UNIQUE KEY `user_id` (`id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8
-      end
       """
 
   Scenario: Create a table with a composite primary key
-    Given a file named "agreement.rb" with:
+    Given I have these class definitions:
       """
       class User
         extend Orel::Relation
@@ -43,31 +30,18 @@ Feature: Create MySQL tables from relational definitions
         end
       end
       """
-    And a file named "sample.rb" with:
+    When I use Orel to fill my database with tables
+    Then my database looks like:
       """
-      require 'orel/test'
-      require 'agreement'
-      Orel.drop_tables!
-      Orel.create_tables!
-
-      puts "begin"
-      User.sql.show_create_tables.each { |c| puts c }
-      puts "end"
-      """
-    When I run "ruby -I ../lib sample.rb"
-    Then the output should contain:
-      """
-      begin
       CREATE TABLE `user` (
         `first_name` varchar(255) NOT NULL,
         `last_name` varchar(255) NOT NULL,
         UNIQUE KEY `user_first_name_last_name` (`first_name`,`last_name`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8
-      end
       """
 
   Scenario: Create a table with basic column types
-    Given a file named "agreement.rb" with:
+    Given I have these class definitions:
       """
       class User
         extend Orel::Relation
@@ -83,21 +57,9 @@ Feature: Create MySQL tables from relational definitions
         end
       end
       """
-    And a file named "sample.rb" with:
+    When I use Orel to fill my database with tables
+    Then my database looks like:
       """
-      require 'orel/test'
-      require 'agreement'
-      Orel.drop_tables!
-      Orel.create_tables!
-
-      puts "begin"
-      User.sql.show_create_tables.each { |c| puts c }
-      puts "end"
-      """
-    When I run "ruby -I ../lib sample.rb"
-    Then the output should contain:
-      """
-      begin
       CREATE TABLE `user` (
         `id` int(11) NOT NULL AUTO_INCREMENT,
         `name` varchar(255) NOT NULL,
@@ -109,5 +71,6 @@ Feature: Create MySQL tables from relational definitions
         `good` tinyint(1) NOT NULL,
         UNIQUE KEY `user_id` (`id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8
-      end
       """
+
+

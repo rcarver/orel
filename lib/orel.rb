@@ -32,6 +32,10 @@ module Orel
     }
   end
 
+  def self.show_create_tables
+    classes.map { |klass| klass.sql.show_create_tables }.flatten
+  end
+
   def self.migrate
     # noop for now
   end
