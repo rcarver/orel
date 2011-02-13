@@ -11,15 +11,42 @@ module Orel
       Arel::Table.new(relation_name(sub_name))
     end
 
-    def orel
-      @orel ||= Database.new
+    def database
+      @database ||= Database.new
     end
 
+    alias_method :orel, :database
+
+    # Public: Get the name of this relation.
+    #
+    # sub_name - Symbol name of the sub-relation (default: get the base relation).
+    #
+    # Returns a String.
+    def relation_name(sub_name=nil)
+      [self.name.underscore, sub_name].compact.join("_")
+    end
+
+    # Public: Get the heading of this relation.
+    # sub_name - Symbol name of the sub-relation (default: get the base relation).
+    #
+    # Returns an Orel::Relation::Heading or nil.
+    def get_heading(sub_name=nil)
+      name = relation_name(sub_name)
+      database.headings.find { |h| h.name == name }
+    end
+
+    # Internal: Get the SQL representation of this relation.
     def sql
       tables = orel.headings.map { |heading|
         Orel::Sql::Table.new(heading)
       }
       foreign_keys = orel.foreign_keys.map { |foreign_key|
+        case foreign_key
+        when Reference
+          foreign_key = foreign_key.to_foreign_key
+        else
+          foreign_key = foreign_key
+        end
         local_table = Orel::Sql::Table.new(foreign_key.local_heading)
         foreign_table = Orel::Sql::Table.new(foreign_key.foreign_heading)
         local_attributes = foreign_key.local_key.attributes
@@ -29,28 +56,17 @@ module Orel
       Orel::Sql::Database.new(tables, foreign_keys)
     end
 
-    def relation_name(sub_name=nil)
-      [self.name.underscore, sub_name].compact.join("_")
-    end
+    # Top level DSL.
 
     def heading(sub_name=nil, &block)
       name = relation_name(sub_name)
       heading = Heading.new(name, sub_name.nil?)
+      # Automatically add a foreign key to the base relation
       unless heading.base?
-        base_name = relation_name
-        # Find the base heading.
-        base_heading = orel.headings.find { |h| h.name == base_name } or raise "Missing base relation #{base_name}"
-        # Find the base heading's primary key.
-        base_key = base_heading.keys.find { |k| k.name == :primary } or raise "Missing primary key in #{base_name}"
-        # Add attributes used in the base table's key to the new heading.
-        heading.attributes.concat base_key.attributes.map { |a| a.for_foreign_key(base_name) }
-        # Convert the base heading's key into a key for the new heading.
-        foreign_key = base_key.for_foreign_key(base_name)
-        heading.keys << foreign_key
-        # Add a foreign key to the database to link these two headings.
-        orel.foreign_keys << ForeignKey.new(heading, base_heading, foreign_key, base_key)
+        local_heading = get_heading or raise "Missing base relation!"
+        orel.foreign_keys << ForeignKey.create(local_heading, :primary, heading)
       end
-      HeadingDSL.new(heading, block)
+      HeadingDSL.new(self, heading, database, block)
       orel.headings << heading
     end
 
@@ -119,9 +135,18 @@ module Orel
     # A key is a set of 0 or more attributes that defines
     # a uniqueness constraint.
     class Key
-      def initialize(name)
+      def initialize(name, options={})
         @name = name
         @attributes = []
+        @references = options.delete(:references)
+
+        # Validate options keys.
+        raise ArgumentError, "Unknown options: #{options.keys.inspect}" unless options.empty?
+
+        # Validate options values.
+        if @references
+          raise ArgumentError, ":references must be a String" unless @references.is_a?(String)
+        end
       end
       attr_reader :name
       attr_reader :attributes
@@ -140,6 +165,26 @@ module Orel
     end
 
     class ForeignKey
+
+      def self.create(local_heading, local_key_name, remote_heading)
+        local_name = local_heading.name
+
+        # Find the local key by name.
+        local_key = local_heading.keys.find { |k| k.name == local_key_name } or raise "Missing key #{local_key_name.inspect } in #{local_name.inspect}"
+
+        # Add all attributes in the local key to the remote heading.
+        remote_heading.attributes.concat local_key.attributes.map { |a| a.for_foreign_key(local_name) }
+
+        # Convert the local heading's key into a key for the remote heading.
+        remote_key = local_key.for_foreign_key(local_name)
+
+        # Add the new key to the remote heading.
+        remote_heading.keys << remote_key
+
+        # Create the foreign key.
+        self.new(remote_heading, local_heading, remote_key, local_key)
+      end
+
       def initialize(local_heading, foreign_heading, local_key, foreign_key)
         @local_heading = local_heading
         @foreign_heading = foreign_heading
@@ -154,12 +199,15 @@ module Orel
 
     # This is the DSL that is used to build up a set of relations.
     class HeadingDSL
-      def initialize(heading, block)
+      def initialize(klass, heading, database, block)
+        @klass = klass
         @attributes = []
         @keys = {}
+        @references = []
         instance_eval(&block)
         @attributes.each { |a| heading.attributes << a }
         @keys.values.each { |k| heading.keys << k }
+        @references.each { |ref| database.foreign_keys << ref }
       end
       def key(name, domain)
         @keys[:primary] ||= Key.new(:primary)
@@ -169,6 +217,18 @@ module Orel
         attribute = Attribute.new(name, domain.new)
         @attributes << attribute
         attribute
+      end
+      def ref(klass)
+        # TODO: allow references to non-primary keys
+        @references << Reference.new(klass, :primary, @klass)
+      end
+    end
+
+    class Reference < Struct.new(:local_class, :key_name, :remote_class)
+      def to_foreign_key
+        local_heading = local_class.get_heading or raise "Missing heading for #{local_class}"
+        remote_heading = remote_class.get_heading or raise "Missing heading for #{remote_class}"
+        ForeignKey.create(local_heading, key_name, remote_heading)
       end
     end
 

@@ -1,0 +1,2 @@
+default: --tags @mysql --tags ~@wip
+wip: --tags @mysql --tags @wip --wip
