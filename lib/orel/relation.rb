@@ -101,7 +101,7 @@ module Orel
       attr_reader :domain
       def for_foreign_key(relation_name)
         unless domain.respond_to?(:for_foreign_key)
-          raise ForeignKeyTranslationError, "#{domain.inspect} does not support foreign keys. It must define `for_forign_key`."
+          raise ForeignKeyTranslationError, "#{domain.inspect} does not support foreign keys. It must define `for_foreign_key`."
         end
         # TODO: expose this naming assumption in a better way. It
         # should probably be an option to this method and be controller
