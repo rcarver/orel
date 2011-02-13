@@ -104,4 +104,37 @@ Feature: Create MySQL tables from relational definitions
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       """
 
+  Scenario: Create multiple relations for one class with a composite key
+    Given I have these class definitions:
+      """
+      class User
+        extend Orel::Relation
+        heading do
+          key :first_name, Orel::Domains::String
+          key :last_name, Orel::Domains::String
+        end
+        heading :deleted do
+          att :at, Orel::Domains::DateTime
+        end
+      end
+      """
+    When I use Orel to fill my database with tables
+    Then my database looks like:
+      """
+      CREATE TABLE `user` (
+        `first_name` varchar(255) NOT NULL,
+        `last_name` varchar(255) NOT NULL,
+        UNIQUE KEY `user_first_name_last_name` (`first_name`,`last_name`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+      CREATE TABLE `user_deleted` (
+        `user_first_name` varchar(255) NOT NULL,
+        `user_last_name` varchar(255) NOT NULL,
+        `at` datetime NOT NULL,
+        UNIQUE KEY `user_deleted_user_first_name_user_last_name` (`user_first_name`,`user_last_name`),
+        CONSTRAINT `user_deleted_user_fk` FOREIGN KEY (`user_first_name`, `user_last_name`) REFERENCES `user` (`first_name`, `last_name`) ON DELETE NO ACTION ON UPDATE NO ACTION
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+      """
+
+
 
