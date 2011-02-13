@@ -128,11 +128,11 @@ Feature: Create MySQL tables from relational definitions
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
       CREATE TABLE `user_deleted` (
-        `user_first_name` varchar(255) NOT NULL,
-        `user_last_name` varchar(255) NOT NULL,
+        `first_name` varchar(255) NOT NULL,
+        `last_name` varchar(255) NOT NULL,
         `at` datetime NOT NULL,
-        UNIQUE KEY `user_deleted_user_first_name_user_last_name` (`user_first_name`,`user_last_name`),
-        CONSTRAINT `user_deleted_user_fk` FOREIGN KEY (`user_first_name`, `user_last_name`) REFERENCES `user` (`first_name`, `last_name`) ON DELETE NO ACTION ON UPDATE NO ACTION
+        UNIQUE KEY `user_deleted_first_name_last_name` (`first_name`,`last_name`),
+        CONSTRAINT `user_deleted_user_fk` FOREIGN KEY (`first_name`, `last_name`) REFERENCES `user` (`first_name`, `last_name`) ON DELETE NO ACTION ON UPDATE NO ACTION
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       """
 

@@ -103,7 +103,14 @@ module Orel
         unless domain.respond_to?(:for_foreign_key)
           raise ForeignKeyTranslationError, "#{domain.inspect} does not support foreign keys. It must define `for_forign_key`."
         end
-        fk_name = [relation_name, name].join("_")
+        # TODO: expose this naming assumption in a better way. It
+        # should probably be an option to this method and be controller
+        # by the DSL.
+        if name == :id
+          fk_name = [relation_name, name].join("_")
+        else
+          fk_name = name
+        end
         fk_domain = domain.for_foreign_key
         self.class.new(fk_name, fk_domain)
       end
