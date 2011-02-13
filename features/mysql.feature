@@ -160,19 +160,19 @@ Feature: Create MySQL tables from relational definitions
     When I use Orel to fill my database with tables
     Then my database looks like:
       """
-      CREATE TABLE `user` (
-        `id` int(11) NOT NULL AUTO_INCREMENT,
-        `name` varchar(255) NOT NULL,
-        UNIQUE KEY `user_id` (`id`)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
       CREATE TABLE `thing` (
         `id` int(11) NOT NULL AUTO_INCREMENT,
         `name` varchar(255) NOT NULL,
         `user_id` int(11) NOT NULL,
-        UNIQUE KEY `thing_id` (`id`)
+        UNIQUE KEY `thing_id` (`id`),
         KEY `user_id` (`id`),
         CONSTRAINT `thing_user_fk` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+      CREATE TABLE `user` (
+        `id` int(11) NOT NULL AUTO_INCREMENT,
+        `name` varchar(255) NOT NULL,
+        UNIQUE KEY `user_id` (`id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       """
 
