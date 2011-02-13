@@ -12,18 +12,26 @@ module Orel
     @classes ||= Set.new
   end
 
+  def self.connection
+    Arel::Table.engine.connection
+  end
+
+  def self.current_database
+    connection.current_database
+  end
+
   def self.query(*args)
-    Arel::Table.engine.connection.select_rows(*args)
+    connection.select_rows(*args)
   end
 
   def self.execute(*args)
-    Arel::Table.engine.connection.execute(*args)
+    connection.execute(*args)
   end
 
-  def self.drop_tables!
-    classes.each { |klass|
-      klass.sql.drop_tables!
-    }
+  def self.recreate_database!
+    db_name = current_database
+    connection.recreate_database(db_name)
+    connection.execute("USE #{db_name}")
   end
 
   def self.create_tables!
@@ -32,12 +40,9 @@ module Orel
     }
   end
 
-  def self.show_create_tables
-    classes.map { |klass| klass.sql.show_create_tables }.flatten
-  end
-
-  def self.migrate
-    # noop for now
+  def self.get_database_structure
+    connection.structure_dump.strip
+    #classes.map { |klass| klass.sql.show_create_tables }.flatten
   end
 
 end

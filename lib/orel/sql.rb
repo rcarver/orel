@@ -9,49 +9,54 @@ module Orel
 
     class Database
       include Quoting
-      def initialize(tables)
+      def initialize(tables, foreign_keys)
         @tables = tables
-      end
-      def drop_tables!
-        @tables.each { |table|
-          Orel.execute "DROP TABLE IF EXISTS #{q table.name}"
-        }
+        @foreign_keys = foreign_keys
       end
       def create_tables!
         @tables.each { |table|
-          table.statements.each { |statement|
-            Orel.execute(statement)
-          }
+          Orel.execute(table.statement)
+        }
+        @foreign_keys.each { |foreign_key|
+          Orel.execute(foreign_key.statement)
         }
       end
-      def show_create_tables
-        sorted = @tables.sort_by { |t| t.name }
-        sorted.map { |table|
-          result = Orel.query("SHOW CREATE TABLE #{q table.name}")
-          result[0][1]
-        }
-      end
+      #def show_create_tables
+        #sorted = @tables.sort_by { |t| t.name }
+        #sorted.map { |table|
+          #Orel.query("SHOW CREATE TABLE #{q table.name}")[0][1]
+        #}
+      #end
     end
 
     class Table
       include Quoting
-      def initialize(name, heading)
-        @name = name
+      def initialize(heading)
         @heading = heading
       end
-      attr_reader :name
-      def statements
+      def name
+        @heading.name
+      end
+      def columns
+        @heading.attributes.map { |attribute|
+          Column.new(attribute.name, attribute.domain)
+        }
+      end
+      def unique_keys
+        @heading.keys.map { |key|
+          key_name = [name, key.attributes.map { |a| a.name }].flatten.join("_")
+          UniqueKey.new(key_name, key.attributes)
+        }
+      end
+      def statement
         sql = []
-        sql << "CREATE TABLE #{q @name}"
+        sql << "CREATE TABLE #{q name}"
         sql << "("
         inside  = []
-        @heading.attributes.each { |attribute|
-          column = Column.new(attribute.name, attribute.domain)
+        columns.each { |column|
           inside << column.create_statement(self)
         }
-        @heading.keys.each { |key|
-          key_name = [@name, key.attributes.map { |a| a.name }].flatten.join("_")
-          unique_key = UniqueKey.new(key_name, key.attributes)
+        unique_keys.each { |unique_key|
           inside << unique_key.create_statement(self)
         }
         sql << inside.join(", ")
@@ -68,6 +73,7 @@ module Orel
         @name = name
         @domain = domain
       end
+      attr_reader :name
       def create_statement(table)
         type_def = @domain.type_def
         "#{q @name} #{type_def}"
@@ -83,6 +89,22 @@ module Orel
       def create_statement(table)
         attribute_names = @attributes.map { |a| q a.name }
         "UNIQUE KEY #{q @name} (#{attribute_names.join(',')})"
+      end
+    end
+
+    class ForeignKey
+      include Quoting
+      def initialize(local_table_name, foreign_table_name, local_attributes, foreign_attributes)
+        @local_table_name = local_table_name
+        @foreign_table_name = foreign_table_name
+        @local_attributes = local_attributes
+        @foreign_attributes = foreign_attributes
+      end
+      def statement
+        name = [@local_table_name, @foreign_table_name, "fk"].join("_")
+        local_attribute_names = @local_attributes.map { |a| q a.name }
+        foreign_attribute_names = @foreign_attributes.map { |a| q a.name }
+        "ALTER TABLE #{q @local_table_name} ADD CONSTRAINT #{q name} FOREIGN KEY (#{local_attribute_names.join(',')}) REFERENCES #{q @foreign_table_name} (#{foreign_attribute_names.join(',')}) ON DELETE NO ACTION ON UPDATE NO ACTION"
       end
     end
 

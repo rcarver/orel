@@ -16,6 +16,9 @@ module Orel
       def type_def
         "INT(11) NOT NULL AUTO_INCREMENT"
       end
+      def for_foreign_key
+        Integer.new
+      end
     end
 
     class Boolean < Domain
@@ -23,9 +26,13 @@ module Orel
         "TINYINT(1) NOT NULL"
       end
     end
+
     class String < Domain
       def type_def
         "VARCHAR(255) NOT NULL"
+      end
+      def for_foreign_key
+        self
       end
     end
 
@@ -38,6 +45,9 @@ module Orel
     class Integer < Domain
       def type_def
         "INT(11) NOT NULL"
+      end
+      def for_foreign_key
+        self
       end
     end
 
@@ -58,5 +68,6 @@ module Orel
         "DATE NOT NULL"
       end
     end
+
   end
 end

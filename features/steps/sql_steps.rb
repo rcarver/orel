@@ -6,10 +6,12 @@ When /^I use Orel to fill my database with tables$/ do
   Given %{a file named "create.rb" with:}, <<-EOF
     require 'orel/test'
     require 'classes'
-    Orel.drop_tables!
+    Orel.recreate_database!
     Orel.create_tables!
+    puts "tables created!"
   EOF
   When %{I run "ruby -I ../lib create.rb"}
+  Then %{the output should contain:}, "tables created!"
 end
 
 Then /^my database looks like:$/ do |string|
@@ -17,7 +19,7 @@ Then /^my database looks like:$/ do |string|
     require 'orel/test'
     require 'classes'
     puts "begin"
-    puts Orel.show_create_tables.join("\n\n")
+    puts Orel.get_database_structure
     puts "end"
   EOF
   When %{I run "ruby -I ../lib show.rb"}
