@@ -1,7 +1,6 @@
 # Orel
 
-An object-relational bridge. It focuses on the relational side more than others
-without sacrificing on the object side.
+An object-relational mapper. It focuses on the relational model more than others.
 
 ## Goals
 
@@ -16,5 +15,21 @@ design. Specifically:
 * Domains (types) are a core part of the model. Though implemented in
   Ruby, Orel domains act more like attribute constraints.
 
+## Integration
 
+Orel works on top of ActiveRecord and Arel. It borrows some ideas from
+DataMapper, such as schema generation.
+
+## Status
+
+Orel is experimnental and not at all ready to use. See the (cucumber stories)[./cucumber]
+for up a look at what's supported.
+
+## Author
+
+Ryan Carver (@rcarver / ryan@typekit.com)
+
+## License
+
+MIT
 
