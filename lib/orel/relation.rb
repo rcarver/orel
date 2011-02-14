@@ -260,7 +260,6 @@ module Orel
             key.attributes << attribute #.for_foreign_key(heading.name)
           end
         }
-        Orel.logger.info "KEY #{key.inspect}"
         heading.keys << key
       end
     end
