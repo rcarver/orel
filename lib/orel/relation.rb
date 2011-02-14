@@ -15,8 +15,6 @@ module Orel
       @database ||= Database.new
     end
 
-    alias_method :orel, :database
-
     # Public: Get the name of this relation.
     #
     # sub_name - Symbol name of the sub-relation (default: get the base relation).

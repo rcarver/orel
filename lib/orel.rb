@@ -1,4 +1,6 @@
 require 'set'
+require 'logger'
+
 require 'arel'
 
 require 'orel/domains'
@@ -11,6 +13,14 @@ module Orel
 
   def self.classes
     @classes ||= Set.new
+  end
+
+  def self.logger=(logger)
+    @logger = logger
+  end
+
+  def self.logger
+    @logger ||= Logger.new("/dev/null")
   end
 
   def self.connection
