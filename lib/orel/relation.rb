@@ -83,6 +83,9 @@ module Orel
       alias_method :base?, :base
       attr_reader :attributes
       attr_reader :keys
+      def get_attribute(name)
+        attributes.find { |a| a.name == name }
+      end
       def get_key(name)
         keys.find { |k| k.name == name }
       end
@@ -176,21 +179,28 @@ module Orel
       attr_reader :foreign_key
     end
 
+    class Reference < Struct.new(:local_class, :key_name, :remote_class)
+      def to_foreign_key
+        local_heading = local_class.get_heading or raise "Missing heading for #{local_class}"
+        remote_heading = remote_class.get_heading or raise "Missing heading for #{remote_class}"
+        ForeignKey.create(local_heading, key_name, remote_heading)
+      end
+    end
+
     # This is the DSL that is used to build up a set of relations.
     class HeadingDSL
       def initialize(klass, heading, database, block)
         @klass = klass
         @attributes = []
-        @keys = {}
         @references = []
+        @keys = {}
         instance_eval(&block)
         @attributes.each { |a| heading.attributes << a }
-        @keys.values.each { |k| heading.keys << k }
         @references.each { |ref| database.foreign_keys << ref }
+        @keys.each { |name, dsl| dsl._apply(name, heading) }
       end
-      def key(name, domain)
-        @keys[:primary] ||= Key.new(:primary)
-        @keys[:primary].attributes << att(name, domain)
+      def key(name=:primary, &block)
+        @keys[name] = KeyDSL.new(block)
       end
       def att(name, domain)
         attribute = Attribute.new(name, domain.new)
@@ -203,11 +213,21 @@ module Orel
       end
     end
 
-    class Reference < Struct.new(:local_class, :key_name, :remote_class)
-      def to_foreign_key
-        local_heading = local_class.get_heading or raise "Missing heading for #{local_class}"
-        remote_heading = remote_class.get_heading or raise "Missing heading for #{remote_class}"
-        ForeignKey.create(local_heading, key_name, remote_heading)
+    class KeyDSL
+      instance_methods.each { |m|
+        undef_method(m) unless m =~ /^__|instance_eval/
+      }
+      def initialize(block)
+        @fields = []
+        instance_eval(&block)
+      end
+      def method_missing(key_name, *args, &block)
+        @fields << key_name
+      end
+      def _apply(name, heading)
+        key = Key.new(name)
+        @fields.each { |f| key.attributes << heading.get_attribute(f) }
+        heading.keys << key
       end
     end
 
