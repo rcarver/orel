@@ -7,7 +7,8 @@ Feature: Create MySQL tables from relational definitions
       class User
         extend Orel::Relation
         heading do
-          key :id, Orel::Domains::Serial
+          key { id }
+          att :id, Orel::Domains::Serial
         end
       end
       """
@@ -26,8 +27,9 @@ Feature: Create MySQL tables from relational definitions
       class User
         extend Orel::Relation
         heading do
-          key :first_name, Orel::Domains::String
-          key :last_name, Orel::Domains::String
+          key { first_name; last_name }
+          att :first_name, Orel::Domains::String
+          att :last_name, Orel::Domains::String
         end
       end
       """
@@ -47,7 +49,8 @@ Feature: Create MySQL tables from relational definitions
       class User
         extend Orel::Relation
         heading do
-          key :id,     Orel::Domains::Serial
+          key { id }
+          att :id,     Orel::Domains::Serial
           att :name,   Orel::Domains::String
           att :age,    Orel::Domains::Integer
           att :height, Orel::Domains::Float
@@ -80,7 +83,8 @@ Feature: Create MySQL tables from relational definitions
       class User
         extend Orel::Relation
         heading do
-          key :id, Orel::Domains::Serial
+          key { id }
+          att :id, Orel::Domains::Serial
           att :name, Orel::Domains::String
         end
         heading :deleted do
@@ -111,8 +115,9 @@ Feature: Create MySQL tables from relational definitions
       class User
         extend Orel::Relation
         heading do
-          key :first_name, Orel::Domains::String
-          key :last_name, Orel::Domains::String
+          key { first_name; last_name }
+          att :first_name, Orel::Domains::String
+          att :last_name, Orel::Domains::String
         end
         heading :deleted do
           att :at, Orel::Domains::DateTime
@@ -143,14 +148,16 @@ Feature: Create MySQL tables from relational definitions
       class User
         extend Orel::Relation
         heading do
-          key :id, Orel::Domains::Serial
+          key { id }
+          att :id, Orel::Domains::Serial
           att :name, Orel::Domains::String
         end
       end
       class Thing
         extend Orel::Relation
         heading do
-          key :id, Orel::Domains::Serial
+          key { id }
+          att :id, Orel::Domains::Serial
           att :name, Orel::Domains::String
           ref User
         end
@@ -182,17 +189,17 @@ Feature: Create MySQL tables from relational definitions
       class User
         extend Orel::Relation
         heading do
-          key :first_name, Orel::Domains::String
-          key :last_name, Orel::Domains::String
+          key { first_name; last_name }
+          att :first_name, Orel::Domains::String
+          att :last_name, Orel::Domains::String
         end
       end
       class Thing
         extend Orel::Relation
         heading do
-          key {
-            ref User
-            att :name, Orel::Domains::String
-          }
+          key { User; name }
+          #ref User
+          att :name, Orel::Domains::String
         end
       end
       """
@@ -221,24 +228,25 @@ Feature: Create MySQL tables from relational definitions
       class Supplier
         extend Orel::Relation
         heading do
-          key :sno, Orel::Domains::String
+          key { sno }
+          att :sno, Orel::Domains::String
           att :name, Orel::Domains::String
         end
       end
       class Part
         extend Orel::Relation
         heading do
-          key :pno, Orel::Domains::String
+          key { pno }
+          att :pno, Orel::Domains::String
           att :name, Orel::Domains::String
         end
       end
       class Shipment
         extend Orel::Relation
         heading do
-          key {
-            ref Supplier
-            ref Part
-          }
+          key { Supplier; Part }
+          ref Supplier
+          ref Part
           att :qty, Orel::Domains::Integer
         end
       end
@@ -267,8 +275,5 @@ Feature: Create MySQL tables from relational definitions
         UNIQUE KEY `supplier_sno` (`sno`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       """
-
-
-
 
 
