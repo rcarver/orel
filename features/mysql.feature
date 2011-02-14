@@ -220,7 +220,6 @@ Feature: Create MySQL tables from relational definitions
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       """
 
-  @wip
   Scenario: Create a many-to-many relationship with natural keys
     Given I have these class definitions:
       """
@@ -260,12 +259,13 @@ Feature: Create MySQL tables from relational definitions
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
       CREATE TABLE `shipment` (
+        `qty` int(11) NOT NULL,
         `sno` varchar(255) NOT NULL,
         `pno` varchar(255) NOT NULL,
-        `qty` int(11) NOT NULL,
-        CONSTRAINT `shipment_supplier_fk` FOREIGN KEY (`sno`) REFERENCES `supplier` (`sno`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+        UNIQUE KEY `shipment_sno_pno` (`sno`,`pno`),
+        KEY `shipment_part_fk` (`pno`),
         CONSTRAINT `shipment_part_fk` FOREIGN KEY (`pno`) REFERENCES `part` (`pno`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-        UNIQUE KEY `shipment_sno_pno` (`sno`,`pno`)
+        CONSTRAINT `shipment_supplier_fk` FOREIGN KEY (`sno`) REFERENCES `supplier` (`sno`) ON DELETE NO ACTION ON UPDATE NO ACTION
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
       CREATE TABLE `supplier` (
