@@ -165,7 +165,7 @@ Feature: Create MySQL tables from relational definitions
         `name` varchar(255) NOT NULL,
         `user_id` int(11) NOT NULL,
         UNIQUE KEY `thing_id` (`id`),
-        KEY `user_id` (`id`),
+        KEY `thing_user_fk` (`user_id`),
         CONSTRAINT `thing_user_fk` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

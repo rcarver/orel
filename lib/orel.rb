@@ -4,6 +4,7 @@ require 'arel'
 require 'orel/domains'
 require 'orel/relation'
 require 'orel/sql'
+require 'orel/translator'
 
 module Orel
   VERSION = "0.0.0"
@@ -35,9 +36,7 @@ module Orel
   end
 
   def self.create_tables!
-    classes.each { |klass|
-      klass.sql.create_tables!
-    }
+    Orel::Translator.create_tables!(classes)
   end
 
   def self.get_database_structure

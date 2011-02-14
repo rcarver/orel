@@ -35,27 +35,6 @@ module Orel
       database.headings.find { |h| h.name == name }
     end
 
-    # Internal: Get the SQL representation of this relation.
-    def sql
-      tables = orel.headings.map { |heading|
-        Orel::Sql::Table.new(heading)
-      }
-      foreign_keys = orel.foreign_keys.map { |foreign_key|
-        case foreign_key
-        when Reference
-          foreign_key = foreign_key.to_foreign_key
-        else
-          foreign_key = foreign_key
-        end
-        local_table = Orel::Sql::Table.new(foreign_key.local_heading)
-        foreign_table = Orel::Sql::Table.new(foreign_key.foreign_heading)
-        local_attributes = foreign_key.local_key.attributes
-        foreign_attributes = foreign_key.foreign_key.attributes
-        Orel::Sql::ForeignKey.new(local_table.name, foreign_table.name, local_attributes, foreign_attributes)
-      }
-      Orel::Sql::Database.new(tables, foreign_keys)
-    end
-
     # Top level DSL.
 
     def heading(sub_name=nil, &block)
@@ -64,10 +43,14 @@ module Orel
       # Automatically add a foreign key to the base relation
       unless heading.base?
         local_heading = get_heading or raise "Missing base relation!"
-        orel.foreign_keys << ForeignKey.create(local_heading, :primary, heading)
+        foreign_key = ForeignKey.create(local_heading, :primary, heading)
+        # Add a key for the foreign key.
+        heading.keys << foreign_key.local_key
+        # Add the foreign key to the database.
+        database.foreign_keys << foreign_key
       end
       HeadingDSL.new(self, heading, database, block)
-      orel.headings << heading
+      database.headings << heading
     end
 
     # Supporting classes
@@ -96,14 +79,12 @@ module Orel
         @base = base
         @attributes = []
         @keys = []
-        @foreign_keys = []
       end
       attr_reader :name
       attr_reader :base
       alias_method :base?, :base
       attr_reader :attributes
       attr_reader :keys
-      attr_reader :foreign_keys
     end
 
     # An attribute describes a field in a relation. It
@@ -177,9 +158,6 @@ module Orel
 
         # Convert the local heading's key into a key for the remote heading.
         remote_key = local_key.for_foreign_key(local_name)
-
-        # Add the new key to the remote heading.
-        remote_heading.keys << remote_key
 
         # Create the foreign key.
         self.new(remote_heading, local_heading, remote_key, local_key)
