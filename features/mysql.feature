@@ -176,6 +176,45 @@ Feature: Create MySQL tables from relational definitions
       """
 
   @wip
+  Scenario: Create a one-to-many relationship with natural keys
+    Given I have these class definitions:
+      """
+      class User
+        extend Orel::Relation
+        heading do
+          key :first_name, Orel::Domains::String
+          key :last_name, Orel::Domains::String
+        end
+      end
+      class Thing
+        extend Orel::Relation
+        heading do
+          key {
+            ref User
+            att :name, Orel::Domains::String
+          }
+        end
+      end
+      """
+    When I use Orel to fill my database with tables
+    Then my database looks like:
+      """
+      CREATE TABLE `thing` (
+        `first_name` varchar(255) NOT NULL,
+        `last_name` varchar(255) NOT NULL,
+        `name` varchar(255) NOT NULL,
+        UNIQUE KEY `thing_first_name_last_name_name` (`first_name`,`last_name`,`name`)
+        CONSTRAINT `thing_user_fk` FOREIGN KEY (`first_name`, `last_name`) REFERENCES `user` (`first_name`, `last_name`) ON DELETE NO ACTION ON UPDATE NO ACTION
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+      CREATE TABLE `user` (
+        `first_name` varchar(255) NOT NULL,
+        `last_name` varchar(255) NOT NULL,
+        UNIQUE KEY `user_first_name_last_name` (`first_name`,`last_name`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+      """
+
+  @wip
   Scenario: Create a many-to-many relationship with natural keys
     Given I have these class definitions:
       """
@@ -196,8 +235,10 @@ Feature: Create MySQL tables from relational definitions
       class Shipment
         extend Orel::Relation
         heading do
-          ref Supplier
-          ref Part
+          key {
+            ref Supplier
+            ref Part
+          }
           att :qty, Orel::Domains::Integer
         end
       end
