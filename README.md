@@ -22,7 +22,7 @@ DataMapper, such as schema generation.
 
 ## Status
 
-Orel is experimnental and not at all ready to use. See the (cucumber stories)[./cucumber]
+Orel is experimnental and not at all ready to use. See the [cucumber stories](./features)
 for up a look at what's supported.
 
 ## Author
