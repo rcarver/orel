@@ -83,6 +83,9 @@ module Orel
       alias_method :base?, :base
       attr_reader :attributes
       attr_reader :keys
+      def get_key(name)
+        keys.find { |k| k.name == name }
+      end
     end
 
     # An attribute describes a field in a relation. It
@@ -149,7 +152,7 @@ module Orel
         local_name = local_heading.name
 
         # Find the local key by name.
-        local_key = local_heading.keys.find { |k| k.name == local_key_name } or raise "Missing key #{local_key_name.inspect } in #{local_name.inspect}"
+        local_key = local_heading.get_key(local_key_name) or raise "Missing key #{local_key_name.inspect } in #{local_name.inspect}"
 
         # Add all attributes in the local key to the remote heading.
         remote_heading.attributes.concat local_key.attributes.map { |a| a.for_foreign_key(local_name) }
