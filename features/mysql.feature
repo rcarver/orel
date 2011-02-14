@@ -27,7 +27,7 @@ Feature: Create MySQL tables from relational definitions
       class User
         extend Orel::Relation
         heading do
-          key { first_name; last_name }
+          key { first_name / last_name }
           att :first_name, Orel::Domains::String
           att :last_name, Orel::Domains::String
         end
@@ -115,7 +115,7 @@ Feature: Create MySQL tables from relational definitions
       class User
         extend Orel::Relation
         heading do
-          key { first_name; last_name }
+          key { first_name / last_name }
           att :first_name, Orel::Domains::String
           att :last_name, Orel::Domains::String
         end
@@ -182,14 +182,13 @@ Feature: Create MySQL tables from relational definitions
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       """
 
-  @wip
   Scenario: Create a one-to-many relationship with natural keys
     Given I have these class definitions:
       """
       class User
         extend Orel::Relation
         heading do
-          key { first_name; last_name }
+          key { first_name / last_name }
           att :first_name, Orel::Domains::String
           att :last_name, Orel::Domains::String
         end
@@ -197,8 +196,8 @@ Feature: Create MySQL tables from relational definitions
       class Thing
         extend Orel::Relation
         heading do
-          key { User; name }
-          #ref User
+          key { User / name }
+          ref User
           att :name, Orel::Domains::String
         end
       end
@@ -207,10 +206,10 @@ Feature: Create MySQL tables from relational definitions
     Then my database looks like:
       """
       CREATE TABLE `thing` (
+        `name` varchar(255) NOT NULL,
         `first_name` varchar(255) NOT NULL,
         `last_name` varchar(255) NOT NULL,
-        `name` varchar(255) NOT NULL,
-        UNIQUE KEY `thing_first_name_last_name_name` (`first_name`,`last_name`,`name`)
+        UNIQUE KEY `thing_first_name_last_name_name` (`first_name`,`last_name`,`name`),
         CONSTRAINT `thing_user_fk` FOREIGN KEY (`first_name`, `last_name`) REFERENCES `user` (`first_name`, `last_name`) ON DELETE NO ACTION ON UPDATE NO ACTION
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -244,7 +243,7 @@ Feature: Create MySQL tables from relational definitions
       class Shipment
         extend Orel::Relation
         heading do
-          key { Supplier; Part }
+          key { Supplier / Part }
           ref Supplier
           ref Part
           att :qty, Orel::Domains::Integer

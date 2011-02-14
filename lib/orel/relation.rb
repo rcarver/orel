@@ -214,19 +214,53 @@ module Orel
     end
 
     class KeyDSL
-      instance_methods.each { |m|
-        undef_method(m) unless m =~ /^__|instance_eval/
+
+      # Experimenting with various syntaxes. The ideal
+      # delimiter is a comma but that's basically the
+      # only thing that causes syntax errors.
+      #
+      # key { User | name }
+      # key { User / name }
+      #
+      Syntaxes = {
+        # clean, split
+        "|" => [/\.|\(|\)/, /\s*\|\s*/],
+        "/" => [/\(|\)/, /\s*\/\s*/]
       }
+
       def initialize(block)
         @fields = []
-        instance_eval(&block)
-      end
-      def method_missing(key_name, *args, &block)
-        @fields << key_name
+        @block = block
+        @syntax = Syntaxes["/"]
       end
       def _apply(name, heading)
+        # Get the source of the block as a string and split it into a series of identifiers.
+        source = @block.to_source(:strip_enclosure => true)
+        source.gsub!(@syntax[0], '')
+        identifiers = source.split(@syntax[1])
+
         key = Key.new(name)
-        @fields.each { |f| key.attributes << heading.get_attribute(f) }
+        identifiers.each { |identifier|
+          case identifier
+          when /^[A-Z]/
+            # TODO: we'll need to support namespaced consts.
+            klass = Object.const_get(identifier)
+            # TODO: we might need to allow you to reference other keys.
+            key_name = :primary
+
+            klass_heading = klass.get_heading
+            heading_key = klass_heading.get_key(key_name) or raise "Missing key #{key_name.inspect} in heading #{heading.inspect}"
+            heading_key.attributes.each { |attribute|
+              key.attributes << attribute.for_foreign_key(heading.name)
+            }
+          else
+            attribute_name = identifier.to_sym
+            attribute = heading.get_attribute(attribute_name) or raise "Missing attribute #{attribute_name.inspect} in heading #{heading.inspect}"
+            # FIXME: why do we convert to foreign key in the Class case but not here?
+            key.attributes << attribute #.for_foreign_key(heading.name)
+          end
+        }
+        Orel.logger.info "KEY #{key.inspect}"
         heading.keys << key
       end
     end
