@@ -2,6 +2,7 @@ require 'set'
 require 'logger'
 
 require 'arel'
+require 'sourcify'
 
 require 'orel/domains'
 require 'orel/relation'

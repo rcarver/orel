@@ -9,4 +9,5 @@ group :test do
 end
 
 gem 'arel'
+gem 'sourcify'
 gem 'orel', :path => '.'
