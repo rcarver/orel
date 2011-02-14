@@ -137,7 +137,6 @@ Feature: Create MySQL tables from relational definitions
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       """
 
-  @wip
   Scenario: Create a one-to-many relationship
     Given I have these class definitions:
       """
