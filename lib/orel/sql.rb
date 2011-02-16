@@ -5,7 +5,7 @@ module Orel
       def q(value)
         Orel.connection.quote(value)
       end
-      def quote_value(value, column)
+      def quote_value(value, column=nil)
         Orel.connection.quote(value, column)
       end
       def quote_column_name(name)
@@ -14,6 +14,7 @@ module Orel
       def quote_table_name(name)
         Orel.connection.quote_table_name(name)
       end
+      alias_method :qv, :quote_value
       alias_method :qc, :quote_column_name
       alias_method :qt, :quote_table_name
     end
@@ -76,6 +77,34 @@ module Orel
         sql << ")"
         # TODO: allow setting these options somewhere
         sql << "ENGINE=InnoDB DEFAULT CHARSET=utf8"
+        sql.join(" ")
+      end
+      def insert_statement(attributes)
+        attribute_names = attributes.keys
+        quoted_column_names = attribute_names.map { |name|
+          attr = @heading.get_attribute(name) or raise "Missing attribute #{name.inspect} in #{heading.name.inspect}"
+          qc attr.name
+        }
+        quoted_values = attribute_names.map { |name|
+          qv attributes[name]
+        }
+        sql = []
+        sql << "INSERT INTO #{qt name}"
+        sql << "(#{quoted_column_names.join(',')})"
+        sql << "VALUES (#{quoted_values.join(',')})"
+        sql.join(" ")
+      end
+      def update_statement(keys, attributes)
+        quoted_values = attributes.map { |name, value|
+          [qc(name), qv(value)].join('=')
+        }
+        quoted_keys = keys.map { |name, value|
+          [qc(name), qv(value)].join('=')
+        }
+        sql = []
+        sql << "UPDATE #{qt name}"
+        sql << "SET #{quoted_values.join(',')}"
+        sql << "WHERE #{quoted_keys.join(' AND ')}"
         sql.join(" ")
       end
     end

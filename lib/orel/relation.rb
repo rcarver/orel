@@ -12,7 +12,7 @@ module Orel
     end
 
     def database
-      @database ||= Database.new
+      @database ||= Database.new(self)
     end
 
     # Public: Get the name of this relation.
@@ -21,7 +21,7 @@ module Orel
     #
     # Returns a String.
     def relation_name(sub_name=nil)
-      [self.name.underscore, sub_name].compact.join("_")
+      database.relation_name(sub_name)
     end
 
     # Public: Get the heading of this relation.
@@ -29,8 +29,7 @@ module Orel
     #
     # Returns an Orel::Relation::Heading or nil.
     def get_heading(sub_name=nil)
-      name = relation_name(sub_name)
-      database.headings.find { |h| h.name == name }
+      database.get_heading(sub_name)
     end
 
     # Top level DSL.
@@ -58,12 +57,21 @@ module Orel
     # We also maintain a set of relationships between
     # those relations in the form of foreign keys.
     class Database
-      def initialize
+      def initialize(klass)
+        @klass = klass
         @headings = []
         @foreign_keys = []
       end
+      attr_reader :klass
       attr_reader :headings
       attr_reader :foreign_keys
+      def relation_name(sub_name=nil)
+        [klass.name.underscore, sub_name].compact.join("_")
+      end
+      def get_heading(sub_name=nil)
+        name = relation_name(sub_name)
+        headings.find { |h| h.name == name }
+      end
     end
 
     # A heading defines the attributes in a relation.

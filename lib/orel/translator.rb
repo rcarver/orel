@@ -2,12 +2,12 @@ module Orel
   class Translator
 
     def self.create_tables!(classes)
-      translator = new(classes)
+      translator = new(*classes)
       database = translator.database
       database.create_tables!
     end
 
-    def initialize(classes)
+    def initialize(*classes)
       @classes = classes
     end
 

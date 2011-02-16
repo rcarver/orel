@@ -41,6 +41,10 @@ module Orel
     connection.execute(*args)
   end
 
+  def self.insert(*args)
+    connection.insert(*args)
+  end
+
   def self.recreate_database!
     db_name = current_database
     connection.recreate_database(db_name)
