@@ -1,4 +1,4 @@
-@mysql
+@schema @mysql
 Feature: Create MySQL tables from relational definitions
 
   Scenario: Create a table with an auto increment integer key
