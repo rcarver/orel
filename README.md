@@ -17,13 +17,19 @@ design. Specifically:
 
 ## Integration
 
-Orel works on top of ActiveRecord and Arel. It borrows some ideas from
-DataMapper, such as schema generation.
+Orel is built on top of Arel, which uses ActiveRecord.
 
 ## Status
 
 Orel is experimnental and not at all ready to use. See the [cucumber stories](./features)
 for up a look at what's supported.
+
+## Inspiration
+
+Reading [Database in Depth][did] reminded me how little ActiveRecord
+does to help you build a traditional relational model. DataMapper does better -
+basic concepts such as composite keys are possible. Even still, the
+basic syntax does not encourage good design.
 
 ## Author
 
@@ -33,3 +39,5 @@ Ryan Carver (@rcarver / ryan@typekit.com)
 
 MIT
 
+
+[did]: http://www.amazon.com/Database-Depth-Relational-Theory-Practitioners/dp/0596100124
