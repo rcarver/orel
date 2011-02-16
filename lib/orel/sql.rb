@@ -2,9 +2,20 @@ module Orel
   module Sql
 
     module Quoting
-      def q(str)
-        "`#{str}`"
+      def q(value)
+        Orel.connection.quote(value)
       end
+      def quote_value(value, column)
+        Orel.connection.quote(value, column)
+      end
+      def quote_column_name(name)
+        Orel.connection.quote_column_name(name)
+      end
+      def quote_table_name(name)
+        Orel.connection.quote_table_name(name)
+      end
+      alias_method :qc, :quote_column_name
+      alias_method :qt, :quote_table_name
     end
 
     class Database
@@ -15,18 +26,18 @@ module Orel
       end
       def create_tables!
         @tables.each { |table|
-          Orel.logger.info table.statement.inspect
-          Orel.execute(table.statement)
+          Orel.logger.info table.create_statement.inspect
+          Orel.execute(table.create_statement)
         }
         @foreign_keys.each { |foreign_key|
-          Orel.logger.info foreign_key.statement.inspect
-          Orel.execute(foreign_key.statement)
+          Orel.logger.info foreign_key.create_statement.inspect
+          Orel.execute(foreign_key.create_statement)
         }
       end
       #def show_create_tables
         #sorted = @tables.sort_by { |t| t.name }
         #sorted.map { |table|
-          #Orel.query("SHOW CREATE TABLE #{q table.name}")[0][1]
+          #Orel.query("SHOW CREATE TABLE #{qt table.name}")[0][1]
         #}
       #end
     end
@@ -50,9 +61,9 @@ module Orel
           UniqueKey.new(key_name, key.attributes)
         }
       end
-      def statement
+      def create_statement
         sql = []
-        sql << "CREATE TABLE #{q name}"
+        sql << "CREATE TABLE #{qt name}"
         sql << "("
         inside  = []
         columns.each { |column|
@@ -78,7 +89,7 @@ module Orel
       attr_reader :name
       def create_statement(table)
         type_def = @domain.type_def
-        "#{q @name} #{type_def}"
+        "#{qc @name} #{type_def}"
       end
     end
 
@@ -89,8 +100,8 @@ module Orel
         @attributes = attributes
       end
       def create_statement(table)
-        attribute_names = @attributes.map { |a| q a.name }
-        "UNIQUE KEY #{q @name} (#{attribute_names.join(',')})"
+        attribute_names = @attributes.map { |a| qc a.name }
+        "UNIQUE KEY #{qc @name} (#{attribute_names.join(',')})"
       end
     end
 
@@ -102,11 +113,11 @@ module Orel
         @local_attributes = local_attributes
         @foreign_attributes = foreign_attributes
       end
-      def statement
+      def create_statement
         name = [@local_table_name, @foreign_table_name, "fk"].join("_")
-        local_attribute_names = @local_attributes.map { |a| q a.name }
-        foreign_attribute_names = @foreign_attributes.map { |a| q a.name }
-        "ALTER TABLE #{q @local_table_name} ADD CONSTRAINT #{q name} FOREIGN KEY (#{local_attribute_names.join(',')}) REFERENCES #{q @foreign_table_name} (#{foreign_attribute_names.join(',')}) ON DELETE NO ACTION ON UPDATE NO ACTION"
+        local_attribute_names = @local_attributes.map { |a| qc a.name }
+        foreign_attribute_names = @foreign_attributes.map { |a| qc a.name }
+        "ALTER TABLE #{qt @local_table_name} ADD CONSTRAINT #{qc name} FOREIGN KEY (#{local_attribute_names.join(',')}) REFERENCES #{qt @foreign_table_name} (#{foreign_attribute_names.join(',')}) ON DELETE NO ACTION ON UPDATE NO ACTION"
       end
     end
 
