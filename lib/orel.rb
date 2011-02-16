@@ -5,6 +5,7 @@ require 'arel'
 require 'sourcify'
 
 require 'orel/domains'
+require 'orel/object'
 require 'orel/relation'
 require 'orel/sql'
 require 'orel/translator'
