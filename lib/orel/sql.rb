@@ -80,32 +80,21 @@ module Orel
         sql.join(" ")
       end
       def insert_statement(attributes)
-        attribute_names = attributes.keys
-        quoted_column_names = attribute_names.map { |name|
-          attr = @heading.get_attribute(name) or raise "Missing attribute #{name.inspect} in #{heading.name.inspect}"
-          qc attr.name
-        }
-        quoted_values = attribute_names.map { |name|
-          qv attributes[name]
-        }
-        sql = []
-        sql << "INSERT INTO #{qt name}"
-        sql << "(#{quoted_column_names.join(',')})"
-        sql << "VALUES (#{quoted_values.join(',')})"
-        sql.join(" ")
+        table = Arel::Table.new(@heading.name)
+        manager = Arel::InsertManager.new(table.engine);
+        manager.into table
+        manager.insert attributes.map { |k, v| [table[k], v] }
+        manager.to_sql
       end
-      def update_statement(keys, attributes)
-        quoted_values = attributes.map { |name, value|
-          [qc(name), qv(value)].join('=')
+      def update_statement(attributes, where)
+        table = Arel::Table.new(@heading.name)
+        manager = Arel::UpdateManager.new(table.engine);
+        manager.table table
+        manager.set attributes.map { |k, v| [table[k], v] }
+        where.each { |k, v|
+          manager.where table[k].eq(v)
         }
-        quoted_keys = keys.map { |name, value|
-          [qc(name), qv(value)].join('=')
-        }
-        sql = []
-        sql << "UPDATE #{qt name}"
-        sql << "SET #{quoted_values.join(',')}"
-        sql << "WHERE #{quoted_keys.join(' AND ')}"
-        sql.join(" ")
+        manager.to_sql
       end
     end
 

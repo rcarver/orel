@@ -48,7 +48,7 @@ Feature: Perform MySQL operations
       table = Orel::Sql::Table.new(User.get_heading)
       insert_statement = table.insert_statement(:name => "John")
       id = Orel.insert(insert_statement)
-      update_statement = table.update_statement({ :id => id }, { :name => "Joe" })
+      update_statement = table.update_statement({ :name => "Joe" }, { :id => id })
       puts update_statement
       Orel.insert(update_statement)
       Orel.query("SELECT id, name from user").each { |row|
@@ -58,7 +58,7 @@ Feature: Perform MySQL operations
       """
     Then the output should contain:
       """
-      UPDATE `user` SET `name`='Joe' WHERE `id`=1
+      UPDATE `user` SET `name` = 'Joe' WHERE `user`.`id` = 1
       1,Joe
       done
       """
