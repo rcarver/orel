@@ -14,7 +14,7 @@ Feature: Use the objects that back relations.
       """
     When I run some Orel code:
       """
-      user = User.new :first_name => "Joe", :last_name => "Smith"
+      user = User.new :first_name => "John", :last_name => "Smith"
       puts user.first_name
       puts user.last_name
       user.first_name = "John"
@@ -22,17 +22,19 @@ Feature: Use the objects that back relations.
       """
     Then the output should contain:
       """
-      Joe
+      John
       Smith
       John
       """
 
-  Scenario: Save a record
+  Scenario: Create a record with a serial key
     Given I have these class definitions:
       """
       class User
         include Orel::Object
         heading do
+          key { id }
+          att :id, Orel::Domains::Serial
           att :first_name, Orel::Domains::String
           att :last_name, Orel::Domains::String
         end
@@ -40,16 +42,119 @@ Feature: Use the objects that back relations.
       """
     When I run some Orel code:
       """
-      user = User.new :first_name => "Joe", :last_name => "Smith"
-      puts user.first_name
-      puts user.last_name
-      puts user.save.inspect
+      user = User.new :first_name => "John", :last_name => "Smith"
+      user.save
+      puts user.id.inspect
+      puts "query"
+      Orel.query("SELECT id, first_name, last_name from user").each { |row|
+        puts row.join(',')
+      }
+      puts "done"
       """
     Then the output should contain:
       """
-      Joe
-      Smith
-      true
+      1
+      query
+      1,John,Smith
+      done
+      """
+
+  Scenario: Create a record with a natural key
+    Given I have these class definitions:
+      """
+      class User
+        include Orel::Object
+        heading do
+          key { first_name / last_name }
+          att :first_name, Orel::Domains::String
+          att :last_name, Orel::Domains::String
+          att :age, Orel::Domains::Integer
+        end
+      end
+      """
+    When I run some Orel code:
+      """
+      user = User.new :first_name => "John", :last_name => "Smith", :age => 10
+      user.save
+      puts "query"
+      Orel.query("SELECT first_name, last_name, age from user").each { |row|
+        puts row.join(',')
+      }
+      puts "done"
+      """
+    Then the output should contain:
+      """
+      query
+      John,Smith,10
+      done
+      """
+
+  Scenario: Update a record with a serial key
+    Given I have these class definitions:
+      """
+      class User
+        include Orel::Object
+        heading do
+          key { id }
+          att :id, Orel::Domains::Serial
+          att :first_name, Orel::Domains::String
+          att :last_name, Orel::Domains::String
+        end
+      end
+      """
+    When I run some Orel code:
+      """
+      user = User.new :first_name => "John", :last_name => "Smith"
+      user.save
+      puts user.id.inspect
+      user.first_name = "John"
+      user.save
+      puts user.id.inspect
+      puts "query"
+      Orel.query("SELECT id, first_name, last_name from user").each { |row|
+        puts row.join(',')
+      }
+      puts "done"
+      """
+    Then the output should contain:
+      """
+      1
+      1
+      query
+      1,John,Smith
+      done
+      """
+
+  Scenario: Update a record with a natural key
+    Given I have these class definitions:
+      """
+      class User
+        include Orel::Object
+        heading do
+          key { first_name / last_name }
+          att :first_name, Orel::Domains::String
+          att :last_name, Orel::Domains::String
+          att :age, Orel::Domains::Integer
+        end
+      end
+      """
+    When I run some Orel code:
+      """
+      user = User.new :first_name => "John", :last_name => "Smith", :age => 10
+      user.save
+      user.age = 30
+      user.save
+      puts "query"
+      Orel.query("SELECT first_name, last_name, age from user").each { |row|
+        puts row.join(',')
+      }
+      puts "done"
+      """
+    Then the output should contain:
+      """
+      query
+      John,Smith,30
+      done
       """
 
 

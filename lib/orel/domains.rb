@@ -9,6 +9,12 @@ module Orel
       def decode(value)
         value
       end
+      # Public: Can this type be inserted?
+      #
+      # Returns a Boolean.
+      def insertable?
+        true
+      end
       # TODO: validations, etc
     end
 
@@ -18,6 +24,9 @@ module Orel
       end
       def for_foreign_key
         Integer.new
+      end
+      def insertable?
+        false
       end
     end
 
