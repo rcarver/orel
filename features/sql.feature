@@ -1,7 +1,7 @@
 @sql @mysql
 Feature: Perform MySQL operations
 
-  Scenario: Perform an insert and see records in a table
+  Background:
     Given I have these class definitions:
       """
       class User
@@ -13,6 +13,8 @@ Feature: Perform MySQL operations
         end
       end
       """
+
+  Scenario: Perform an insert
     When I run some Orel code:
       """
       table = Orel::Sql::Table.new(User.get_heading)
@@ -31,18 +33,7 @@ Feature: Perform MySQL operations
       done
       """
 
-  Scenario: Perform an update and see changes in a table
-    Given I have these class definitions:
-      """
-      class User
-        extend Orel::Relation
-        heading do
-          key { id }
-          att :id, Orel::Domains::Serial
-          att :name, Orel::Domains::String
-        end
-      end
-      """
+  Scenario: Perform an update
     When I run some Orel code:
       """
       table = Orel::Sql::Table.new(User.get_heading)
@@ -60,6 +51,29 @@ Feature: Perform MySQL operations
       """
       UPDATE `user` SET `name` = 'Joe' WHERE `user`.`id` = 1
       1,Joe
+      done
+      """
+
+  Scenario: Perform a delete
+    When I run some Orel code:
+      """
+      table = Orel::Sql::Table.new(User.get_heading)
+      insert_statement1 = table.insert_statement(:name => "John")
+      insert_statement2 = table.insert_statement(:name => "Joe")
+      id1 = Orel.insert(insert_statement1)
+      id2 = Orel.insert(insert_statement2)
+      delete_statement = table.delete_statement(:id => id1)
+      puts delete_statement
+      Orel.insert(delete_statement)
+      Orel.query("SELECT id, name from user").each { |row|
+        puts row.join(',')
+      }
+      puts "done"
+      """
+    Then the output should contain:
+      """
+      DELETE FROM `user` WHERE `user`.`id` = 1
+      2,Joe
       done
       """
 

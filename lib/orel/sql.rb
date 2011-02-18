@@ -96,6 +96,15 @@ module Orel
         }
         manager.to_sql
       end
+      def delete_statement(where)
+        table = Arel::Table.new(@heading.name)
+        manager = Arel::DeleteManager.new(table.engine);
+        manager.from table
+        where.each { |k, v|
+          manager.where table[k].eq(v)
+        }
+        manager.to_sql
+      end
     end
 
     class Column
