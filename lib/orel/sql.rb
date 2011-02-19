@@ -23,7 +23,7 @@ module Orel
           Orel.execute(table.create_statement)
         }
         @foreign_keys.each { |foreign_key|
-          Orel.execute(foreign_key.create_statement)
+          Orel.execute(foreign_key.alter_statement)
         }
       end
       #def show_create_tables
@@ -131,7 +131,7 @@ module Orel
         @local_attributes = local_attributes
         @foreign_attributes = foreign_attributes
       end
-      def create_statement
+      def alter_statement
         name = [@local_table_name, @foreign_table_name, "fk"].join("_")
         local_attribute_names = @local_attributes.map { |a| qc a.name }
         foreign_attribute_names = @foreign_attributes.map { |a| qc a.name }

@@ -37,6 +37,7 @@ module Orel
     def heading(sub_name=nil, &block)
       name = relation_name(sub_name)
       heading = Heading.new(name, sub_name.nil?)
+
       # Automatically add a foreign key to the base relation
       unless heading.base?
         local_heading = get_heading or raise "Missing base relation!"
@@ -46,7 +47,12 @@ module Orel
         # Add the foreign key to the database.
         database.foreign_keys << foreign_key
       end
-      HeadingDSL.new(self, heading, database, block)
+
+      # Execute the DSL.
+      dsl = HeadingDSL.new(self, block)
+      dsl._apply(heading, database)
+
+      # Add the heading to the class's database.
       database.headings << heading
     end
 
@@ -108,7 +114,7 @@ module Orel
       end
       attr_reader :name
       attr_reader :domain
-      def for_foreign_key(relation_name)
+      def for_foreign_key_in(heading)
         unless domain.respond_to?(:for_foreign_key)
           raise ForeignKeyTranslationError, "#{domain.inspect} does not support foreign keys. It must define `for_foreign_key`."
         end
@@ -116,7 +122,7 @@ module Orel
         # should probably be an option to this method and be controller
         # by the DSL.
         if name == :id
-          fk_name = [relation_name, name].join("_")
+          fk_name = [heading.name, name].join("_")
         else
           fk_name = name
         end
@@ -128,27 +134,26 @@ module Orel
     # A key is a set of 0 or more attributes that defines
     # a uniqueness constraint.
     class Key
-      def initialize(name, options={})
+
+      def initialize(name)
         @name = name
         @attributes = []
-        @references = options.delete(:references)
-
-        # Validate options keys.
-        raise ArgumentError, "Unknown options: #{options.keys.inspect}" unless options.empty?
-
-        # Validate options values.
-        if @references
-          raise ArgumentError, ":references must be a String" unless @references.is_a?(String)
-        end
       end
+
       attr_reader :name
       attr_reader :attributes
-      def for_foreign_key(relation_name)
-        fk_name = [relation_name, name].join("_")
+
+      # Public: Convert this key into its foreign key equivalent.
+      #
+      # relation_name - String name of the
+      #
+      # Returns a new Orel::Relation::Key.
+      def for_foreign_key_in(heading)
+        fk_name = [heading.name, name].join("_")
         foreign_key = self.class.new(fk_name)
         attributes.each { |attribute|
           begin
-            foreign_key.attributes << attribute.for_foreign_key(relation_name)
+            foreign_key.attributes << attribute.for_foreign_key_in(heading)
           rescue ForeignKeyTranslationError => e
             raise "Cannot convert key #{name} to a foreign key. #{e.message}"
           end
@@ -166,10 +171,10 @@ module Orel
         local_key = local_heading.get_key(local_key_name) or raise "Missing key #{local_key_name.inspect } in #{local_name.inspect}"
 
         # Add all attributes in the local key to the remote heading.
-        remote_heading.attributes.concat local_key.attributes.map { |a| a.for_foreign_key(local_name) }
+        remote_heading.attributes.concat local_key.attributes.map { |a| a.for_foreign_key_in(local_heading) }
 
         # Convert the local heading's key into a key for the remote heading.
-        remote_key = local_key.for_foreign_key(local_name)
+        remote_key = local_key.for_foreign_key_in(local_heading)
 
         # Create the foreign key.
         self.new(remote_heading, local_heading, remote_key, local_key)
@@ -197,15 +202,9 @@ module Orel
 
     # This is the DSL that is used to build up a set of relations.
     class HeadingDSL
-      def initialize(klass, heading, database, block)
+      def initialize(klass, block)
         @klass = klass
-        @attributes = []
-        @references = []
-        @keys = {}
-        instance_eval(&block)
-        @attributes.each { |a| heading.attributes << a }
-        @references.each { |ref| database.foreign_keys << ref }
-        @keys.each { |name, dsl| dsl._apply(name, heading) }
+        @block = block
       end
       def key(name=:primary, &block)
         @keys[name] = KeyDSL.new(block)
@@ -218,6 +217,15 @@ module Orel
       def ref(klass)
         # TODO: allow references to non-primary keys
         @references << Reference.new(klass, :primary, @klass)
+      end
+      def _apply(heading, database)
+        @attributes = []
+        @references = []
+        @keys = {}
+        instance_eval(&@block)
+        @attributes.each { |a| heading.attributes << a }
+        @references.each { |ref| database.foreign_keys << ref }
+        @keys.each { |name, dsl| dsl._apply(name, heading) }
       end
     end
 
@@ -237,7 +245,6 @@ module Orel
       }
 
       def initialize(block)
-        @fields = []
         @block = block
         @syntax = Syntaxes["/"]
       end
@@ -259,13 +266,13 @@ module Orel
             klass_heading = klass.get_heading
             heading_key = klass_heading.get_key(key_name) or raise "Missing key #{key_name.inspect} in heading #{heading.inspect}"
             heading_key.attributes.each { |attribute|
-              key.attributes << attribute.for_foreign_key(heading.name)
+              key.attributes << attribute.for_foreign_key_in(heading)
             }
           else
             attribute_name = identifier.to_sym
             attribute = heading.get_attribute(attribute_name) or raise "Missing attribute #{attribute_name.inspect} in heading #{heading.inspect}"
             # FIXME: why do we convert to foreign key in the Class case but not here?
-            key.attributes << attribute #.for_foreign_key(heading.name)
+            key.attributes << attribute #.for_foreign_key_in(heading.name)
           end
         }
         heading.keys << key
