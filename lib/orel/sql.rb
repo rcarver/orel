@@ -27,11 +27,9 @@ module Orel
       end
       def create_tables!
         @tables.each { |table|
-          Orel.logger.info table.create_statement.inspect
           Orel.execute(table.create_statement)
         }
         @foreign_keys.each { |foreign_key|
-          Orel.logger.info foreign_key.create_statement.inspect
           Orel.execute(foreign_key.create_statement)
         }
       end
