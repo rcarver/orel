@@ -2,19 +2,12 @@ module Orel
   module Sql
 
     module Quoting
-      def q(value)
-        Orel.connection.quote(value)
-      end
-      def quote_value(value, column=nil)
-        Orel.connection.quote(value, column)
-      end
       def quote_column_name(name)
         Orel.connection.quote_column_name(name)
       end
       def quote_table_name(name)
         Orel.connection.quote_table_name(name)
       end
-      alias_method :qv, :quote_value
       alias_method :qc, :quote_column_name
       alias_method :qt, :quote_table_name
     end
