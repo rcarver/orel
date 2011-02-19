@@ -8,7 +8,6 @@ require 'orel/domains'
 require 'orel/object'
 require 'orel/relation'
 require 'orel/sql'
-require 'orel/translator'
 
 module Orel
   VERSION = "0.0.0"
@@ -29,7 +28,7 @@ module Orel
     Arel::Table.engine.connection
   end
 
-  def self.current_database
+  def self.current_database_name
     connection.current_database
   end
 
@@ -46,13 +45,13 @@ module Orel
   end
 
   def self.recreate_database!
-    db_name = current_database
+    db_name = current_database_name
     connection.recreate_database(db_name)
     connection.execute("USE #{db_name}")
   end
 
   def self.create_tables!
-    Orel::Translator.create_tables!(classes)
+    Orel::Sql.create_tables!(classes)
   end
 
   def self.get_database_structure
