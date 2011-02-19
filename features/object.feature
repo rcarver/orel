@@ -45,18 +45,18 @@ Feature: Use the objects that back relations.
       user = User.new :first_name => "John", :last_name => "Smith"
       user.save
       puts user.id.inspect
-      puts "query"
+      puts "---"
       Orel.query("SELECT id, first_name, last_name from user").each { |row|
         puts row.join(',')
       }
-      puts "done"
+      puts "---"
       """
     Then the output should contain:
       """
       1
-      query
+      ---
       1,John,Smith
-      done
+      ---
       """
 
   Scenario: Create a record with a natural key
@@ -76,17 +76,17 @@ Feature: Use the objects that back relations.
       """
       user = User.new :first_name => "John", :last_name => "Smith", :age => 10
       user.save
-      puts "query"
+      puts "---"
       Orel.query("SELECT first_name, last_name, age from user").each { |row|
         puts row.join(',')
       }
-      puts "done"
+      puts "---"
       """
     Then the output should contain:
       """
-      query
+      ---
       John,Smith,10
-      done
+      ---
       """
 
   Scenario: Update a record with a serial key
@@ -110,19 +110,19 @@ Feature: Use the objects that back relations.
       user.first_name = "John"
       user.save
       puts user.id.inspect
-      puts "query"
+      puts "---"
       Orel.query("SELECT id, first_name, last_name from user").each { |row|
         puts row.join(',')
       }
-      puts "done"
+      puts "---"
       """
     Then the output should contain:
       """
       1
       1
-      query
+      ---
       1,John,Smith
-      done
+      ---
       """
 
   Scenario: Update a record with a natural key
@@ -144,17 +144,17 @@ Feature: Use the objects that back relations.
       user.save
       user.age = 30
       user.save
-      puts "query"
+      puts "---"
       Orel.query("SELECT first_name, last_name, age from user").each { |row|
         puts row.join(',')
       }
-      puts "done"
+      puts "---"
       """
     Then the output should contain:
       """
-      query
+      ---
       John,Smith,30
-      done
+      ---
       """
 
 
