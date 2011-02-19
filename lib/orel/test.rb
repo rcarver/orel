@@ -38,3 +38,15 @@ module Arel
     end
   end
 end
+
+module Orel
+  module Test
+    def self.show(*args)
+      puts '---'
+      Orel.query(*args).each { |row|
+        puts row.join(',')
+      }
+      puts '---'
+    end
+  end
+end

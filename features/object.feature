@@ -45,11 +45,7 @@ Feature: Use the objects that back relations.
       user = User.new :first_name => "John", :last_name => "Smith"
       user.save
       puts user.id.inspect
-      puts "---"
-      Orel.query("SELECT id, first_name, last_name from user").each { |row|
-        puts row.join(',')
-      }
-      puts "---"
+      Orel::Test.show "SELECT id, first_name, last_name from user"
       """
     Then the output should contain:
       """
@@ -76,11 +72,7 @@ Feature: Use the objects that back relations.
       """
       user = User.new :first_name => "John", :last_name => "Smith", :age => 10
       user.save
-      puts "---"
-      Orel.query("SELECT first_name, last_name, age from user").each { |row|
-        puts row.join(',')
-      }
-      puts "---"
+      Orel::Test.show "SELECT first_name, last_name, age from user"
       """
     Then the output should contain:
       """
@@ -110,11 +102,7 @@ Feature: Use the objects that back relations.
       user.first_name = "John"
       user.save
       puts user.id.inspect
-      puts "---"
-      Orel.query("SELECT id, first_name, last_name from user").each { |row|
-        puts row.join(',')
-      }
-      puts "---"
+      Orel::Test.show "SELECT id, first_name, last_name from user"
       """
     Then the output should contain:
       """
@@ -144,11 +132,7 @@ Feature: Use the objects that back relations.
       user.save
       user.age = 30
       user.save
-      puts "---"
-      Orel.query("SELECT first_name, last_name, age from user").each { |row|
-        puts row.join(',')
-      }
-      puts "---"
+      Orel::Test.show "SELECT first_name, last_name, age from user"
       """
     Then the output should contain:
       """

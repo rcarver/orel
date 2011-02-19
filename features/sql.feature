@@ -21,16 +21,14 @@ Feature: Perform MySQL operations
       insert_statement = table.insert_statement(:name => "John")
       puts insert_statement
       Orel.execute(insert_statement)
-      Orel.query("SELECT id, name from user").each { |row|
-        puts row.join(',')
-      }
-      puts "done"
+      Orel::Test.show "SELECT id, name from user"
       """
     Then the output should contain:
       """
       INSERT INTO `user` (`name`) VALUES ('John')
+      ---
       1,John
-      done
+      ---
       """
 
   Scenario: Perform an update
@@ -42,16 +40,14 @@ Feature: Perform MySQL operations
       update_statement = table.update_statement({ :name => "Joe" }, { :id => id })
       puts update_statement
       Orel.insert(update_statement)
-      Orel.query("SELECT id, name from user").each { |row|
-        puts row.join(',')
-      }
-      puts "done"
+      Orel::Test.show "SELECT id, name from user"
       """
     Then the output should contain:
       """
       UPDATE `user` SET `name` = 'Joe' WHERE `user`.`id` = 1
+      ---
       1,Joe
-      done
+      ---
       """
 
   Scenario: Perform a delete
@@ -65,15 +61,13 @@ Feature: Perform MySQL operations
       delete_statement = table.delete_statement(:id => id1)
       puts delete_statement
       Orel.insert(delete_statement)
-      Orel.query("SELECT id, name from user").each { |row|
-        puts row.join(',')
-      }
-      puts "done"
+      Orel::Test.show "SELECT id, name from user"
       """
     Then the output should contain:
       """
       DELETE FROM `user` WHERE `user`.`id` = 1
+      ---
       2,Joe
-      done
+      ---
       """
 
