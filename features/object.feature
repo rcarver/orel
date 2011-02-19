@@ -141,4 +141,57 @@ Feature: Use the objects that back relations.
       ---
       """
 
+  Scenario: Destroy a record with a serial key
+    Given I have these class definitions:
+      """
+      class User
+        include Orel::Object
+        heading do
+          key { id }
+          att :id, Orel::Domains::Serial
+          att :first_name, Orel::Domains::String
+          att :last_name, Orel::Domains::String
+        end
+      end
+      """
+    When I run some Orel code:
+      """
+      user = User.new :first_name => "John", :last_name => "Smith"
+      user.save
+      user.destroy
+      Orel::Test.show "SELECT id, first_name, last_name from user"
+      """
+    Then the output should contain:
+      """
+      ---
+      ---
+      """
+
+  Scenario: Destroy a record with a natural key
+    Given I have these class definitions:
+      """
+      class User
+        include Orel::Object
+        heading do
+          key { first_name / last_name }
+          att :first_name, Orel::Domains::String
+          att :last_name, Orel::Domains::String
+          att :age, Orel::Domains::Integer
+        end
+      end
+      """
+    When I run some Orel code:
+      """
+      user = User.new :first_name => "John", :last_name => "Smith", :age => 10
+      user.save
+      user.destroy
+      Orel::Test.show "SELECT first_name, last_name, age from user"
+      """
+    Then the output should contain:
+      """
+      ---
+      ---
+      """
+
+
 

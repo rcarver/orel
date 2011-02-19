@@ -40,6 +40,18 @@ module Orel
       end
     end
 
+    def destroy
+      heading = self.class.get_heading
+      table = Orel::Sql::Table.new(heading)
+
+      attributes_for_key = Hash[get_primary_key.attributes.map { |a| [a.name, @attributes[a.name]] }]
+      statement = table.delete_statement(attributes_for_key)
+
+      Orel.execute(statement)
+    end
+
+  protected
+
     def create
       heading = self.class.get_heading
       table = Orel::Sql::Table.new(heading)
@@ -73,8 +85,6 @@ module Orel
         Orel.execute(statement)
       end
     end
-
-  protected
 
     def has_attribute?(name)
       !! self.class.get_heading.get_attribute(name)
