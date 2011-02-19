@@ -6,6 +6,7 @@ require 'sourcify'
 
 require 'orel/domains'
 require 'orel/object'
+require 'orel/operator'
 require 'orel/relation'
 require 'orel/sql'
 
