@@ -41,12 +41,17 @@ end
 
 module Orel
   module Test
+    def self.wrap
+      puts '---'
+      yield
+      puts '---'
+    end
     def self.show(*args)
-      puts '---'
-      Orel.query(*args).each { |row|
-        puts row.join(',')
+      wrap {
+        Orel.query(*args).each { |row|
+          puts row.join(',')
+        }
       }
-      puts '---'
     end
   end
 end
