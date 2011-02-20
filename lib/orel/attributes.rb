@@ -1,6 +1,9 @@
 module Orel
   class Attributes
 
+    InvalidAttribute = Class.new(ArgumentError)
+    InvalidReference = Class.new(ArgumentError)
+
     def initialize(heading, defaults={})
       @heading = heading
       @attributes = {}
@@ -17,8 +20,25 @@ module Orel
     end
 
     def []=(key, value)
-      raise InvalidAttribute unless key?(key)
-      @attributes[key.to_sym] = value
+      if key.is_a?(Orel::Relation)
+        klass = key
+        object = value
+        raise ArgumentError, "Expected a #{klass} but got #{object.class}" unless object.is_a?(klass)
+
+        reference = @heading.get_reference(klass)
+        raise InvalidReference, klass unless reference
+
+        key = reference.get_remote_key
+        heading = reference.get_remote_heading
+
+        key.attributes.each { |a|
+          rename = a.for_foreign_key_in(heading)
+          self[rename.name] = object.attributes[a.name]
+        }
+      else
+        raise InvalidAttribute, key unless att?(key)
+        @attributes[key.to_sym] = value
+      end
     end
 
     def hash_excluding_keys(keys)

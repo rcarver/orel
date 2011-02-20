@@ -90,15 +90,20 @@ module Orel
         @name = name
         @base = base
         @attributes = []
+        @references = []
         @keys = []
       end
       attr_reader :name
       attr_reader :base
       alias_method :base?, :base
       attr_reader :attributes
+      attr_reader :references
       attr_reader :keys
       def get_attribute(name)
         attributes.find { |a| a.name == name }
+      end
+      def get_reference(klass)
+        references.find { |r| r.local_class == klass }
       end
       def get_key(name)
         keys.find { |k| k.name == name }
@@ -122,7 +127,7 @@ module Orel
         # should probably be an option to this method and be controller
         # by the DSL.
         if name == :id
-          fk_name = [heading.name, name].join("_")
+          fk_name = [heading.name, name].join("_").to_sym
         else
           fk_name = name
         end
@@ -152,7 +157,7 @@ module Orel
       #
       # Returns a new Orel::Relation::Key.
       def for_foreign_key_in(heading)
-        fk_name = [heading.name, name].join("_")
+        fk_name = [heading.name, name].join("_").to_sym
         foreign_key = self.class.new(fk_name)
         attributes.each { |attribute|
           begin
@@ -201,6 +206,12 @@ module Orel
         remote_heading = remote_class.get_heading or raise "Missing heading for #{remote_class}"
         ForeignKey.create(local_heading, key_name, remote_heading)
       end
+      def get_remote_key
+        get_remote_heading.get_key(key_name)
+      end
+      def get_remote_heading
+        local_class.get_heading
+      end
     end
 
     # This is the DSL that is used to build up a set of relations.
@@ -226,9 +237,16 @@ module Orel
         @references = []
         @keys = {}
         instance_eval(&@block)
-        @attributes.each { |a| heading.attributes << a }
-        @references.each { |ref| database.foreign_keys << ref }
-        @keys.each { |name, dsl| dsl._apply(name, heading) }
+        @attributes.each { |a|
+          heading.attributes << a
+        }
+        @references.each { |ref|
+          heading.references << ref
+          database.foreign_keys << ref
+        }
+        @keys.each { |name, dsl|
+          dsl._apply(name, heading)
+        }
       end
     end
 
