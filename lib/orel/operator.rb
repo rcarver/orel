@@ -18,7 +18,8 @@ module Orel
     def create
       serial = get_serial_key_attribute
       keys = serial ? [serial.name] : []
-      attributes_to_insert = remove_hash_keys(@attributes, keys)
+
+      attributes_to_insert = @attributes.hash_excluding_keys(keys)
       statement = @table.insert_statement(attributes_to_insert)
 
       auto_id = Orel.insert(statement)
@@ -31,8 +32,8 @@ module Orel
     end
 
     def update
-      attributes_for_key = Hash[get_primary_key.attributes.map { |a| [a.name, @attributes[a.name]] }]
-      attributes_to_update = remove_hash_keys(@attributes, attributes_for_key.keys)
+      attributes_for_key = hash_of_primary_key
+      attributes_to_update = @attributes.hash_excluding_keys(attributes_for_key.keys)
 
       # TODO: since we're not updating attributes in the primary key,
       # it's possible to have nothing to update. That's weird, right?
@@ -44,7 +45,7 @@ module Orel
     end
 
     def destroy
-      attributes_for_key = Hash[get_primary_key.attributes.map { |a| [a.name, @attributes[a.name]] }]
+      attributes_for_key = hash_of_primary_key
       statement = @table.delete_statement(attributes_for_key)
 
       Orel.execute(statement)
@@ -62,12 +63,8 @@ module Orel
       end
     end
 
-    def remove_hash_keys(hash, keys)
-      output = {}
-      hash.each { |k, v|
-        output[k] = v unless keys.include?(k)
-      }
-      output
+    def hash_of_primary_key
+      Hash[get_primary_key.attributes.map { |a| [a.name, @attributes[a.name]] }]
     end
 
   end
