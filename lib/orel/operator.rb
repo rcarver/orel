@@ -22,13 +22,19 @@ module Orel
       attributes_to_insert = @attributes.hash_excluding_keys(keys)
       statement = @table.insert_statement(attributes_to_insert)
 
-      auto_id = Orel.insert(statement)
 
-      if serial
-        @attributes[serial.name] = auto_id
+      begin
+        auto_id = Orel.insert(statement)
+
+        if serial
+          @attributes[serial.name] = auto_id
+        end
+
+        @persisted = true
+      rescue StandardError => e
+        debug_sql_error(statement)
+        raise
       end
-
-      @persisted = true
     end
 
     def update
@@ -40,7 +46,12 @@ module Orel
       unless attributes_to_update.empty?
         statement = @table.update_statement(attributes_to_update, attributes_for_key)
 
-        Orel.execute(statement)
+        begin
+          Orel.execute(statement)
+        rescue StandardError => e
+          debug_sql_error(statement)
+          raise
+        end
       end
     end
 
@@ -48,7 +59,12 @@ module Orel
       attributes_for_key = hash_of_primary_key
       statement = @table.delete_statement(attributes_for_key)
 
-      Orel.execute(statement)
+      begin
+        Orel.execute(statement)
+      rescue StandardError => e
+        debug_sql_error(statement)
+        raise
+      end
     end
 
   protected
@@ -65,6 +81,10 @@ module Orel
 
     def hash_of_primary_key
       Hash[get_primary_key.attributes.map { |a| [a.name, @attributes[a.name]] }]
+    end
+
+    def debug_sql_error(statement)
+      Orel.logger.fatal "A SQL error occurred while executing:\n#{statement}"
     end
 
   end
