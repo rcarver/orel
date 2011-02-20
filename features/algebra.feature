@@ -1,3 +1,4 @@
+@algebra
 Feature: Perform relational algebra
 
   Scenario: Perform a projection
@@ -18,16 +19,19 @@ Feature: Perform relational algebra
       Orel.execute "INSERT INTO user (first_name, last_name) VALUES ('Mary', 'Smith')"
 
       algebra = Orel::Algebra.new(User)
-      projection = algebra.project
+      algebra.project
+      puts algebra.to_sql
+      #puts algebra.count
 
       Orel::Test.wrap_and_sort {
-        projection.each { |tuple|
+        algebra.each { |tuple|
           puts [tuple[:first_name], tuple[:last_name]].join(",")
         }
       }
       """
     Then the output should contain:
       """
+      SELECT * FROM `user`
       ---
       John,Smith
       Mary,Smith
@@ -52,17 +56,20 @@ Feature: Perform relational algebra
       Orel.execute "INSERT INTO user (first_name, last_name) VALUES ('Mary', 'Smith')"
 
       algebra = Orel::Algebra.new(User)
-      restriction = algebra.restrict(:first_name => "John")
-      #puts restriction.count
+      algebra.restrict(:first_name => "John")
+      algebra.project
+      puts algebra.to_sql
+      #puts algebra.count
 
       Orel::Test.wrap_and_sort {
-        restriction.project.each { |tuple|
+        algebra.each { |tuple|
           puts [tuple[:first_name], tuple[:last_name]].join(",")
         }
       }
       """
     Then the output should contain:
       """
+      SELECT * FROM `user` WHERE `user`.`first_name` = 'John'
       ---
       John,Smith
       ---
@@ -97,17 +104,20 @@ Feature: Perform relational algebra
       Orel.execute "INSERT INTO thing (first_name, last_name, name) VALUES ('Mary', 'Smith', 'Boat')"
 
       algebra = Orel::Algebra.new(User)
-      join = algebra.join(Thing)
-      #puts join.count
+      algebra.join(Thing)
+      algebra.project
+      puts algebra.to_sql
+      #puts algebra.count
 
       Orel::Test.wrap_and_sort {
-        join.project.each { |tuple|
+        algebra.each { |tuple|
           puts [tuple[:first_name], tuple[:last_name], tuple[:name]].join(",")
         }
       }
       """
     Then the output should contain:
       """
+      SELECT * FROM `user` INNER JOIN `thing` ON `thing`.`first_name` = `user`.`first_name` AND `thing`.`last_name` = `user`.`last_name`
       ---
       John,Smith,Boat
       John,Smith,Car

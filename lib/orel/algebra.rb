@@ -69,6 +69,10 @@ module Orel
       Orel.execute(sql).each(:as => :hash, :symbolize_keys => true, &block)
     end
 
+    def to_sql
+      @manager.to_sql
+    end
+
     # Public: Execute the current algebraic statement and iterate
     # over the results.
     #
