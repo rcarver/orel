@@ -129,6 +129,9 @@ module Orel
         fk_domain = domain.for_foreign_key
         self.class.new(fk_name, fk_domain)
       end
+      def inspect
+        "<Attribute #{name.inspect} #{domain.class}>"
+      end
     end
 
     # A key is a set of 0 or more attributes that defines

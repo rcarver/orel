@@ -42,5 +42,9 @@ module Orel
       end
     end
 
+    def inspect
+      "<Attributes #{@attributes.inspect}>"
+    end
+
   end
 end
