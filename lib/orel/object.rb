@@ -3,6 +3,15 @@ module Orel
 
     def self.included(base)
       base.extend Orel::Relation
+      base.extend ClassMethods
+    end
+
+    module ClassMethods
+      def create(*args)
+        object = new(*args)
+        object.save
+        object
+      end
     end
 
     def initialize(attributes={})
