@@ -7,12 +7,12 @@ module Orel
       defaults.each { |k, v| self[k] = v }
     end
 
-    def key?(key)
+    def att?(key)
       !! @heading.get_attribute(key.to_sym)
     end
 
     def [](key)
-      raise InvalidAttribute unless key?(key)
+      raise InvalidAttribute, key unless att?(key)
       @attributes[key.to_sym]
     end
 
@@ -37,7 +37,7 @@ module Orel
         key = message.to_sym
         action = :get
       end
-      if key && key?(key)
+      if key && att?(key)
         return key, action
       end
     end

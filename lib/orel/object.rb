@@ -11,8 +11,10 @@ module Orel
       @operator = Operator.new(heading, @attributes)
     end
 
+    attr_reader :attributes
+
     def id
-      if @attributes.key?(:id)
+      if @attributes.att?(:id)
         @attributes[:id]
       else
         super
