@@ -1,4 +1,3 @@
-@wip
 Feature: Perform relational algebra
 
   Scenario: Perform a projection
@@ -6,7 +5,6 @@ Feature: Perform relational algebra
       """
       class User
         extend Orel::Relation
-        extend Orel::Algebra
         heading do
           key { first_name / last_name }
           att :first_name, Orel::Domains::String
@@ -16,10 +14,13 @@ Feature: Perform relational algebra
       """
     When I run some Orel code:
       """
-      User.create :first_name => "John", :last_name => "Smith"
-      User.create :first_name => "Mary", :last_name => "Smith"
-      projection = User.project
-      Orel::Test.wrap {
+      Orel.execute "INSERT INTO user (first_name, last_name) VALUES ('John', 'Smith')"
+      Orel.execute "INSERT INTO user (first_name, last_name) VALUES ('Mary', 'Smith')"
+
+      algebra = Orel::Algebra.new(User)
+      projection = algebra.project
+
+      Orel::Test.wrap_and_sort {
         projection.each { |tuple|
           puts [tuple[:first_name], tuple[:last_name]].join(",")
         }
@@ -38,7 +39,6 @@ Feature: Perform relational algebra
       """
       class User
         extend Orel::Relation
-        extend Orel::Algebra
         heading do
           key { first_name / last_name }
           att :first_name, Orel::Domains::String
@@ -48,11 +48,14 @@ Feature: Perform relational algebra
       """
     When I run some Orel code:
       """
-      User.create :first_name => "John", :last_name => "Smith"
-      User.create :first_name => "Mary", :last_name => "Smith"
-      restriction = User.restrict(:first_name => "John")
-      puts restriction.count
-      Orel::Test.wrap {
+      Orel.execute "INSERT INTO user (first_name, last_name) VALUES ('John', 'Smith')"
+      Orel.execute "INSERT INTO user (first_name, last_name) VALUES ('Mary', 'Smith')"
+
+      algebra = Orel::Algebra.new(User)
+      restriction = algebra.restrict(:first_name => "John")
+      #puts restriction.count
+
+      Orel::Test.wrap_and_sort {
         restriction.project.each { |tuple|
           puts [tuple[:first_name], tuple[:last_name]].join(",")
         }
@@ -60,18 +63,16 @@ Feature: Perform relational algebra
       """
     Then the output should contain:
       """
-      1
       ---
       John,Smith
       ---
       """
 
-  Scenario: Perform a natural join
+  Scenario: Perform an inner join
     Given I have these class definitions:
       """
       class User
         extend Orel::Relation
-        extend Orel::Algebra
         heading do
           key { first_name / last_name }
           att :first_name, Orel::Domains::String
@@ -80,7 +81,6 @@ Feature: Perform relational algebra
       end
       class Thing
         extend Orel::Relation
-        extend Orel::Algebra
         heading do
           key { User / name }
           ref User
@@ -90,14 +90,17 @@ Feature: Perform relational algebra
       """
     When I run some Orel code:
       """
-      john = User.create :first_name => "John", :last_name => "Smith"
-      mary = User.create :first_name => "Mary", :last_name => "Smith"
-      Thing.create :user => john, :name => "Car"
-      Thing.create :user => john, :name => "Boat"
-      Thing.create :user => mary, :name => "Boat"
-      join = User.natual_join(Thing)
-      puts join.count
-      Orel::Test.wrap {
+      Orel.execute "INSERT INTO user (first_name, last_name) VALUES ('John', 'Smith')"
+      Orel.execute "INSERT INTO user (first_name, last_name) VALUES ('Mary', 'Smith')"
+      Orel.execute "INSERT INTO thing (first_name, last_name, name) VALUES ('John', 'Smith', 'Car')"
+      Orel.execute "INSERT INTO thing (first_name, last_name, name) VALUES ('John', 'Smith', 'Boat')"
+      Orel.execute "INSERT INTO thing (first_name, last_name, name) VALUES ('Mary', 'Smith', 'Boat')"
+
+      algebra = Orel::Algebra.new(User)
+      join = algebra.join(Thing)
+      #puts join.count
+
+      Orel::Test.wrap_and_sort {
         join.project.each { |tuple|
           puts [tuple[:first_name], tuple[:last_name], tuple[:name]].join(",")
         }
@@ -105,10 +108,9 @@ Feature: Perform relational algebra
       """
     Then the output should contain:
       """
-      3
       ---
-      John,Smith,Car
       John,Smith,Boat
+      John,Smith,Car
       Mary,Smith,Boat
       ---
       """

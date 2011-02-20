@@ -4,6 +4,7 @@ require 'logger'
 require 'arel'
 require 'sourcify'
 
+require 'orel/algebra'
 require 'orel/attributes'
 require 'orel/domains'
 require 'orel/object'
