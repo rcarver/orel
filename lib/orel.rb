@@ -19,6 +19,18 @@ module Orel
     @classes ||= Set.new
   end
 
+  def self.finalize!
+    return if @finalized
+    @finalized = true
+    classes.each { |klass|
+      klass.database.headings.each { |heading|
+        heading.references.each { |ref|
+          klass.database.foreign_keys << ref.to_foreign_key
+        }
+      }
+    }
+  end
+
   def self.logger=(logger)
     @logger = logger
   end
@@ -54,6 +66,7 @@ module Orel
   end
 
   def self.create_tables!
+    finalize!
     Orel::Sql.create_tables!(classes)
   end
 

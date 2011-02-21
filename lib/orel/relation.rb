@@ -251,7 +251,6 @@ module Orel
         }
         @references.each { |ref|
           heading.references << ref
-          database.foreign_keys << ref
         }
         @keys.each { |name, dsl|
           dsl._apply(name, heading)
