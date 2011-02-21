@@ -25,7 +25,7 @@ module Orel
     classes.each { |klass|
       klass.database.headings.each { |heading|
         heading.references.each { |ref|
-          klass.database.foreign_keys << ref.create_foreign_key_relationship
+          ref.create_foreign_key_relationship!
         }
       }
     }

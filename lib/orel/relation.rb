@@ -51,11 +51,9 @@ module Orel
       def initialize(klass)
         @klass = klass
         @headings = []
-        @foreign_keys = []
       end
       attr_reader :klass
       attr_reader :headings
-      attr_reader :foreign_keys
       def relation_name(sub_name=nil)
         [klass.name.underscore, sub_name].compact.join("_")
       end
@@ -75,15 +73,17 @@ module Orel
         @name = name
         @child = child
         @attributes = []
-        @references = []
         @keys = []
+        @references = []
+        @foreign_keys = []
       end
       attr_reader :name
       attr_reader :child
       alias_method :child?, :child
       attr_reader :attributes
-      attr_reader :references
       attr_reader :keys
+      attr_reader :references
+      attr_reader :foreign_keys
       def get_attribute(name)
         attributes.find { |a| a.name == name }
       end
@@ -175,15 +175,22 @@ module Orel
       def child_key
         @child_heading.get_key(@child_key_name)
       end
-      def create_foreign_key_relationship
+      def create_foreign_key_relationship!
+        # Add attributes in the parent heading to the child heading.
         child_heading.attributes.concat parent_key.attributes.map { |a|
           a.foreign_key_for(parent_heading)
         }
+
+        # Create a key that references the parent heading.
         child_key = parent_key.foreign_key_for(parent_heading)
+
+        # Optionally add that key to the child heading.
         if @one_to_one
           child_heading.keys << child_key
         end
-        ForeignKey.new(parent_heading, parent_key, child_heading, child_key)
+
+        # Store a foreign key description on the child heading.
+        child_heading.foreign_keys << ForeignKey.new(parent_heading, parent_key, child_heading, child_key)
       end
     end
 

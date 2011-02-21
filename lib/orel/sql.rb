@@ -19,12 +19,14 @@ module Orel
         }
 
         foreign_keys = @classes.map { |klass|
-          klass.database.foreign_keys.map { |foreign_key|
-            parent_table = Orel::Sql::Table.new(foreign_key.parent_heading)
-            child_table = Orel::Sql::Table.new(foreign_key.child_heading)
-            parent_attributes = foreign_key.parent_key.attributes
-            child_attributes = foreign_key.child_key.attributes
-            Orel::Sql::ForeignKey.new(parent_table.name, parent_attributes, child_table.name, child_attributes)
+          klass.database.headings.map { |heading|
+            heading.foreign_keys.map { |foreign_key|
+              parent_table = Orel::Sql::Table.new(foreign_key.parent_heading)
+              child_table = Orel::Sql::Table.new(foreign_key.child_heading)
+              parent_attributes = foreign_key.parent_key.attributes
+              child_attributes = foreign_key.child_key.attributes
+              Orel::Sql::ForeignKey.new(parent_table.name, parent_attributes, child_table.name, child_attributes)
+            }
           }
         }
 
