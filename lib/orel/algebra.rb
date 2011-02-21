@@ -61,6 +61,9 @@ module Orel
       self
     end
 
+    # Public: Get the sql statement for the algebra.
+    #
+    # Returns a String.
     def to_sql
       @manager.to_sql
     end

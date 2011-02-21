@@ -77,7 +77,7 @@ Feature: Create MySQL tables from relational definitions
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       """
 
-  Scenario: Create a one-to-one relationship with a single class
+  Scenario: Create a one-to-many relationship with a single class
     Given I have these class definitions:
       """
       class User
@@ -109,7 +109,7 @@ Feature: Create MySQL tables from relational definitions
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       """
 
-  Scenario: Create a one-to-one relationship with a single class using a composite key
+  Scenario: Create a one-to-many relationship with a single class using a composite key
     Given I have these class definitions:
       """
       class User

@@ -22,7 +22,6 @@ module Orel
       attributes_to_insert = @attributes.hash_excluding_keys(keys)
       statement = @table.insert_statement(attributes_to_insert)
 
-
       begin
         auto_id = Orel.insert(statement)
 
