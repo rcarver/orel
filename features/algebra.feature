@@ -21,7 +21,6 @@ Feature: Perform relational algebra
       algebra = Orel::Algebra.new(User)
       algebra.project
       puts algebra.to_sql
-      #puts algebra.count
 
       Orel::Test.wrap_and_sort {
         algebra.each { |tuple|
@@ -31,7 +30,6 @@ Feature: Perform relational algebra
       """
     Then the output should contain:
       """
-      SELECT * FROM `user`
       ---
       John,Smith
       Mary,Smith
@@ -59,7 +57,6 @@ Feature: Perform relational algebra
       algebra.restrict(:first_name => "John")
       algebra.project
       puts algebra.to_sql
-      #puts algebra.count
 
       Orel::Test.wrap_and_sort {
         algebra.each { |tuple|
@@ -107,7 +104,6 @@ Feature: Perform relational algebra
       algebra.join(Thing)
       algebra.project
       puts algebra.to_sql
-      #puts algebra.count
 
       Orel::Test.wrap_and_sort {
         algebra.each { |tuple|

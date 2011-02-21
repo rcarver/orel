@@ -61,14 +61,6 @@ module Orel
       self
     end
 
-    # WIP
-    def count
-      sql = @manager.to_sql
-      count_manager = @manager.clone
-      count_manager.
-      Orel.execute(sql).each(:as => :hash, :symbolize_keys => true, &block)
-    end
-
     def to_sql
       @manager.to_sql
     end
@@ -82,9 +74,8 @@ module Orel
     #
     # Returns nothing.
     def each(&block)
-      statement = @manager.to_sql
       begin
-        Orel.execute(statement).each(:as => :hash, :symbolize_keys => true, &block)
+        Orel.execute(to_sql).each(:as => :hash, :symbolize_keys => true, &block)
       rescue StandardError => e
         debug_sql_error(statement)
         raise
