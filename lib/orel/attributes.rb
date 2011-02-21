@@ -15,7 +15,7 @@ module Orel
     end
 
     def [](key)
-      raise InvalidAttribute, key unless att?(key)
+      raise InvalidAttribute, "Attribute #{key.inspect} is not in #{@heading.name}" unless att?(key)
       @attributes[key.to_sym]
     end
 
@@ -25,18 +25,18 @@ module Orel
         object = value
         raise ArgumentError, "Expected a #{klass} but got #{object.class}" unless object.is_a?(klass)
 
-        reference = @heading.get_reference(klass)
+        reference = @heading.get_parent_reference(klass)
         raise InvalidReference, klass unless reference
 
-        key = reference.child_key
-        heading = reference.child_heading
+        parent_key = reference.parent_key
+        parent_heading = reference.parent_heading
 
-        key.attributes.each { |a|
-          rename = a.for_foreign_key_in(heading)
-          self[rename.name] = object.attributes[a.name]
+        parent_key.attributes.each { |parent_attribute|
+          child_attribute = parent_attribute.foreign_key_for(parent_heading)
+          self[child_attribute.name] = object.attributes[parent_attribute.name]
         }
       else
-        raise InvalidAttribute, key unless att?(key)
+        raise InvalidAttribute, "Attribute #{key.inspect} is not in #{@heading.name}" unless att?(key)
         @attributes[key.to_sym] = value
       end
     end

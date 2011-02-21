@@ -47,7 +47,7 @@ module Orel
       join_heading = klass.get_heading
       join_table = Arel::Table.new(join_heading.name)
 
-      join_reference = join_heading.get_reference(klass)
+      join_reference = join_heading.get_child_reference(klass)
       raise "Missing reference #{klass} for #{@klass}" unless join_reference
 
       parent_key = join_reference.parent_key

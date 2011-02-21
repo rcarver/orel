@@ -87,8 +87,11 @@ module Orel
       def get_attribute(name)
         attributes.find { |a| a.name == name }
       end
-      def get_reference(klass)
+      def get_child_reference(klass)
         references.find { |r| r.child_class == klass }
+      end
+      def get_parent_reference(klass)
+        references.find { |r| r.parent_class == klass }
       end
       def get_key(name)
         keys.find { |k| k.name == name }
@@ -159,10 +162,12 @@ module Orel
         @parent_class = parent_class
         @parent_heading_name = parent_heading_name
         @child_class = child_class
+        @child_heading_name = child_heading_name
         @child_key_name = child_key_name
         @one_to_one = false
       end
       attr_writer :one_to_one
+      attr_reader :parent_class
       attr_reader :child_class
       def create_foreign_key_relationship!
         # Add attributes in the parent heading to the child heading.
@@ -187,7 +192,6 @@ module Orel
       def child_key
         child_heading.get_key(@child_key_name)
       end
-    protected
       def parent_heading
         @parent_class.get_heading(@parent_heading_name)
       end
