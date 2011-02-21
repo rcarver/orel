@@ -38,22 +38,9 @@ module Orel
       name = relation_name(sub_name)
       heading = Heading.new(name, sub_name.nil?)
 
-      # Automatically add a foreign key to the base relation
-      unless heading.base?
-        local_heading = get_heading or raise "Missing base relation!"
-        foreign_key = ForeignKey.create(local_heading, :primary, heading)
-        # Add a key for the foreign key.
-        heading.keys << foreign_key.local_key
-        # Add the foreign key to the database.
-        database.foreign_keys << foreign_key
-      end
-
       # Execute the DSL.
       dsl = HeadingDSL.new(self, block)
       dsl._apply(heading, database)
-
-      # Add the heading to the class's database.
-      database.headings << heading
     end
 
     # Supporting classes
@@ -236,7 +223,21 @@ module Orel
         @attributes = []
         @references = []
         @keys = {}
+
+        # Execute instructions.
         instance_eval(&@block)
+
+        # Automatically add a foreign key to the base relation
+        unless heading.base?
+          local_heading = database.get_heading or raise "Missing base relation!"
+          foreign_key = ForeignKey.create(local_heading, :primary, heading)
+          # Add a key for the foreign key.
+          heading.keys << foreign_key.local_key
+          # Add the foreign key to the database.
+          database.foreign_keys << foreign_key
+        end
+
+        # Apply results to the heading and database.
         @attributes.each { |a|
           heading.attributes << a
         }
@@ -247,6 +248,9 @@ module Orel
         @keys.each { |name, dsl|
           dsl._apply(name, heading)
         }
+
+        # Add the heading to the database.
+        database.headings << heading
       end
     end
 
