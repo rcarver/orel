@@ -159,7 +159,7 @@ module Orel
         @parent_class = parent_class
         @parent_heading_name = parent_heading_name
         @child_class = child_class
-        @child_heading_name = child_heading_name
+        @child_key_name = child_key_name
         @one_to_one = false
       end
       attr_writer :one_to_one
@@ -181,18 +181,18 @@ module Orel
         # Store a foreign key description on the child heading.
         child_heading.foreign_keys << ForeignKey.new(parent_heading, parent_key, child_heading, child_key)
       end
+      def parent_key
+        parent_heading.get_key(:primary)
+      end
+      def child_key
+        child_heading.get_key(@child_key_name)
+      end
     protected
       def parent_heading
         @parent_class.get_heading(@parent_heading_name)
       end
-      def parent_key
-        parent_heading.get_key(:primary)
-      end
       def child_heading
         @child_class.get_heading(@child_heading_name)
-      end
-      def child_key
-        @child_heading.get_key(@child_key_name)
       end
     end
 

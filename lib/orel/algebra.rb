@@ -47,17 +47,20 @@ module Orel
       join_heading = klass.get_heading
       join_table = Arel::Table.new(join_heading.name)
 
-      join_reference = join_heading.get_reference(@klass)
+      join_reference = join_heading.get_reference(klass)
       raise "Missing reference #{klass} for #{@klass}" unless join_reference
 
-      join_key = join_reference.child_key
+      parent_key = join_reference.parent_key
+      child_key = join_reference.child_key
 
       @manager.join(join_table)
-      predicates = join_key.attributes.map { |a|
-        rename = a.for_foreign_key_in(@heading)
-        join_table[a.name].eq(@table[rename.name])
+
+      predicates = parent_key.attributes.map { |parent_attribute|
+        child_attribute = parent_attribute.foreign_key_for(join_heading)
+        join_table[child_attribute.name].eq(@table[parent_attribute.name])
       }
       @manager.on(*predicates)
+
       self
     end
 
