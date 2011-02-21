@@ -26,11 +26,11 @@ module Orel
             else
               foreign_key = foreign_key
             end
-            local_table = Orel::Sql::Table.new(foreign_key.local_heading)
-            foreign_table = Orel::Sql::Table.new(foreign_key.foreign_heading)
-            local_attributes = foreign_key.local_key.attributes
-            foreign_attributes = foreign_key.foreign_key.attributes
-            Orel::Sql::ForeignKey.new(local_table.name, foreign_table.name, local_attributes, foreign_attributes)
+            parent_table = Orel::Sql::Table.new(foreign_key.parent_heading)
+            child_table = Orel::Sql::Table.new(foreign_key.child_heading)
+            parent_attributes = foreign_key.parent_key.attributes
+            child_attributes = foreign_key.child_key.attributes
+            Orel::Sql::ForeignKey.new(parent_table.name, parent_attributes, child_table.name, child_attributes)
           }
         }
 
@@ -162,17 +162,17 @@ module Orel
 
     class ForeignKey
       include Quoting
-      def initialize(local_table_name, foreign_table_name, local_attributes, foreign_attributes)
-        @local_table_name = local_table_name
-        @foreign_table_name = foreign_table_name
-        @local_attributes = local_attributes
-        @foreign_attributes = foreign_attributes
+      def initialize(parent_table_name, parent_attributes, child_table_name, child_attributes)
+        @parent_table_name = parent_table_name
+        @parent_attributes = parent_attributes
+        @child_table_name = child_table_name
+        @child_attributes = child_attributes
       end
       def alter_statement
-        name = [@local_table_name, @foreign_table_name, "fk"].join("_")
-        local_attribute_names = @local_attributes.map { |a| qc a.name }
-        foreign_attribute_names = @foreign_attributes.map { |a| qc a.name }
-        "ALTER TABLE #{qt @local_table_name} ADD CONSTRAINT #{qc name} FOREIGN KEY (#{local_attribute_names.join(',')}) REFERENCES #{qt @foreign_table_name} (#{foreign_attribute_names.join(',')}) ON DELETE NO ACTION ON UPDATE NO ACTION"
+        name = [@child_table_name, @parent_table_name, "fk"].join("_")
+        child_attribute_names = @child_attributes.map { |a| qc a.name }
+        parent_attribute_names = @parent_attributes.map { |a| qc a.name }
+        "ALTER TABLE #{qt @child_table_name} ADD CONSTRAINT #{qc name} FOREIGN KEY (#{child_attribute_names.join(',')}) REFERENCES #{qt @parent_table_name} (#{parent_attribute_names.join(',')}) ON DELETE NO ACTION ON UPDATE NO ACTION"
       end
     end
 

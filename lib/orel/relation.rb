@@ -35,12 +35,10 @@ module Orel
     # Top level DSL.
 
     def heading(sub_name=nil, &block)
-      name = relation_name(sub_name)
-      heading = Heading.new(name, sub_name.nil?)
 
       # Execute the DSL.
       dsl = HeadingDSL.new(self, block)
-      dsl._apply(heading, database)
+      dsl._apply(database, sub_name)
     end
 
     # Supporting classes
@@ -172,31 +170,31 @@ module Orel
         remote_key = local_key.for_foreign_key_in(local_heading)
 
         # Create the foreign key.
-        self.new(remote_heading, local_heading, remote_key, local_key)
+        self.new(local_heading, local_key, remote_heading, remote_key)
       end
 
-      def initialize(local_heading, foreign_heading, local_key, foreign_key)
-        @local_heading = local_heading
-        @foreign_heading = foreign_heading
-        @local_key = local_key
-        @foreign_key = foreign_key
+      def initialize(parent_heading, parent_key, child_heading, child_key)
+        @parent_heading = parent_heading
+        @parent_key = parent_key
+        @child_heading = child_heading
+        @child_key = child_key
       end
-      attr_reader :local_heading
-      attr_reader :foreign_heading
-      attr_reader :local_key
-      attr_reader :foreign_key
+      attr_reader :parent_heading
+      attr_reader :parent_key
+      attr_reader :child_heading
+      attr_reader :child_key
     end
 
-    class ClassReference < Struct.new(:parent_class, :child_class, :key_name)
+    class ClassReference < Struct.new(:parent_class, :parent_heading_name, :child_class, :child_heading_name, :key_name)
       def child_heading
-        child_class.get_heading
+        child_class.get_heading(child_heading_name)
       end
       def child_key
         child_heading.get_key(key_name)
       end
       def to_foreign_key
-        parent_heading = parent_class.get_heading or raise "Missing heading for #{parent_class}"
-        child_heading = child_class.get_heading or raise "Missing heading for #{child_class}"
+        parent_heading = parent_class.get_heading(parent_heading_name) or raise "Missing heading #{parent_heading_name} for #{parent_class}"
+        child_heading = child_class.get_heading(child_heading_name) or raise "Missing heading #{child_heading_name} for #{child_class}"
         ForeignKey.create(child_heading, key_name, parent_heading)
       end
     end
@@ -217,9 +215,9 @@ module Orel
       end
       def ref(klass)
         # TODO: allow references to non-primary keys
-        @references << ClassReference.new(@klass, klass, :primary)
+        @references << ClassReference.new(@klass, nil, klass, nil, :primary)
       end
-      def _apply(heading, database)
+      def _apply(database, sub_name)
         @attributes = []
         @references = []
         @keys = {}
@@ -227,14 +225,24 @@ module Orel
         # Execute instructions.
         instance_eval(&@block)
 
+        # Build the heading.
+        name = database.relation_name(sub_name)
+        heading = Heading.new(name, sub_name.nil?)
+
         # Automatically add a foreign key to the base relation
         unless heading.base?
-          local_heading = database.get_heading or raise "Missing base relation!"
-          foreign_key = ForeignKey.create(local_heading, :primary, heading)
-          # Add a key for the foreign key.
-          heading.keys << foreign_key.local_key
-          # Add the foreign key to the database.
-          database.foreign_keys << foreign_key
+          #reference = ClassReference.new(@klass, nil, @klass, sub_name, :user_id)
+          #database.foreign_keys << reference
+          #foreign_key = reference.to_foreign_key
+
+          parent_heading = @klass.get_heading
+          parent_key = parent_heading.get_key(:primary)
+          child_key = parent_key.for_foreign_key_in(parent_heading)
+
+          heading.attributes.concat parent_key.attributes.map { |a| a.for_foreign_key_in(parent_heading) }
+          heading.keys << child_key
+
+          database.foreign_keys << ForeignKey.new(parent_heading, parent_key, heading, child_key)
         end
 
         # Apply results to the heading and database.
