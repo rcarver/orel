@@ -246,15 +246,9 @@ module Orel
         end
 
         # Apply results to the heading and database.
-        @attributes.each { |a|
-          heading.attributes << a
-        }
-        @references.each { |ref|
-          heading.references << ref
-        }
-        @keys.each { |name, dsl|
-          dsl._apply(name, heading)
-        }
+        @attributes.each { |a| heading.attributes << a }
+        @references.each { |ref| heading.references << ref }
+        @keys.each { |name, dsl| dsl._apply(name, heading) }
 
         # Add the heading to the database.
         database.headings << heading
