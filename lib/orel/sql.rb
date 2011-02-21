@@ -21,7 +21,7 @@ module Orel
         foreign_keys = @classes.map { |klass|
           klass.database.foreign_keys.map { |foreign_key|
             case foreign_key
-            when Orel::Relation::Reference
+            when Orel::Relation::ClassReference
               foreign_key = foreign_key.to_foreign_key
             else
               foreign_key = foreign_key

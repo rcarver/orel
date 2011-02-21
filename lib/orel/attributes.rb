@@ -28,8 +28,8 @@ module Orel
         reference = @heading.get_reference(klass)
         raise InvalidReference, klass unless reference
 
-        key = reference.get_remote_key
-        heading = reference.get_remote_heading
+        key = reference.child_key
+        heading = reference.child_heading
 
         key.attributes.each { |a|
           rename = a.for_foreign_key_in(heading)

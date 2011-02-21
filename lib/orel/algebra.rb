@@ -50,7 +50,7 @@ module Orel
       join_reference = join_heading.get_reference(@klass)
       raise "Missing reference #{klass} for #{@klass}" unless join_reference
 
-      join_key = join_reference.get_remote_key
+      join_key = join_reference.child_key
 
       @manager.join(join_table)
       predicates = join_key.attributes.map { |a|

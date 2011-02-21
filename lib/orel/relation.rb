@@ -103,7 +103,7 @@ module Orel
         attributes.find { |a| a.name == name }
       end
       def get_reference(klass)
-        references.find { |r| r.local_class == klass }
+        references.find { |r| r.child_class == klass }
       end
       def get_key(name)
         keys.find { |k| k.name == name }
@@ -200,17 +200,17 @@ module Orel
       attr_reader :foreign_key
     end
 
-    class Reference < Struct.new(:local_class, :key_name, :remote_class)
+    class ClassReference < Struct.new(:parent_class, :child_class, :key_name)
+      def child_heading
+        child_class.get_heading
+      end
+      def child_key
+        child_heading.get_key(key_name)
+      end
       def to_foreign_key
-        local_heading = local_class.get_heading or raise "Missing heading for #{local_class}"
-        remote_heading = remote_class.get_heading or raise "Missing heading for #{remote_class}"
-        ForeignKey.create(local_heading, key_name, remote_heading)
-      end
-      def get_remote_key
-        get_remote_heading.get_key(key_name)
-      end
-      def get_remote_heading
-        local_class.get_heading
+        parent_heading = parent_class.get_heading or raise "Missing heading for #{parent_class}"
+        child_heading = child_class.get_heading or raise "Missing heading for #{child_class}"
+        ForeignKey.create(child_heading, key_name, parent_heading)
       end
     end
 
@@ -230,7 +230,7 @@ module Orel
       end
       def ref(klass)
         # TODO: allow references to non-primary keys
-        @references << Reference.new(klass, :primary, @klass)
+        @references << ClassReference.new(@klass, klass, :primary)
       end
       def _apply(heading, database)
         @attributes = []
