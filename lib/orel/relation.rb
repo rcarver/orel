@@ -71,16 +71,16 @@ module Orel
     # maintain a set of foreign keys that reference
     # other headings.
     class Heading
-      def initialize(name, base)
+      def initialize(name, child)
         @name = name
-        @base = base
+        @child = child
         @attributes = []
         @references = []
         @keys = []
       end
       attr_reader :name
-      attr_reader :base
-      alias_method :base?, :base
+      attr_reader :child
+      alias_method :child?, :child
       attr_reader :attributes
       attr_reader :references
       attr_reader :keys
@@ -152,54 +152,37 @@ module Orel
       end
     end
 
-    class ForeignKey
+    ForeignKey = Struct.new(:parent_heading, :parent_key, :child_heading, :child_key)
 
-      def self.create(local_heading, local_key_name, remote_heading)
-        local_name = local_heading.name
-
-        # Find the local key by name.
-        local_key = local_heading.get_key(local_key_name) or raise "Missing key #{local_key_name.inspect } in #{local_name.inspect}"
-
-        # Add all attributes in the local key to the remote heading.
-        remote_heading.attributes.concat local_key.attributes.map { |a| a.foreign_key_for(local_heading) }
-
-        # Convert the local heading's key into a key for the remote heading.
-        remote_key = local_key.foreign_key_for(local_heading)
-
-        # Create the foreign key.
-        self.new(local_heading, local_key, remote_heading, remote_key)
+    class ClassReference
+      def initialize(parent_class, parent_heading_name, child_class, child_heading_name, child_key_name)
+        @parent_class = parent_class
+        @parent_heading_name = parent_heading_name
+        @child_class = child_class
+        @child_heading_name = child_heading_name
+        @one_to_one = false
       end
-
-      def initialize(parent_heading, parent_key, child_heading, child_key)
-        @parent_heading = parent_heading
-        @parent_key = parent_key
-        @child_heading = child_heading
-        @child_key = child_key
-      end
-      attr_reader :parent_heading
-      attr_reader :parent_key
-      attr_reader :child_heading
-      attr_reader :child_key
-    end
-
-    class ClassReference < Struct.new(:parent_class, :parent_heading_name, :child_class, :child_heading_name, :child_key_name)
+      attr_writer :one_to_one
       def parent_heading
-        parent_class.get_heading(parent_heading_name)
+        @parent_class.get_heading(@parent_heading_name)
       end
       def parent_key
         parent_heading.get_key(:primary)
       end
       def child_heading
-        child_class.get_heading(child_heading_name)
+        @child_class.get_heading(@child_heading_name)
       end
       def child_key
-        child_heading.get_key(child_key_name)
+        @child_heading.get_key(@child_key_name)
       end
       def create_foreign_key_relationship
         child_heading.attributes.concat parent_key.attributes.map { |a|
           a.foreign_key_for(parent_heading)
         }
         child_key = parent_key.foreign_key_for(parent_heading)
+        if @one_to_one
+          child_heading.keys << child_key
+        end
         ForeignKey.new(parent_heading, parent_key, child_heading, child_key)
       end
     end
@@ -234,15 +217,10 @@ module Orel
         name = database.relation_name(sub_name)
         heading = Heading.new(name, sub_name.nil?)
 
-        # Automatically add a foreign key to the base relation
-        unless heading.base?
+        # Add a reference to the parent relation.
+        unless heading.child?
           reference = ClassReference.new(@klass, nil, @klass, sub_name, :primary)
-
-          parent_heading = reference.parent_heading
-          parent_key = reference.parent_key
-          child_key = parent_key.foreign_key_for(parent_heading)
-
-          heading.keys << child_key
+          reference.one_to_one = true
           heading.references << reference
         end
 
