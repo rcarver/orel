@@ -20,12 +20,6 @@ module Orel
 
         foreign_keys = @classes.map { |klass|
           klass.database.foreign_keys.map { |foreign_key|
-            case foreign_key
-            when Orel::Relation::ClassReference
-              foreign_key = foreign_key.to_foreign_key
-            else
-              foreign_key = foreign_key
-            end
             parent_table = Orel::Sql::Table.new(foreign_key.parent_heading)
             child_table = Orel::Sql::Table.new(foreign_key.child_heading)
             parent_attributes = foreign_key.parent_key.attributes

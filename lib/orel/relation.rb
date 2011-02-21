@@ -104,7 +104,7 @@ module Orel
       end
       attr_reader :name
       attr_reader :domain
-      def for_foreign_key_in(heading)
+      def foreign_key_for(heading)
         unless domain.respond_to?(:for_foreign_key)
           raise ForeignKeyTranslationError, "#{domain.inspect} does not support foreign keys. It must define `for_foreign_key`."
         end
@@ -127,26 +127,23 @@ module Orel
     # A key is a set of 0 or more attributes that defines
     # a uniqueness constraint.
     class Key
-
       def initialize(name)
         @name = name
         @attributes = []
       end
-
       attr_reader :name
       attr_reader :attributes
-
       # Public: Convert this key into its foreign key equivalent.
       #
       # relation_name - String name of the
       #
       # Returns a new Orel::Relation::Key.
-      def for_foreign_key_in(heading)
+      def foreign_key_for(heading)
         fk_name = [heading.name, name].join("_").to_sym
         foreign_key = self.class.new(fk_name)
         attributes.each { |attribute|
           begin
-            foreign_key.attributes << attribute.for_foreign_key_in(heading)
+            foreign_key.attributes << attribute.foreign_key_for(heading)
           rescue ForeignKeyTranslationError => e
             raise "Cannot convert key #{name} to a foreign key. #{e.message}"
           end
@@ -164,10 +161,10 @@ module Orel
         local_key = local_heading.get_key(local_key_name) or raise "Missing key #{local_key_name.inspect } in #{local_name.inspect}"
 
         # Add all attributes in the local key to the remote heading.
-        remote_heading.attributes.concat local_key.attributes.map { |a| a.for_foreign_key_in(local_heading) }
+        remote_heading.attributes.concat local_key.attributes.map { |a| a.foreign_key_for(local_heading) }
 
         # Convert the local heading's key into a key for the remote heading.
-        remote_key = local_key.for_foreign_key_in(local_heading)
+        remote_key = local_key.foreign_key_for(local_heading)
 
         # Create the foreign key.
         self.new(local_heading, local_key, remote_heading, remote_key)
@@ -185,17 +182,25 @@ module Orel
       attr_reader :child_key
     end
 
-    class ClassReference < Struct.new(:parent_class, :parent_heading_name, :child_class, :child_heading_name, :key_name)
+    class ClassReference < Struct.new(:parent_class, :parent_heading_name, :child_class, :child_heading_name, :child_key_name)
+      def parent_heading
+        parent_class.get_heading(parent_heading_name)
+      end
+      def parent_key
+        parent_heading.get_key(:primary)
+      end
       def child_heading
         child_class.get_heading(child_heading_name)
       end
       def child_key
-        child_heading.get_key(key_name)
+        child_heading.get_key(child_key_name)
       end
-      def to_foreign_key
-        parent_heading = parent_class.get_heading(parent_heading_name) or raise "Missing heading #{parent_heading_name} for #{parent_class}"
-        child_heading = child_class.get_heading(child_heading_name) or raise "Missing heading #{child_heading_name} for #{child_class}"
-        ForeignKey.create(child_heading, key_name, parent_heading)
+      def create_foreign_key_relationship
+        child_heading.attributes.concat parent_key.attributes.map { |a|
+          a.foreign_key_for(parent_heading)
+        }
+        child_key = parent_key.foreign_key_for(parent_heading)
+        ForeignKey.new(parent_heading, parent_key, child_heading, child_key)
       end
     end
 
@@ -215,7 +220,7 @@ module Orel
       end
       def ref(klass)
         # TODO: allow references to non-primary keys
-        @references << ClassReference.new(@klass, nil, klass, nil, :primary)
+        @references << ClassReference.new(klass, nil, @klass, nil, :primary)
       end
       def _apply(database, sub_name)
         @attributes = []
@@ -231,18 +236,14 @@ module Orel
 
         # Automatically add a foreign key to the base relation
         unless heading.base?
-          #reference = ClassReference.new(@klass, nil, @klass, sub_name, :user_id)
-          #database.foreign_keys << reference
-          #foreign_key = reference.to_foreign_key
+          reference = ClassReference.new(@klass, nil, @klass, sub_name, :primary)
 
-          parent_heading = @klass.get_heading
-          parent_key = parent_heading.get_key(:primary)
-          child_key = parent_key.for_foreign_key_in(parent_heading)
+          parent_heading = reference.parent_heading
+          parent_key = reference.parent_key
+          child_key = parent_key.foreign_key_for(parent_heading)
 
-          heading.attributes.concat parent_key.attributes.map { |a| a.for_foreign_key_in(parent_heading) }
           heading.keys << child_key
-
-          database.foreign_keys << ForeignKey.new(parent_heading, parent_key, heading, child_key)
+          heading.references << reference
         end
 
         # Apply results to the heading and database.
@@ -292,13 +293,13 @@ module Orel
             klass_heading = klass.get_heading
             heading_key = klass_heading.get_key(key_name) or raise "Missing key #{key_name.inspect} in heading #{heading.inspect}"
             heading_key.attributes.each { |attribute|
-              key.attributes << attribute.for_foreign_key_in(heading)
+              key.attributes << attribute.foreign_key_for(heading)
             }
           else
             attribute_name = identifier.to_sym
             attribute = heading.get_attribute(attribute_name) or raise "Missing attribute #{attribute_name.inspect} in heading #{heading.inspect}"
             # FIXME: why do we convert to foreign key in the Class case but not here?
-            key.attributes << attribute #.for_foreign_key_in(heading.name)
+            key.attributes << attribute #.foreign_key_for(heading.name)
           end
         }
         heading.keys << key
