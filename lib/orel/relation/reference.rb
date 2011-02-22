@@ -18,7 +18,7 @@ module Orel
       def create_foreign_key_relationship!
         # Add attributes in the parent heading to the child heading.
         child_heading.attributes.concat parent_key.attributes.map { |a|
-          a.foreign_key_for(parent_heading)
+          a.to_foreign_key
         }
 
         # Create a key that references the parent heading.

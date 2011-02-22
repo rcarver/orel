@@ -4,7 +4,8 @@ module Orel
 
       ForeignKeyTranslationError = Class.new(StandardError)
 
-      def initialize(name, domain)
+      def initialize(heading, name, domain)
+        @heading = heading
         @name = name
         @domain = domain
       end
@@ -12,7 +13,10 @@ module Orel
       attr_reader :name
       attr_reader :domain
 
-      def foreign_key_for(heading)
+      def to_foreign_key
+        unless @heading
+          raise ForeignKeyTranslationError, "Cannot convert to a foreign key because it already is one"
+        end
         unless domain.respond_to?(:for_foreign_key)
           raise ForeignKeyTranslationError, "#{domain.inspect} does not support foreign keys. It must define `for_foreign_key`."
         end
@@ -20,12 +24,12 @@ module Orel
         # should probably be an option to this method and be controller
         # by the DSL.
         if name == :id
-          fk_name = [heading.name, name].join("_").to_sym
+          fk_name = [@heading.name, name].join("_").to_sym
         else
           fk_name = name
         end
         fk_domain = domain.for_foreign_key
-        self.class.new(fk_name, fk_domain)
+        self.class.new(nil, fk_name, fk_domain)
       end
 
       def inspect

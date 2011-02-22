@@ -32,7 +32,7 @@ module Orel
         parent_heading = reference.parent_heading
 
         parent_key.attributes.each { |parent_attribute|
-          child_attribute = parent_attribute.foreign_key_for(parent_heading)
+          child_attribute = parent_attribute.to_foreign_key
           self[child_attribute.name] = object.attributes[parent_attribute.name]
         }
       else

@@ -56,7 +56,7 @@ module Orel
       @manager.join(join_table)
 
       predicates = parent_key.attributes.map { |parent_attribute|
-        child_attribute = parent_attribute.foreign_key_for(join_heading)
+        child_attribute = parent_attribute.to_foreign_key
         join_table[child_attribute.name].eq(@table[parent_attribute.name])
       }
       @manager.on(*predicates)

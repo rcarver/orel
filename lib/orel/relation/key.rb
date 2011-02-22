@@ -20,7 +20,7 @@ module Orel
         foreign_key = self.class.new(fk_name)
         attributes.each { |attribute|
           begin
-            foreign_key.attributes << attribute.foreign_key_for(heading)
+            foreign_key.attributes << attribute.to_foreign_key
           rescue ForeignKeyTranslationError => e
             raise "Cannot convert key #{name} to a foreign key. #{e.message}"
           end

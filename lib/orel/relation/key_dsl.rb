@@ -40,7 +40,7 @@ module Orel
             klass_heading = klass.get_heading
             heading_key = klass_heading.get_key(key_name) or raise "Missing key #{key_name.inspect} in heading #{@heading.inspect}"
             heading_key.attributes.each { |attribute|
-              key.attributes << attribute.foreign_key_for(@heading)
+              key.attributes << attribute.to_foreign_key
             }
           else
             attribute_name = identifier.to_sym
