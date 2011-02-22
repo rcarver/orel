@@ -5,17 +5,52 @@ module Orel
       Orel.classes << klass
     end
 
+    # Public: Define a relation heading for this class. See
+    # Orel::Relation::HeadingDSL for additional syntax.
+    #
+    # Examples
+    #
+    #     heading do
+    #       att :name, Orel::Domains::String
+    #     end
+    #
+    # Returns nothing.
     def heading(&block)
       dsl = HeadingDSL.new(self, block)
       dsl._apply(database)
     end
 
+    # Public: Define the heading for one-to-one child relation. The relation
+    # is automatically given a reference to this class's parent relation and
+    # a key is defined for that foreign key.
+    #
+    # child_name - Symbol to name the child.
+    #
+    # Examples
+    #
+    #     one :state do
+    #       att :status, Orel::Domains::Integer
+    #     end
+    #
+    # Returns nothing.
     def one(child_name, &block)
       dsl = HeadingDSL.new(self, block)
       dsl.ref self, child_name, :unique => true
       dsl._apply(database, child_name)
     end
 
+    # Public: Define the heading for one-to-many child relation. The relation
+    # is automatically given a reference to this class's parent relation.
+    #
+    # child_name - Symbol to name the child.
+    #
+    # Examples
+    #
+    #     many :statuses do
+    #       att :status, Orel::Domains::Integer
+    #     end
+    #
+    # Returns nothing.
     def many(child_name, &block)
       dsl = HeadingDSL.new(self, block)
       dsl.ref self, child_name
