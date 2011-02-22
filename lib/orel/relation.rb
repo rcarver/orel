@@ -16,8 +16,8 @@ module Orel
     #
     # Returns nothing.
     def heading(&block)
-      dsl = HeadingDSL.new(self, block)
-      dsl._apply(database)
+      dsl = HeadingDSL.new(self, database, &block)
+      dsl._apply!
     end
 
     # Public: Define the heading for one-to-one child relation. The relation
@@ -34,9 +34,9 @@ module Orel
     #
     # Returns nothing.
     def one(child_name, &block)
-      dsl = HeadingDSL.new(self, block)
-      dsl.ref self, child_name, :unique => true
-      dsl._apply(database, child_name)
+      dsl = HeadingDSL.new(self, database, child_name, &block)
+      dsl.ref self, :unique => true
+      dsl._apply!
     end
 
     # Public: Define the heading for one-to-many child relation. The relation
@@ -52,9 +52,9 @@ module Orel
     #
     # Returns nothing.
     def many(child_name, &block)
-      dsl = HeadingDSL.new(self, block)
-      dsl.ref self, child_name
-      dsl._apply(database, child_name)
+      dsl = HeadingDSL.new(self, database, child_name, &block)
+      dsl.ref self
+      dsl._apply!
     end
 
     # Internal: Get the name of this relation.

@@ -15,18 +15,20 @@ module Orel
         "/" => [/\(|\)/, /\s*\/\s*/]
       }
 
-      def initialize(block)
+      def initialize(name, heading, &block)
+        @name = name
+        @heading = heading
         @block = block
         @syntax = Syntaxes["/"]
       end
 
-      def _apply(name, heading)
+      def _apply!
         # Get the source of the block as a string and split it into a series of identifiers.
         source = @block.to_source(:strip_enclosure => true)
         source.gsub!(@syntax[0], '')
         identifiers = source.split(@syntax[1])
 
-        key = Key.new(name)
+        key = Key.new(@name)
         identifiers.each { |identifier|
           case identifier
           when /^[A-Z]/
@@ -36,18 +38,18 @@ module Orel
             key_name = :primary
 
             klass_heading = klass.get_heading
-            heading_key = klass_heading.get_key(key_name) or raise "Missing key #{key_name.inspect} in heading #{heading.inspect}"
+            heading_key = klass_heading.get_key(key_name) or raise "Missing key #{key_name.inspect} in heading #{@heading.inspect}"
             heading_key.attributes.each { |attribute|
-              key.attributes << attribute.foreign_key_for(heading)
+              key.attributes << attribute.foreign_key_for(@heading)
             }
           else
             attribute_name = identifier.to_sym
-            attribute = heading.get_attribute(attribute_name) or raise "Missing attribute #{attribute_name.inspect} in heading #{heading.inspect}"
+            attribute = @heading.get_attribute(attribute_name) or raise "Missing attribute #{attribute_name.inspect} in heading #{@heading.inspect}"
             # FIXME: why do we convert to foreign key in the Class case but not here?
-            key.attributes << attribute #.foreign_key_for(heading.name)
+            key.attributes << attribute #.foreign_key_for(@heading.name)
           end
         }
-        heading.keys << key
+        @heading.keys << key
       end
 
     end

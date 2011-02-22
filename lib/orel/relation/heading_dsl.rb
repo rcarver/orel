@@ -2,22 +2,24 @@ module Orel
   module Relation
     class HeadingDSL
 
-      def initialize(klass, block)
+      def initialize(klass, database, child_name=nil, &block)
         @klass = klass
+        @database = database
+        @child_name = child_name
         @block = block
-        @attributes = []
-        @references = []
-        @keys = {}
+
+        name = database.relation_name(child_name)
+        @heading = Heading.new(name)
+
+        @keys = []
       end
 
       def key(name=:primary, &block)
-        @keys[name] = KeyDSL.new(block)
+        @keys << KeyDSL.new(name, @heading, &block)
       end
 
       def att(name, domain)
-        attribute = Attribute.new(name, domain.new)
-        @attributes << attribute
-        attribute
+        @heading.attributes << Attribute.new(name, domain.new)
       end
 
       def ref(klass, *args)
@@ -25,26 +27,20 @@ module Orel
         child_name = args.first
         # TODO: validate options
         # TODO: allow references to non-primary keys
-        reference = Reference.new(klass, nil, @klass, child_name, :primary)
+        reference = Reference.new(klass, nil, @klass, @child_name, :primary)
         reference.one_to_one = options[:unique]
-        @references << reference
+        @heading.references << reference
       end
 
-      def _apply(database, child_name=nil)
+      def _apply!
         # Execute instructions.
         instance_eval(&@block)
 
-        # Build the heading.
-        name = database.relation_name(child_name)
-        heading = Heading.new(name)
-
-        # Apply results to the heading and database.
-        @attributes.each { |a| heading.attributes << a }
-        @references.each { |ref| heading.references << ref }
-        @keys.each { |name, dsl| dsl._apply(name, heading) }
+        # Keys must be created after attributes.
+        @keys.each { |dsl| dsl._apply! }
 
         # Add the heading to the database.
-        database.headings << heading
+        @database.headings << @heading
       end
 
     end
