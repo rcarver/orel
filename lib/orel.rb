@@ -12,6 +12,15 @@ require 'orel/operator'
 require 'orel/relation'
 require 'orel/sql'
 
+require 'orel/relation/attribute'
+require 'orel/relation/database'
+require 'orel/relation/foreign_key'
+require 'orel/relation/heading'
+require 'orel/relation/heading_dsl'
+require 'orel/relation/key'
+require 'orel/relation/key_dsl'
+require 'orel/relation/reference'
+
 module Orel
   VERSION = "0.0.0"
 
