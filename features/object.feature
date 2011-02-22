@@ -27,7 +27,7 @@ Feature: Use the objects that back relations.
       John
       """
 
-  Scenario: Create a record with a serial key
+  Scenario: Create a record with a surrogate key
     Given I have these class definitions:
       """
       class User
@@ -81,7 +81,7 @@ Feature: Use the objects that back relations.
       ---
       """
 
-  Scenario: Create a record that references another with a serial key
+  Scenario: Create a referenced (one-to-many) relationship using surrogate keys
     Given I have these class definitions:
       """
       class User
@@ -121,7 +121,7 @@ Feature: Use the objects that back relations.
       ---
       """
 
-  Scenario: Create a record that references another with a natural key
+  Scenario: Create a referenced (one-to-many) relationship using natural keys
     Given I have these class definitions:
       """
       class User
@@ -159,7 +159,7 @@ Feature: Use the objects that back relations.
       ---
       """
 
-  Scenario: Update a record with a serial key
+  Scenario: Update a record with a surrogate key
     Given I have these class definitions:
       """
       class User
@@ -219,7 +219,7 @@ Feature: Use the objects that back relations.
       ---
       """
 
-  Scenario: Destroy a record with a serial key
+  Scenario: Destroy a record with a surrogate key
     Given I have these class definitions:
       """
       class User

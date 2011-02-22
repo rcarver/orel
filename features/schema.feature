@@ -1,7 +1,7 @@
 @schema @mysql
 Feature: Create MySQL tables from relational definitions
 
-  Scenario: Create a table with an auto increment integer key
+  Scenario: Create a table with surrogate
     Given I have these class definitions:
       """
       class User
@@ -21,7 +21,7 @@ Feature: Create MySQL tables from relational definitions
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       """
 
-  Scenario: Create a table with a composite primary key
+  Scenario: Create a table with a natural key
     Given I have these class definitions:
       """
       class User
@@ -163,7 +163,7 @@ Feature: Create MySQL tables from relational definitions
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       """
 
-  Scenario: Create a one-to-many relationship
+  Scenario: Create a one-to-many relationship using surrogate keys
     Given I have these class definitions:
       """
       class User
@@ -203,7 +203,7 @@ Feature: Create MySQL tables from relational definitions
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       """
 
-  Scenario: Create a one-to-many relationship with natural keys
+  Scenario: Create a one-to-many relationship using natural keys
     Given I have these class definitions:
       """
       class User
