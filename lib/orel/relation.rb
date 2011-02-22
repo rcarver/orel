@@ -34,11 +34,21 @@ module Orel
 
     # Top level DSL.
 
-    def heading(sub_name=nil, &block)
-
-      # Execute the DSL.
+    def heading(&block)
       dsl = HeadingDSL.new(self, block)
-      dsl._apply(database, sub_name)
+      dsl._apply(database)
+    end
+
+    def one(child_name, &block)
+      dsl = HeadingDSL.new(self, block)
+      dsl.ref self, child_name, :unique => true
+      dsl._apply(database, child_name)
+    end
+
+    def many(child_name, &block)
+      dsl = HeadingDSL.new(self, block)
+      dsl.ref self, child_name
+      dsl._apply(database, child_name)
     end
 
     # Supporting classes
@@ -69,17 +79,14 @@ module Orel
     # maintain a set of foreign keys that reference
     # other headings.
     class Heading
-      def initialize(name, child)
+      def initialize(name)
         @name = name
-        @child = child
         @attributes = []
         @keys = []
         @references = []
         @foreign_keys = []
       end
       attr_reader :name
-      attr_reader :child
-      alias_method :child?, :child
       attr_reader :attributes
       attr_reader :keys
       attr_reader :references
@@ -205,6 +212,9 @@ module Orel
       def initialize(klass, block)
         @klass = klass
         @block = block
+        @attributes = []
+        @references = []
+        @keys = {}
       end
       def key(name=:primary, &block)
         @keys[name] = KeyDSL.new(block)
@@ -214,28 +224,22 @@ module Orel
         @attributes << attribute
         attribute
       end
-      def ref(klass)
+      def ref(klass, *args)
+        options = args.last.is_a?(Hash) ? args.pop : {}
+        child_name = args.first
+        # TODO: validate options
         # TODO: allow references to non-primary keys
-        @references << ClassReference.new(klass, nil, @klass, nil, :primary)
+        reference = ClassReference.new(klass, nil, @klass, child_name, :primary)
+        reference.one_to_one = options[:unique]
+        @references << reference
       end
-      def _apply(database, sub_name)
-        @attributes = []
-        @references = []
-        @keys = {}
-
+      def _apply(database, child_name=nil)
         # Execute instructions.
         instance_eval(&@block)
 
         # Build the heading.
-        name = database.relation_name(sub_name)
-        heading = Heading.new(name, sub_name.nil?)
-
-        # Add a reference to the parent relation.
-        unless heading.child?
-          reference = ClassReference.new(@klass, nil, @klass, sub_name, :primary)
-          reference.one_to_one = true
-          heading.references << reference
-        end
+        name = database.relation_name(child_name)
+        heading = Heading.new(name)
 
         # Apply results to the heading and database.
         @attributes.each { |a| heading.attributes << a }

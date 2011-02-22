@@ -77,7 +77,7 @@ Feature: Create MySQL tables from relational definitions
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       """
 
-  Scenario: Create a one-to-many relationship with a single class
+  Scenario: Create child one-to-one and one-to-many relationships within a class using a surrogate key
     Given I have these class definitions:
       """
       class User
@@ -87,7 +87,10 @@ Feature: Create MySQL tables from relational definitions
           att :id, Orel::Domains::Serial
           att :name, Orel::Domains::String
         end
-        heading :deleted do
+        many :logins do
+          att :at, Orel::Domains::DateTime
+        end
+        one :deleted do
           att :at, Orel::Domains::DateTime
         end
       end
@@ -107,9 +110,16 @@ Feature: Create MySQL tables from relational definitions
         UNIQUE KEY `user_deleted_user_id` (`user_id`),
         CONSTRAINT `user_deleted_user_fk` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+      CREATE TABLE `user_logins` (
+        `at` datetime NOT NULL,
+        `user_id` int(11) NOT NULL,
+        KEY `user_logins_user_fk` (`user_id`),
+        CONSTRAINT `user_logins_user_fk` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       """
 
-  Scenario: Create a one-to-many relationship with a single class using a composite key
+  Scenario: Create child one-to-one and one-to-many relationships within a class using a natural key
     Given I have these class definitions:
       """
       class User
@@ -119,7 +129,10 @@ Feature: Create MySQL tables from relational definitions
           att :first_name, Orel::Domains::String
           att :last_name, Orel::Domains::String
         end
-        heading :deleted do
+        many :logins do
+          att :at, Orel::Domains::DateTime
+        end
+        one :deleted do
           att :at, Orel::Domains::DateTime
         end
       end
@@ -139,6 +152,14 @@ Feature: Create MySQL tables from relational definitions
         `last_name` varchar(255) NOT NULL,
         UNIQUE KEY `user_deleted_first_name_last_name` (`first_name`,`last_name`),
         CONSTRAINT `user_deleted_user_fk` FOREIGN KEY (`first_name`, `last_name`) REFERENCES `user` (`first_name`, `last_name`) ON DELETE NO ACTION ON UPDATE NO ACTION
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+      CREATE TABLE `user_logins` (
+        `at` datetime NOT NULL,
+        `first_name` varchar(255) NOT NULL,
+        `last_name` varchar(255) NOT NULL,
+        KEY `user_logins_user_fk` (`first_name`,`last_name`),
+        CONSTRAINT `user_logins_user_fk` FOREIGN KEY (`first_name`, `last_name`) REFERENCES `user` (`first_name`, `last_name`) ON DELETE NO ACTION ON UPDATE NO ACTION
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       """
 
