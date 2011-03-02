@@ -11,6 +11,7 @@ require 'orel/object'
 require 'orel/operator'
 require 'orel/relation'
 require 'orel/sql'
+require 'orel/validator'
 
 require 'orel/relation/attribute'
 require 'orel/relation/database'

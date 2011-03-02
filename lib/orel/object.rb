@@ -1,6 +1,8 @@
 module Orel
   module Object
 
+    NoHeadingError = Class.new(StandardError)
+
     def self.included(base)
       base.extend Orel::Relation
       base.extend ClassMethods
@@ -17,8 +19,10 @@ module Orel
 
     def initialize(attributes={})
       heading = self.class.get_heading
+      raise NoHeadingError unless heading
       @attributes = Attributes.new(heading, attributes)
       @operator = Operator.new(heading, @attributes)
+      @validator = Validator.new(self, heading, @attributes)
     end
 
     attr_reader :attributes
@@ -58,19 +62,19 @@ module Orel
     end
 
     def valid?
-      false
+      @validator.valid?
     end
 
     def errors
-      ActiveModel::Errors.new(self)
+      @validator.errors
     end
 
     def to_param
-      nil
+      nil if persisted?
     end
 
     def to_key
-      nil
+      nil if persisted?
     end
 
   protected

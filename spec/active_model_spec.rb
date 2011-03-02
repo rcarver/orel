@@ -8,6 +8,9 @@ describe "Conformance to ActiveModel::Lint" do
 
   class ActiveModelNamingCompatible
     include Orel::Object
+    heading do
+      att :name, Orel::Domains::String
+    end
   end
 
   # Convert Lint's tests into RSpec examples.
@@ -21,3 +24,4 @@ describe "Conformance to ActiveModel::Lint" do
 
   let(:model) { ActiveModelNamingCompatible.new }
 end
+

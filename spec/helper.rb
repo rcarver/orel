@@ -17,6 +17,8 @@ ActiveRecord::Base.establish_connection(
   :password => ''
 )
 
+require 'fixtures/users_and_things'
+
 RSpec.configure do |config|
 
 end
