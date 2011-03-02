@@ -4,6 +4,7 @@ module Orel
     def self.included(base)
       base.extend Orel::Relation
       base.extend ClassMethods
+      base.extend ActiveModel::Naming
     end
 
     module ClassMethods
@@ -42,6 +43,34 @@ module Orel
       if @operator.persisted?
         @operator.destroy
       end
+    end
+
+    def to_model
+      self
+    end
+
+    def persisted?
+      @operator.persisted?
+    end
+
+    def destroyed?
+      @operator.destroyed?
+    end
+
+    def valid?
+      false
+    end
+
+    def errors
+      ActiveModel::Errors.new(self)
+    end
+
+    def to_param
+      nil
+    end
+
+    def to_key
+      nil
     end
 
   protected

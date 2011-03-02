@@ -10,4 +10,5 @@ end
 
 gem 'arel'
 gem 'sourcify'
+gem 'activemodel'
 gem 'orel', :path => '.'

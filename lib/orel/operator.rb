@@ -6,10 +6,14 @@ module Orel
       @attributes = attributes
       @table = Orel::Sql::Table.new(@heading)
       @persisted = false
+      @destroyed = false
     end
 
     attr_reader :persisted
     alias_method :persisted?, :persisted
+
+    attr_reader :destroyed
+    alias_method :destroyed?, :destroyed
 
     def has_heading_attribute?(name)
       !! @heading.get_attribute(name)
@@ -60,6 +64,8 @@ module Orel
 
       begin
         Orel.execute(statement)
+
+        @destroyed = true
       rescue StandardError => e
         debug_sql_error(statement)
         raise
