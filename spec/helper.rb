@@ -20,5 +20,7 @@ ActiveRecord::Base.establish_connection(
 require 'fixtures/users_and_things'
 
 RSpec.configure do |config|
-
+  config.before(:suite) do
+    Orel.finalize!
+  end
 end
