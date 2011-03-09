@@ -1,5 +1,6 @@
 module Orel
   class Attributes
+    include ActiveModel::Dirty
 
     InvalidAttribute = Class.new(ArgumentError)
     InvalidReference = Class.new(ArgumentError)
@@ -13,6 +14,10 @@ module Orel
       @heading = heading
       @attributes = {}
       defaults.each { |k, v| self[k] = v }
+
+      # For ActiveModel::Dirty
+      @previously_changed = {}
+      @changed_attributes = {}
     end
 
     # Public: Determine if a key is in the heading.
@@ -27,6 +32,7 @@ module Orel
     # key - Symbol attribute name.
     #
     # Returns most anything.
+    # Raises InvalidAttribute if the key is not an attribute in my heading.
     def [](key)
       raise InvalidAttribute, "Attribute #{key.inspect} is not in #{@heading.name}" unless att?(key)
       @attributes[key.to_sym]
@@ -54,14 +60,17 @@ module Orel
     #     # => "Smith"
     #
     # Returns nothing.
+    # Raises InvalidAttribute if the key is not an attribute in my heading.
+    # Raises ArgumentError if the key is a class and the value is not an instance of that class.
+    # Raises InvalidReference if the key is a class but it is not a reference of the heading.
     def []=(key, value)
       if key.is_a?(Orel::Relation)
         klass = key
         object = value
-        raise ArgumentError, "Expected a #{klass} but got #{object.class}" unless object.is_a?(klass)
 
         reference = @heading.get_parent_reference(klass)
         raise InvalidReference, klass unless reference
+        raise ArgumentError, "Expected a #{klass} but got #{object.class}" unless object.is_a?(klass)
 
         parent_key = reference.parent_key
         parent_heading = reference.parent_heading
@@ -72,6 +81,7 @@ module Orel
         }
       else
         raise InvalidAttribute, "Attribute #{key.inspect} is not in #{@heading.name}" unless att?(key)
+        attribute_will_change!(key)
         @attributes[key.to_sym] = value
       end
     end
@@ -103,6 +113,15 @@ module Orel
 
     def inspect
       "<Attributes #{@attributes.inspect}>"
+    end
+
+    # For ActiveModel::Dirty
+    def method_missing(*args)
+      case args.size
+      when 1: self[args.first]
+      when 2: self[args.first] = args.last
+      else super
+      end
     end
 
   end

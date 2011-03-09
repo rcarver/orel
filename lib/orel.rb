@@ -2,6 +2,7 @@ require 'set'
 require 'logger'
 
 require 'arel'
+require 'active_model'
 require 'sourcify'
 
 require 'orel/algebra'
