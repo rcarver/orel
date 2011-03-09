@@ -226,6 +226,40 @@ Feature: Use the objects that back relations.
       ---
       """
 
+  Scenario: Update a record with a natural key, changing a key attribute
+    Given I have these class definitions:
+      """
+      class User
+        include Orel::Object
+        heading do
+          key { first_name / last_name }
+          att :first_name, Orel::Domains::String
+          att :last_name, Orel::Domains::String
+          att :age, Orel::Domains::Integer
+        end
+      end
+      """
+    When I run some Orel code:
+      """
+      user = User.create :first_name => "Mary", :last_name => "White", :age => 10
+      user = User.create :first_name => "John", :last_name => "Smith", :age => 10
+      Orel::Test.show "SELECT first_name, last_name, age FROM user ORDER BY first_name ASC"
+      user.first_name = "Bob"
+      user.save
+      Orel::Test.show "SELECT first_name, last_name, age FROM user ORDER BY first_name ASC"
+      """
+    Then the output should contain:
+      """
+      ---
+      John,Smith,10
+      Mary,White,10
+      ---
+      ---
+      Bob,Smith,10
+      Mary,White,10
+      ---
+      """
+
   Scenario: Destroy a record with a surrogate key
     Given I have these class definitions:
       """

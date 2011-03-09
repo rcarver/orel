@@ -42,7 +42,12 @@ module Orel
 
     def update
       attributes_for_key = hash_of_primary_key
-      attributes_to_update = @attributes.hash_excluding_keys(attributes_for_key.keys)
+
+      if serial = get_serial_key_attribute
+        attributes_to_update = @attributes.hash_excluding_keys([serial.name])
+      else
+        attributes_to_update = @attributes.hash
+      end
 
       # TODO: since we're not updating attributes in the primary key,
       # it's possible to have nothing to update. That's weird, right?
@@ -85,7 +90,12 @@ module Orel
     end
 
     def hash_of_primary_key
-      Hash[get_primary_key.attributes.map { |a| [a.name, @attributes[a.name]] }]
+      pairs = get_primary_key.attributes.map { |a|
+        key = a.name
+        value = @attributes.changed_attributes[a.name] || @attributes[a.name]
+        [key, value]
+      }
+      Hash[pairs]
     end
 
     def debug_sql_error(statement)

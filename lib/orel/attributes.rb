@@ -115,7 +115,12 @@ module Orel
       "<Attributes #{@attributes.inspect}>"
     end
 
-    # For ActiveModel::Dirty
+    # For ActiveModel::Dirty, which uses __send__.
+    def id
+      att?(:id) ? self[:id] : nil
+    end
+
+    # For ActiveModel::Dirty, which uses __send__.
     def method_missing(*args)
       case args.size
       when 1: self[args.first]
