@@ -70,7 +70,7 @@ Feature: Use the objects that back relations.
       """
     When I run some Orel code:
       """
-      user = User.new :first_name => "John", :last_name => "Smith", :age => 10
+      user = User.create :first_name => "John", :last_name => "Smith", :age => 10
       user.save
       Orel::Test.show "SELECT first_name, last_name, age from user"
       """
@@ -174,20 +174,21 @@ Feature: Use the objects that back relations.
       """
     When I run some Orel code:
       """
-      user = User.new :first_name => "John", :last_name => "Smith"
+      user = User.create :first_name => "Mary", :last_name => "White"
+      user = User.create :first_name => "John", :last_name => "Smith"
+      puts user.id.inspect
+      user.first_name = "Bob"
       user.save
       puts user.id.inspect
-      user.first_name = "John"
-      user.save
-      puts user.id.inspect
-      Orel::Test.show "SELECT id, first_name, last_name from user"
+      Orel::Test.show "SELECT id, first_name, last_name FROM user ORDER BY first_name"
       """
     Then the output should contain:
       """
-      1
-      1
+      2
+      2
       ---
-      1,John,Smith
+      2,Bob,Smith
+      1,Mary,White
       ---
       """
 
@@ -206,16 +207,22 @@ Feature: Use the objects that back relations.
       """
     When I run some Orel code:
       """
-      user = User.new :first_name => "John", :last_name => "Smith", :age => 10
-      user.save
+      user = User.create :first_name => "Mary", :last_name => "White", :age => 10
+      user = User.create :first_name => "John", :last_name => "Smith", :age => 10
+      Orel::Test.show "SELECT first_name, last_name, age FROM user ORDER BY first_name ASC"
       user.age = 30
       user.save
-      Orel::Test.show "SELECT first_name, last_name, age from user"
+      Orel::Test.show "SELECT first_name, last_name, age FROM user ORDER BY first_name ASC"
       """
     Then the output should contain:
       """
       ---
+      John,Smith,10
+      Mary,White,10
+      ---
+      ---
       John,Smith,30
+      Mary,White,10
       ---
       """
 
@@ -234,14 +241,20 @@ Feature: Use the objects that back relations.
       """
     When I run some Orel code:
       """
-      user = User.new :first_name => "John", :last_name => "Smith"
-      user.save
+      user = User.create :first_name => "Mary", :last_name => "White"
+      user = User.create :first_name => "John", :last_name => "Smith"
+      Orel::Test.show "SELECT id, first_name, last_name FROM user ORDER BY first_name ASC"
       user.destroy
-      Orel::Test.show "SELECT id, first_name, last_name from user"
+      Orel::Test.show "SELECT id, first_name, last_name FROM user ORDER BY first_name ASC"
       """
     Then the output should contain:
       """
       ---
+      2,John,Smith
+      1,Mary,White
+      ---
+      ---
+      1,Mary,White
       ---
       """
 
@@ -260,14 +273,20 @@ Feature: Use the objects that back relations.
       """
     When I run some Orel code:
       """
-      user = User.new :first_name => "John", :last_name => "Smith", :age => 10
-      user.save
+      user = User.create :first_name => "Mary", :last_name => "White", :age => 10
+      user = User.create :first_name => "John", :last_name => "Smith", :age => 10
+      Orel::Test.show "SELECT first_name, last_name, age from user"
       user.destroy
       Orel::Test.show "SELECT first_name, last_name, age from user"
       """
     Then the output should contain:
       """
       ---
+      John,Smith,10
+      Mary,White,10
+      ---
+      ---
+      Mary,White,10
       ---
       """
 
