@@ -41,7 +41,7 @@ module Orel
     end
 
     def update
-      attributes_for_key = hash_of_primary_key
+      attributes_for_key = hash_of_current_primary_key
 
       if serial = get_serial_key_attribute
         attributes_to_update = @attributes.hash_excluding_keys([serial.name])
@@ -64,7 +64,7 @@ module Orel
     end
 
     def destroy
-      attributes_for_key = hash_of_primary_key
+      attributes_for_key = hash_of_current_primary_key
       statement = @table.delete_statement(attributes_for_key)
 
       begin
@@ -89,7 +89,7 @@ module Orel
       end
     end
 
-    def hash_of_primary_key
+    def hash_of_current_primary_key
       pairs = get_primary_key.attributes.map { |a|
         key = a.name
         value = @attributes.changed_attributes[a.name] || @attributes[a.name]
