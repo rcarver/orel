@@ -59,7 +59,7 @@ module Orel
 
     # Internal: Get the name of this relation.
     #
-    # sub_name - Symbol name of the sub-relation (default: get the base relation).
+    # sub_name - Symbol name of the sub-relation (default: get the parent relation).
     #
     # Returns a String.
     def relation_name(sub_name=nil)

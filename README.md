@@ -17,7 +17,9 @@ design. Specifically:
 
 ## Integration
 
-Orel is built on top of Arel, which uses ActiveRecord.
+Orel is built on top of Arel, which uses ActiveRecord connection
+adapters. It is compatible with ActiveModel::Naming and borrows support
+for other basic functionality from ActiveModel.
 
 ## Status
 
