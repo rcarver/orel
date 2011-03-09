@@ -25,3 +25,48 @@ describe "Conformance to ActiveModel::Lint" do
   let(:model) { ActiveModelNamingCompatible.new }
 end
 
+describe "ActiveModel details" do
+
+  let(:user) {
+    UsersAndThings::User.new(:first_name => "John", :last_name => "Smith")
+  }
+
+  let(:thing) {
+    UsersAndThings::Thing.new(UsersAndThings::User => user, :name => "Box")
+  }
+
+  describe "#to_param" do
+    it "returns nil if the record is not persisted" do
+      user.to_param.should be_nil
+      thing.to_key.should be_nil
+    end
+    it "returns a string id if the record has a single key and is persisted" do
+      user.save
+      thing.save
+      thing.to_param.should be_an_instance_of(String)
+      thing.to_param.should match(/^\d$/)
+    end
+    it "returns a comma delimited string if the record has a composite key and is persisted" do
+      user.save
+      user.to_param.should be_an_instance_of(String)
+      user.to_param.should == "John,Smith"
+    end
+  end
+
+  describe "#to_key" do
+    it "returns nil if the record is not persisted" do
+      user.to_key.should be_nil
+      thing.to_key.should be_nil
+    end
+    it "returns a single item array if the record has a single key and is persisted" do
+      user.save
+      thing.save
+      thing.id.should_not be_nil
+      thing.to_key.should == [thing.id]
+    end
+    it "returns an array of all key values if record has a composite key and is persisted" do
+      user.save
+      user.to_key.should == ["John", "Smith"]
+    end
+  end
+end

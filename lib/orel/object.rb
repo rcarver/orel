@@ -18,11 +18,11 @@ module Orel
     end
 
     def initialize(attributes={})
-      heading = self.class.get_heading
-      raise NoHeadingError unless heading
-      @attributes = Attributes.new(heading, attributes)
-      @operator = Operator.new(heading, @attributes)
-      @validator = Validator.new(self, heading, @attributes)
+      @heading = self.class.get_heading
+      raise NoHeadingError unless @heading
+      @attributes = Attributes.new(@heading, attributes)
+      @operator = Operator.new(@heading, @attributes)
+      @validator = Validator.new(self, @heading, @attributes)
     end
 
     attr_reader :attributes
@@ -49,35 +49,68 @@ module Orel
       end
     end
 
-    def to_model
-      self
-    end
-
+    # Public: Determine if a record has been stored.
+    #
+    # Returns a boolean
     def persisted?
       @operator.persisted?
     end
 
+    # Public: Detemine if the record has been deleted.
+    #
+    # Returns a boolean.
     def destroyed?
       @operator.destroyed?
     end
 
+    # Public: Determine whether the record is currently valid.
+    #
+    # Returns a boolean.
     def valid?
       @validator.valid?
     end
 
+    # Public: Get current validation errors.
+    #
+    # Returns ActiveModel::Errors.
     def errors
       @validator.errors
     end
 
-    def to_param
-      nil if persisted?
+    # Public: Convert to ActiveModel.
+    #
+    # Returns itself.
+    def to_model
+      self
     end
 
+    # Public: Get an array representing the primary key.
+    #
+    # Returns an Enumerable or nil.
     def to_key
-      nil if persisted?
+      if persisted?
+        primary_key.attributes.map { |a| @attributes[a.name] }
+      else
+        nil
+      end
+    end
+
+    # Public: Get a string representing the primary key.
+    #
+    # Returns a String or nil.
+    def to_param
+      if persisted?
+        primary_key.attributes.map { |a| @attributes[a.name] }.join(',')
+      else
+        nil
+      end
     end
 
   protected
+
+    def primary_key
+      @heading.get_key(:primary)
+    end
 
     def method_missing(message, *args, &block)
       key, action = @attributes.extract_method_missing(message, args)
