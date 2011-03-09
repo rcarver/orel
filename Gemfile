@@ -6,6 +6,7 @@ group :test do
   gem "aruba"
   gem 'activerecord'
   gem 'mysql2'
+  gem 'database_cleaner'
 end
 
 gem 'arel'
