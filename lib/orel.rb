@@ -7,6 +7,7 @@ require 'sourcify'
 
 require 'orel/sql_debugging'
 require 'orel/algebra'
+require 'orel/associations'
 require 'orel/attributes'
 require 'orel/domains'
 require 'orel/object'

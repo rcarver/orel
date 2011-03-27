@@ -2,6 +2,7 @@ module Orel
   # Performs relational algebra using implementations of Orel::Object.
   class Algebra
     include Orel::SqlDebugging
+    include Enumerable
 
     # Public: Initialize a new Algebra.
     #
@@ -77,8 +78,9 @@ module Orel
     #
     # Returns nothing.
     def each(&block)
+      statement = to_sql
       begin
-        Orel.execute(to_sql).each(:as => :hash, :symbolize_keys => true, &block)
+        Orel.execute(statement).each(:as => :hash, :symbolize_keys => true, &block)
       rescue StandardError => e
         debug_sql_error(statement)
         raise

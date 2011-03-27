@@ -61,11 +61,13 @@ module Orel
       @heading = self.class.get_heading
       raise NoHeadingError unless @heading
       @attributes = Attributes.new(@heading, attributes)
+      @associations = Associations.new(self.class, @attributes)
       @operator = Operator.new(@heading, @attributes)
       @validator = Validator.new(self, @heading, @attributes)
     end
 
     attr_reader :attributes
+    attr_reader :associations
 
     def id
       if @attributes.att?(:id)
