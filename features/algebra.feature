@@ -30,6 +30,7 @@ Feature: Perform relational algebra
       """
     Then the output should contain:
       """
+      SELECT * FROM `user`
       ---
       John,Smith
       Mary,Smith
