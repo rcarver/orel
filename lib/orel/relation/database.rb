@@ -1,5 +1,7 @@
 module Orel
   module Relation
+    # This database describes zero or more headings
+    # that are created as part of a class.
     class Database
 
       def initialize(klass)

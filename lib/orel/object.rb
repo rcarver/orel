@@ -1,4 +1,36 @@
 module Orel
+  # Orel::Object is a module that gives any class relational cabilities.
+  # In particular, it lets you describe relations that instances of the class
+  # can manipulate. Relations are defined through their heading. A heading
+  # describes the attributes and keys in a relation. It  also describes
+  # references between relations (and more importantly, between the classes
+  # that define those relations).
+  #
+  # Examples
+  #
+  #     # A User has a first name and a last name. There may be only
+  #     # one user with any first name last name combination because
+  #     # we've defined those attributes as a key.
+  #     class User
+  #       include Orel::Object
+  #       heading do
+  #         key { first_name / last_name }
+  #         att :first_name, Orel::Domains::String
+  #         att :last_name, Orel::Domains::String
+  #       end
+  #     end
+  #
+  #     # A Thing has a name, an incrementing id and belongs to a User.
+  #     class Thing
+  #       include Orel::Object
+  #       heading do
+  #         key { id }
+  #         att :id, Orel::Domains::Serial
+  #         att :name, Orel::Domains::String
+  #         ref User
+  #       end
+  #     end
+  #
   module Object
 
     NoHeadingError = Class.new(StandardError)
