@@ -4,6 +4,7 @@ module Orel
   # describe the current values. With that information we can do  basic
   # ORM CRUD operations on behalf of Orel objects.
   class Operator
+    include Orel::SqlDebugging
 
     # Internal: Create a new Operator
     #
@@ -25,10 +26,6 @@ module Orel
     # Internal: Determine if our attributes have been removed from the heading.
     attr_reader :destroyed
     alias_method :destroyed?, :destroyed
-
-    def has_heading_attribute?(name)
-      !! @heading.get_attribute(name)
-    end
 
     # Internal: Store my attributes in the relation described by my heading.
     #
@@ -120,10 +117,6 @@ module Orel
         [key, value]
       }
       Hash[pairs]
-    end
-
-    def debug_sql_error(statement)
-      Orel.logger.fatal "A SQL error occurred while executing:\n#{statement}"
     end
 
   end

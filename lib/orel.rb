@@ -5,6 +5,7 @@ require 'arel'
 require 'active_model'
 require 'sourcify'
 
+require 'orel/sql_debugging'
 require 'orel/algebra'
 require 'orel/attributes'
 require 'orel/domains'

@@ -1,6 +1,7 @@
 module Orel
   # Performs relational algebra using implementations of Orel::Object.
   class Algebra
+    include Orel::SqlDebugging
 
     # Public: Initialize a new Algebra.
     #
@@ -82,12 +83,6 @@ module Orel
         debug_sql_error(statement)
         raise
       end
-    end
-
-  protected
-
-    def debug_sql_error(statement)
-      Orel.logger.fatal "A SQL error occurred while executing:\n#{statement}"
     end
 
   end
