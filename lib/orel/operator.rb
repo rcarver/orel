@@ -1,6 +1,15 @@
 module Orel
+  # This class performs SQL operations using a heading and attributes.
+  # The heading describes the table to operate on and the attributes
+  # describe the current values. With that information we can do  basic
+  # ORM CRUD operations on behalf of Orel objects.
   class Operator
 
+    # Internal: Create a new Operator
+    #
+    # heading    - Orel::Relation::Heading to manipulate.
+    # attributes - Orel::Attributes used to manipulate that heading.
+    #
     def initialize(heading, attributes)
       @heading = heading
       @attributes = attributes
@@ -9,9 +18,11 @@ module Orel
       @destroyed = false
     end
 
+    # Internal: Determine if our attributes have been stored in the heading.
     attr_reader :persisted
     alias_method :persisted?, :persisted
 
+    # Internal: Determine if our attributes have been removed from the heading.
     attr_reader :destroyed
     alias_method :destroyed?, :destroyed
 
@@ -19,6 +30,10 @@ module Orel
       !! @heading.get_attribute(name)
     end
 
+    # Internal: Store my attributes in the relation described by my heading.
+    #
+    # Returns nothing.
+    # Raises errors if something goes wrong while executing sql.
     def create
       serial = get_serial_key_attribute
       keys = serial ? [serial.name] : []
@@ -40,6 +55,11 @@ module Orel
       end
     end
 
+    # Internal: Update the non-key values of my attributes in the relation
+    # described by my heading.
+    #
+    # Returns nothing.
+    # Raises errors if something goes wrong while executing sql.
     def update
       attributes_for_key = hash_of_current_primary_key
 
@@ -63,6 +83,10 @@ module Orel
       end
     end
 
+    # Internal: Remove my attributes from the relation described by my heading.
+    #
+    # Returns nothing.
+    # Raises errors if something goes wrong while executing sql.
     def destroy
       attributes_for_key = hash_of_current_primary_key
       statement = @table.delete_statement(attributes_for_key)

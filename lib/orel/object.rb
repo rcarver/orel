@@ -10,6 +10,10 @@ module Orel
     end
 
     module ClassMethods
+
+      # Public: Create and save a new object.
+      #
+      # Returns an instance of the class this was called on.
       def create(*args)
         object = new(*args)
         object.save
@@ -17,6 +21,10 @@ module Orel
       end
     end
 
+    # Public: Initialize a new object.
+    #
+    # attributes - A Hash of key/value pairs to use as values on the object.
+    #
     def initialize(attributes={})
       @heading = self.class.get_heading
       raise NoHeadingError unless @heading
@@ -35,6 +43,12 @@ module Orel
       end
     end
 
+    # Public: Persist the object's current attributes. If the object has been
+    # saved previously, the non-key attributes are updated, else all attributes
+    # are stored. If the object defines a Serial key, that attribute will have
+    # a value after calling save.
+    #
+    # Returns nothing.
     def save
       if @operator.persisted?
         @operator.update
@@ -43,20 +57,24 @@ module Orel
       end
     end
 
+    # Public: Stop persisting this object. If the object has never been persisted,
+    # this method has no effect.
+    #
+    # Returns nothing.
     def destroy
       if @operator.persisted?
         @operator.destroy
       end
     end
 
-    # Public: Determine if a record has been stored.
+    # Public: Determine if a record has been saved.
     #
     # Returns a boolean
     def persisted?
       @operator.persisted?
     end
 
-    # Public: Detemine if the record has been deleted.
+    # Public: Detemine if the record has been destroyed.
     #
     # Returns a boolean.
     def destroyed?

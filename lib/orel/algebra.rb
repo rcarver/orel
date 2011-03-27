@@ -1,7 +1,8 @@
 module Orel
+  # Performs relational algebra using implementations of Orel::Object.
   class Algebra
 
-    # Public: Initialize new Algebra.
+    # Public: Initialize a new Algebra.
     #
     # klass - Class containing a heading to perform algebra on.
     #
@@ -15,19 +16,16 @@ module Orel
 
     # Public: Project attributes of the resulting relation.
     #
-    # TODO: add an arg to set the attributes to project.
-    #
     # Returns Orel::Algebra for chaining.
     def project
+      # TODO: add an arg to set the attributes to project.
       @manager.project Arel::Nodes::SqlLiteral.new('*')
       self
     end
 
-    # Public: Restrict the resulting relation with the
-    # values of some attributes.
+    # Public: Restrict the resulting relation with the values of some attributes.
     #
-    # attributes - Hash key/value pairs required in the
-    #              resulting relation.
+    # attributes - Hash of key/value pairs required in the resulting relation.
     #
     # Returns Orel::Algebra for chaining.
     def restrict(attributes={})
@@ -39,8 +37,7 @@ module Orel
 
     # Public: Join another class.
     #
-    # klass - Class that has a heading containing
-    #         a reference to the current class.
+    # klass - Class that has a heading containing a reference to the current class.
     #
     # Returns Orel::Algebra for chaining.
     def join(klass)
@@ -71,8 +68,7 @@ module Orel
       @manager.to_sql
     end
 
-    # Public: Execute the current algebraic statement and iterate
-    # over the results.
+    # Public: Execute the current algebraic statement and iterate over the results.
     #
     # block - Proc that receives a tuple for each row in the resulting
     #         relation. The tuple has symbol keys for each attribute
