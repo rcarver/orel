@@ -16,15 +16,18 @@ Feature: Use the objects that back relations.
       """
       user = User.new :first_name => "John", :last_name => "Smith"
       puts user.first_name
-      puts user.last_name
-      user.first_name = "John"
+      puts user[:last_name]
+      user.first_name = "Bob"
+      user[:last_name] = "Johnson"
       puts user.first_name
+      puts user[:last_name]
       """
     Then the output should contain:
       """
       John
       Smith
-      John
+      Bob
+      Johnson
       """
 
   Scenario: Create a record with a surrogate key

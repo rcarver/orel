@@ -109,3 +109,37 @@ Feature: Classes have associations with other classes
       Supplier B, 400
       """
 
+  Scenario: Change the association relationship
+    Given I have these class definitions:
+      """
+      class User
+        include Orel::Object
+        heading do
+          key { first_name / last_name }
+          att :first_name, Orel::Domains::String
+          att :last_name, Orel::Domains::String
+        end
+      end
+      class Thing
+        include Orel::Object
+        heading do
+          key { name }
+          att :name, Orel::Domains::String
+          ref User
+        end
+      end
+      """
+    When I run some Orel code:
+      """
+      user1 = User.create :first_name => "John", :last_name => "Smith"
+      user2 = User.create :first_name => "Mary", :last_name => "Smith"
+      thing = Thing.create User => user1, :name => "box"
+
+      thing[User] = user2
+      puts thing[User].first_name
+      """
+    Then the output should contain:
+      """
+      Mary
+      """
+

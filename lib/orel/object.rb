@@ -68,12 +68,34 @@ module Orel
 
     attr_reader :attributes
 
-    def id
-      if @attributes.att?(:id)
-        @attributes[:id]
-      else
-        super
+    # Public: Read associations and attributes.
+    #
+    # key - Either a Class or a Symbol.
+    #       A Class is expected to be an association.
+    #       A Symbol is expected to be an attribute name.
+    #
+    # Returns a value appropriate to the input.
+    # Raises an error if an unknown association is requested
+    #   or if the attribute is not defined.
+    def [](key)
+      case key
+      when Class: @associations[key]
+      else @attributes[key]
       end
+    end
+
+    # Public: Modify associations and attributes.
+    #
+    # key - Either a Class or a Symbol.
+    #       A Class is expected to be an association.
+    #       A Symbol is expected to be an attribute name.
+    # value - The value to set the association or attribute.
+    #
+    # Returns nothing.
+    # Raises an error if an unknown association or attribute
+    #   is specified or if the value is inappropriate.
+    def []=(key, value)
+      @attributes[key] = value
     end
 
     # Public: Persist the object's current attributes. If the object has been
@@ -157,8 +179,13 @@ module Orel
       end
     end
 
-    def [](klass)
-      @associations[klass]
+    # Special handling of `id` to do the right thing in spite of Ruby defining Object#id.
+    def id
+      if @attributes.att?(:id)
+        @attributes[:id]
+      else
+        super
+      end
     end
 
   protected
