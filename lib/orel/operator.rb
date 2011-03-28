@@ -109,7 +109,7 @@ module Orel
   protected
 
     def get_primary_key
-      @heading.get_key(:primary)
+      @heading.get_key(:primary) or raise "#{@heading.name} has no :primary key. #{@heading.inspect}"
     end
 
     def get_serial_key_attribute

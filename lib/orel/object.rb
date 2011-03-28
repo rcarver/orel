@@ -62,7 +62,7 @@ module Orel
       raise NoHeadingError unless @heading
       @attributes = Attributes.new(@heading, attributes)
       @class_associations = ClassAssociations.new(self.class, @attributes)
-      @simple_associations = SimpleAssociations.new(self.class.database, @attributes)
+      @simple_associations = SimpleAssociations.new(self, self.class.database, @attributes)
       @operator = Operator.new(@heading, @attributes)
       @validator = Validator.new(self, @heading, @attributes)
     end
@@ -81,8 +81,12 @@ module Orel
     def [](key)
       case key
       when Class: @class_associations[key]
-      when @simple_associations.include?(key): @simple_associations[key]
-      else @attributes[key]
+      else
+        if @simple_associations.include?(key)
+          @simple_associations[key]
+        else
+          @attributes[key]
+        end
       end
     end
 
@@ -97,7 +101,11 @@ module Orel
     # Raises an error if an unknown association or attribute
     #   is specified or if the value is inappropriate.
     def []=(key, value)
-      @attributes[key] = value
+      if @simple_associations.include?(key)
+        @simple_associations[key] = value
+      else
+        @attributes[key] = value
+      end
     end
 
     # Public: Persist the object's current attributes. If the object has been
@@ -108,6 +116,7 @@ module Orel
     # Returns nothing.
     def save
       @operator.create_or_update
+      @simple_associations.save
     end
 
     # Public: Stop persisting this object. If the object has never been persisted,

@@ -13,6 +13,7 @@ require 'orel/domains'
 require 'orel/object'
 require 'orel/operator'
 require 'orel/relation'
+require 'orel/simple_associations'
 require 'orel/sql'
 require 'orel/validator'
 
