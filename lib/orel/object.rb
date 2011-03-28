@@ -67,7 +67,6 @@ module Orel
     end
 
     attr_reader :attributes
-    attr_reader :associations
 
     def id
       if @attributes.att?(:id)
@@ -156,6 +155,10 @@ module Orel
       else
         nil
       end
+    end
+
+    def [](klass)
+      @associations[klass]
     end
 
   protected

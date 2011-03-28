@@ -17,7 +17,7 @@ module Orel
       if child_reference = klass.get_heading.get_parent_reference(@klass)
         return children(child_reference)
       end
-      raise ArgumentError, "#{klass} is neither a parent nor child association"
+      raise ArgumentError, "#{klass} is neither a parent nor child association of #{@klass}"
     end
 
     # NOTE: @attributes must align with the heading we're talking about

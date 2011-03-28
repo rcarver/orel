@@ -27,11 +27,8 @@ Feature: Classes have associations with other classes
       thing1 = Thing.create User => user, :name => "box"
       thing2 = Thing.create User => user, :name => "toy"
 
-      puts thing1.associations[User].first_name
-      # puts thing1.user.last_name
-
-      puts user.associations[Thing].map { |t| t.name }.sort.join(', ')
-      # puts user.things.size
+      puts thing1[User].first_name
+      puts user[Thing].map { |t| t.name }.sort.join(', ')
       """
     Then the output should contain:
       """
@@ -81,21 +78,19 @@ Feature: Classes have associations with other classes
 
       [supplier1, supplier2].each { |supplier|
         puts supplier.name
-        supplier.associations[Shipment].each { |shipment|
-          part = shipment.associations[Part]
+        supplier[Shipment].each { |shipment|
+          part = shipment[Part]
           puts [part.name, shipment.qty].join(', ')
         }
       }
       puts
       [part1, part2].each { |part|
         puts part.name
-        part.associations[Shipment].each { |shipment|
-          supplier = shipment.associations[Supplier]
+        part[Shipment].each { |shipment|
+          supplier = shipment[Supplier]
           puts [supplier.name, shipment.qty].join(', ')
         }
       }
-
-      supplier1.associations[Part]
       """
     Then the output should contain:
       """
