@@ -87,10 +87,11 @@ Feature: Create MySQL tables from relational definitions
           att :id, Orel::Domains::Serial
           att :name, Orel::Domains::String
         end
-        many :logins do
+        heading :deleted do
+          key { User }
           att :at, Orel::Domains::DateTime
         end
-        one :deleted do
+        heading :logins do
           att :at, Orel::Domains::DateTime
         end
       end
@@ -129,10 +130,11 @@ Feature: Create MySQL tables from relational definitions
           att :first_name, Orel::Domains::String
           att :last_name, Orel::Domains::String
         end
-        many :logins do
+        heading :deleted do
+          key { User }
           att :at, Orel::Domains::DateTime
         end
-        one :deleted do
+        heading :logins do
           att :at, Orel::Domains::DateTime
         end
       end

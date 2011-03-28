@@ -8,10 +8,8 @@ module Orel
         @child_class = child_class
         @child_heading_name = child_heading_name
         @child_key_name = child_key_name
-        @one_to_one = false
       end
 
-      attr_writer :one_to_one
       attr_reader :parent_class
       attr_reader :child_class
 
@@ -23,11 +21,6 @@ module Orel
 
         # Create a key that references the parent heading.
         child_key = parent_key.foreign_key_for(parent_heading)
-
-        # Optionally add that key to the child heading.
-        if @one_to_one
-          child_heading.keys << child_key
-        end
 
         # Store a foreign key description on the child heading.
         child_heading.foreign_keys << ForeignKey.new(parent_heading, parent_key, child_heading, child_key)

@@ -22,13 +22,9 @@ module Orel
         @heading.attributes << Attribute.new(@heading, name, domain.new)
       end
 
-      def ref(klass, *args)
-        options = args.last.is_a?(Hash) ? args.pop : {}
-        child_name = args.first
-        # TODO: validate options
+      def ref(klass, child_name=nil)
         # TODO: allow references to non-primary keys
         reference = Reference.new(klass, nil, @klass, @child_name, :primary)
-        reference.one_to_one = options[:unique]
         @heading.references << reference
       end
 
