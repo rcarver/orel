@@ -27,6 +27,14 @@ module Orel
     attr_reader :destroyed
     alias_method :destroyed?, :destroyed
 
+    def create_or_update
+      if persisted?
+        update
+      else
+        create
+      end
+    end
+
     # Internal: Store my attributes in the relation described by my heading.
     #
     # Returns nothing.

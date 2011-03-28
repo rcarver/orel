@@ -1,7 +1,7 @@
 module Orel
   # Retrieve objects through their references. Supports one-to-many and
   # many-to-one associations right now.
-  class Associations
+  class ClassAssociations
 
     InvalidReference = Class.new(ArgumentError)
 
