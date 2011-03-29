@@ -62,7 +62,7 @@ module Orel
       raise NoHeadingError unless @heading
       @attributes = Attributes.new(@heading, attributes)
       @class_associations = ClassAssociations.new(self.class, @attributes)
-      @simple_associations = SimpleAssociations.new(self, self.class.database, @attributes)
+      @simple_associations = SimpleAssociations.new(self, self.class.database)
       @operator = Operator.new(@heading, @attributes)
       @validator = Validator.new(self, @heading, @attributes)
     end
