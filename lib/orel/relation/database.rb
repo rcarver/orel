@@ -13,7 +13,11 @@ module Orel
       attr_reader :headings
 
       def relation_name(sub_name=nil)
-        [klass.name.underscore, sub_name].compact.join("_")
+        if sub_name
+          [klass.name.underscore.gsub(/\//, '_'), sub_name.to_s].compact.join("_")
+        else
+          klass.name.underscore.gsub(/\//, '_')
+        end
       end
 
       def get_heading(sub_name=nil)
