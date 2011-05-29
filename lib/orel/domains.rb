@@ -60,6 +60,15 @@ module Orel
       end
     end
 
+    class BigInt < Domain
+      def type_def
+        "BIGINT NOT NULL"
+      end
+      def for_foreign_key
+        self
+      end
+    end
+
     class Float < Domain
       def type_def
         "FLOAT(11) NOT NULL"

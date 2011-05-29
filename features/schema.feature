@@ -58,6 +58,7 @@ Feature: Create MySQL tables from relational definitions
           att :on,     Orel::Domains::Date
           att :bio,    Orel::Domains::Text
           att :good,   Orel::Domains::Boolean
+          att :time,   Orel::Domains::BigInt
         end
       end
       """
@@ -73,6 +74,7 @@ Feature: Create MySQL tables from relational definitions
         `on` date NOT NULL,
         `bio` text NOT NULL,
         `good` tinyint(1) NOT NULL,
+        `time` bigint(20) NOT NULL,
         UNIQUE KEY `user_id` (`id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       """
