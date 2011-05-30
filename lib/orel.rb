@@ -15,6 +15,7 @@ require 'orel/operator'
 require 'orel/relation'
 require 'orel/simple_associations'
 require 'orel/sql'
+require 'orel/sql_generator'
 require 'orel/validator'
 
 require 'orel/relation/attribute'

@@ -1,7 +1,8 @@
 require 'helper'
 
-describe Orel::Sql::Table do
+describe Orel::SqlGenerator::Table do
   subject { described_class.new(UsersAndThings::User.get_heading) }
+  its(:name) { should == "users_and_things_user" }
   specify "#insert_statement" do
     sql = subject.insert_statement(:first_name => "John")
     sql.should == %{INSERT INTO `users_and_things_user` (`first_name`) VALUES ('John')}

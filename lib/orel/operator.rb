@@ -14,7 +14,7 @@ module Orel
     def initialize(heading, attributes)
       @heading = heading
       @attributes = attributes
-      @table = Orel::Sql::Table.new(@heading)
+      @table = Orel::SqlGenerator::Table.new(@heading)
       @persisted = false
       @destroyed = false
     end
