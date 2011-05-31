@@ -9,13 +9,13 @@ module Orel
     # Returns an Array of Strings.
     def self.creation_statements(classes)
       tables = classes.map { |klass|
-        klass.database.headings.map { |heading|
+        klass.headings.map { |heading|
           Orel::SqlGenerator::Table.new(heading)
         }
       }
 
       foreign_keys = classes.map { |klass|
-        klass.database.headings.map { |heading|
+        klass.headings.map { |heading|
           heading.foreign_keys.map { |foreign_key|
             parent_table = Orel::SqlGenerator::Table.new(foreign_key.parent_heading)
             child_table = Orel::SqlGenerator::Table.new(foreign_key.child_heading)

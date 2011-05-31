@@ -2,13 +2,13 @@ module Orel
   module Relation
     class HeadingDSL
 
-      def initialize(klass, database, child_name=nil, &block)
+      def initialize(klass, set, namer, child_name=nil, &block)
         @klass = klass
-        @database = database
+        @set = set
         @child_name = child_name
         @block = block
 
-        name = database.relation_name(child_name)
+        name = child_name ? namer.child_name(child_name) : namer.base_name
         @heading = Heading.new(name)
 
         @keys = []
@@ -35,8 +35,8 @@ module Orel
         # Keys must be created after attributes.
         @keys.each { |dsl| dsl._apply! }
 
-        # Add the heading to the database.
-        @database.headings << @heading
+        # Add the heading to the set.
+        @set << @heading
       end
 
     end

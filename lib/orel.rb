@@ -19,13 +19,14 @@ require 'orel/sql_generator'
 require 'orel/validator'
 
 require 'orel/relation/attribute'
-require 'orel/relation/database'
 require 'orel/relation/foreign_key'
 require 'orel/relation/heading'
 require 'orel/relation/heading_dsl'
 require 'orel/relation/key'
 require 'orel/relation/key_dsl'
+require 'orel/relation/namer'
 require 'orel/relation/reference'
+require 'orel/relation/set'
 
 module Orel
   VERSION = "0.0.0"
@@ -38,7 +39,7 @@ module Orel
     return if @finalized
     @finalized = true
     classes.each { |klass|
-      klass.database.headings.each { |heading|
+      klass.headings.each { |heading|
         heading.references.each { |ref|
           ref.create_foreign_key_relationship!
         }

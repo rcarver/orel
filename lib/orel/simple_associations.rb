@@ -6,11 +6,11 @@ module Orel
     # Internal: Initialize a new SimpleAssociations
     #
     # parent   - Orel::Object that is the parent.
-    # database - Orel::Relation::Database in which to find headings.
+    # relation_set - Orel::Relation::Set in which to find headings.
     #
-    def initialize(parent, database)
+    def initialize(parent, relation_set)
       @parent = parent
-      @database = database
+      @relation_set = relation_set
       @associations = {}
     end
 
@@ -20,7 +20,7 @@ module Orel
     #
     # Returns a boolean.
     def include?(name)
-      !! @database.get_heading(name)
+      !! @relation_set.child(name)
     end
 
     # Public: Modify the attributes of a one-to-one association.
@@ -56,7 +56,7 @@ module Orel
 
     def one(name)
       unless @associations[name]
-        heading = @database.get_heading(name) or raise InvalidRelation, name
+        heading = @relation_set.child(name) or raise InvalidRelation, name
         @associations[name] = OneProxy.new(@parent, heading)
       end
       @associations[name]
@@ -64,7 +64,7 @@ module Orel
 
     def many(name)
       unless @associations[name]
-        heading = @database.get_heading(name) or raise InvalidRelation, name
+        heading = @relation_set.child(name) or raise InvalidRelation, name
         @associations[name] = ManyProxy.new(@parent, heading)
       end
       @associations[name]
