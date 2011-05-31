@@ -4,14 +4,15 @@ module Orel
 
       def initialize(klass)
         @klass = klass
+        @name = @klass.name.underscore.gsub(/\//, '_')
       end
 
       def base_name
-        @klass.name.underscore.gsub(/\//, '_')
+        @name.pluralize
       end
 
       def child_name(name)
-        [base_name, name.to_s].join("_")
+        [@name, name.to_s.pluralize].join("_")
       end
 
     end
