@@ -2,9 +2,9 @@ module Orel
   module Relation
     class Set
 
-      def initialize(name, namer)
-        @name = name
+      def initialize(namer)
         @namer = namer
+        @name = namer.heading_name
         @headings = []
       end
 
@@ -23,7 +23,7 @@ module Orel
       end
 
       def child(name)
-        name = @namer.child_name(name)
+        name = @namer.for_child(name).heading_name
         @headings.find { |h| h.name == name }
       end
 

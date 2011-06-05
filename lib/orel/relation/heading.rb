@@ -7,13 +7,16 @@ module Orel
     # define.
     class Heading
 
-      def initialize(name)
-        @name = name
+      def initialize(namer)
+        @namer = namer
+        @name = namer.heading_name
         @attributes = []
         @keys = []
         @references = []
         @foreign_keys = []
       end
+
+      attr_reader :namer
 
       # Public: Name of this heading.
       #

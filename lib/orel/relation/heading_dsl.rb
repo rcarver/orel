@@ -9,8 +9,11 @@ module Orel
         @child_name = child_name
         @block = block
 
-        name = child_name ? namer.child_name(child_name) : namer.base_name
-        @heading = Heading.new(name)
+        if child_name
+          @heading = Heading.new(namer.for_child(child_name))
+        else
+          @heading = Heading.new(namer)
+        end
 
         @keys = []
       end
@@ -20,7 +23,7 @@ module Orel
       end
 
       def att(name, domain)
-        @heading.attributes << Attribute.new(@heading, @namer, name, domain.new)
+        @heading.attributes << Attribute.new(@heading, @heading.namer, name, domain.new)
       end
 
       def ref(klass, child_name=nil)

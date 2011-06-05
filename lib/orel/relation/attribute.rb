@@ -6,8 +6,8 @@ module Orel
 
       # Internal: Initialize a new Attribute.
       #
-      # heading - Heading the attribute belongs to.
-      # name    - Symbol name of the heading.
+      # heading - Relation::Heading that the attribute belongs to.
+      # namer   - Relation::Namer.
       # domain  - Orel::Domain describing the type.
       #
       def initialize(heading, namer, name, domain)
@@ -40,7 +40,7 @@ module Orel
         unless domain.respond_to?(:for_foreign_key)
           raise ForeignKeyTranslationError, "#{domain.inspect} does not support foreign keys. It must define `for_foreign_key`."
         end
-        fk_name = @namer.foreign_key_name(name).to_sym
+        fk_name = @namer.foreign_key_name(name)
         fk_domain = domain.for_foreign_key
         self.class.new(nil, nil, fk_name, fk_domain)
       end

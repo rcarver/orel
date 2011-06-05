@@ -10,15 +10,15 @@ module Orel
     def self.creation_statements(classes)
       tables = classes.map { |klass|
         klass.headings.map { |heading|
-          Orel::SqlGenerator::Table.new(klass.relation_namer, heading)
+          Orel::SqlGenerator::Table.new(heading.namer, heading)
         }
       }
 
       foreign_keys = classes.map { |klass|
         klass.headings.map { |heading|
           heading.foreign_keys.map { |foreign_key|
-            parent_table = Orel::SqlGenerator::Table.new(klass.relation_namer, foreign_key.parent_heading)
-            child_table = Orel::SqlGenerator::Table.new(klass.relation_namer, foreign_key.child_heading)
+            parent_table = Orel::SqlGenerator::Table.new(heading.namer, foreign_key.parent_heading)
+            child_table = Orel::SqlGenerator::Table.new(heading.namer, foreign_key.child_heading)
             parent_attributes = foreign_key.parent_key.attributes
             child_attributes = foreign_key.child_key.attributes
             Orel::SqlGenerator::ForeignKey.new(

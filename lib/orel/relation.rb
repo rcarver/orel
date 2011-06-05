@@ -47,11 +47,11 @@ module Orel
     end
 
     def relation_namer
-      @namer ||= Orel::Relation::Namer.new(self)
+      @namer ||= Orel::Relation::Namer.for_class(self)
     end
 
     def relation_set
-      @relation_set ||= Orel::Relation::Set.new(relation_namer.base_name, relation_namer)
+      @relation_set ||= Orel::Relation::Set.new(relation_namer)
     end
 
     alias_method :headings, :relation_set

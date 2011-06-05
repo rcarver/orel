@@ -104,7 +104,7 @@ Feature: Create MySQL tables from relational definitions
       CREATE TABLE `user_deleted` (
         `at` datetime NOT NULL,
         `user_id` int(11) NOT NULL,
-        UNIQUE KEY `user_user_id` (`user_id`),
+        UNIQUE KEY `user_deleted_user_id` (`user_id`),
         CONSTRAINT `user_deleted_users_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -148,7 +148,7 @@ Feature: Create MySQL tables from relational definitions
         `at` datetime NOT NULL,
         `first_name` varchar(255) NOT NULL,
         `last_name` varchar(255) NOT NULL,
-        UNIQUE KEY `user_first_name_last_name` (`first_name`,`last_name`),
+        UNIQUE KEY `user_deleted_first_name_last_name` (`first_name`,`last_name`),
         CONSTRAINT `user_deleted_users_fk` FOREIGN KEY (`first_name`, `last_name`) REFERENCES `users` (`first_name`, `last_name`) ON DELETE NO ACTION ON UPDATE NO ACTION
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
