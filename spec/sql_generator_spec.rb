@@ -3,10 +3,11 @@ require 'helper'
 describe Orel::SqlGenerator::Table do
 
   let(:klass) { UsersAndThings::User }
-  let(:namer) { Orel::Relation::Namer.new(klass) }
+  let(:namer) { Orel::Relation::Namer.for_class(klass) }
+
   subject { described_class.new(namer, klass.get_heading) }
 
-  its(:name) { should == "users_and_things_users" }
+  its(:name) { should == :users_and_things_users }
 
   specify "#insert_statement" do
     sql = subject.insert_statement(:first_name => "John")
