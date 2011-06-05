@@ -19,8 +19,17 @@ Gem::Specification.new do |s|
   s.require_path     = "lib"
 
   s.add_dependency 'arel'
+  s.add_dependency 'activerecord', '~>3.0'
+  s.add_dependency 'mysql2', '~>0.2.0'
   s.add_dependency 'sourcify'
   s.add_dependency 'activemodel'
   s.add_dependency 'mysql2'
+
+  s.add_development_dependency "rake"
+  s.add_development_dependency "rspec"
+  s.add_development_dependency "cucumber"
+  s.add_development_dependency "aruba"
+  s.add_development_dependency 'database_cleaner'
+
 end
 
