@@ -3,12 +3,16 @@ module Orel
     class Namer
 
       def self.for_class(klass)
-        Namer.new klass.name.underscore.gsub(/\//, '_'), true
+        Namer.new(klass.name.underscore.gsub(/\//, '_'), true)
       end
 
       def initialize(name, pluralize)
         @name = name
         @pluralize = pluralize
+      end
+
+      def for_child(name)
+        Namer.new([@name, name].join("_"), false)
       end
 
       def heading_name
@@ -17,10 +21,6 @@ module Orel
         else
           @name.to_sym
         end
-      end
-
-      def for_child(name)
-        Namer.new [@name, name].join("_"), false
       end
 
       # Used in Attribute.
