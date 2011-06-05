@@ -98,6 +98,20 @@ module Orel
         manager.insert attributes.map { |k, v| [table[k], v] }
         manager.to_sql
       end
+      def upsert_statement(attributes, update)
+        values = update[:values] or raise ArgumentError, "Missing :values to update"
+        update_with = update[:with] or raise ArgumentError, "Missing :with describing how to update"
+        values.all? { |v| attributes.key?(v) } or raise ArgumentError, "All :values to update must have attributes to insert"
+        update_statement = case update_with
+        when :increment
+          values.map { |v| "#{v}=#{v}+VALUES(#{v})" }.join(',')
+        when :replace
+          values.map { |v| "#{v}=VALUES(#{v})" }
+        else
+          raise ArgumentError, "Unknown value for :with - #{with.inspect}"
+        end
+        "#{insert_statement(attributes)} ON DUPLICATE KEY UPDATE #{update_statement}"
+      end
       def update_statement(attributes, where)
         table = Arel::Table.new(@heading.name)
         manager = Arel::UpdateManager.new(table.engine);
