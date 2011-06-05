@@ -17,5 +17,10 @@ Gem::Specification.new do |s|
   s.extra_rdoc_files = [ "README.md" ]
   s.rdoc_options     = ["--charset=UTF-8"]
   s.require_path     = "lib"
+
+  s.add_dependency 'arel'
+  s.add_dependency 'sourcify'
+  s.add_dependency 'activemodel'
+  s.add_dependency 'mysql2'
 end
 
