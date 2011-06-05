@@ -21,9 +21,9 @@ Feature: Classes can define more than one relation
       """
       def show
         Orel::Test.show <<-SQL
-          SELECT user.id, user.first_name, user.last_name, user_status.value
-          FROM user, user_status
-          WHERE user.id = user_status.user_id
+          SELECT users.id, users.first_name, users.last_name, user_status.value
+          FROM users, user_status
+          WHERE users.id = user_status.user_id
         SQL
       end
       user = User.create :first_name => "John", :last_name => "Smith"
@@ -65,9 +65,9 @@ Feature: Classes can define more than one relation
       """
       def show
         Orel::Test.show <<-SQL
-          SELECT user.id, user.first_name, user.last_name, user_logins.ip
-          FROM user, user_logins
-          WHERE user.id = user_logins.user_id
+          SELECT users.id, users.first_name, users.last_name, user_logins.ip
+          FROM users, user_logins
+          WHERE users.id = user_logins.user_id
         SQL
       end
       user = User.create :first_name => "John", :last_name => "Smith"

@@ -8,13 +8,14 @@ module Orel
 
     # Internal: Create a new Operator
     #
-    # heading    - Orel::Relation::Heading to manipulate.
+    # table      - Orel::SqlGenerator::Table to manipulate.
+    # heading    - Orel::Relation::Heading that describes the table.
     # attributes - Orel::Attributes used to manipulate that heading.
     #
-    def initialize(heading, attributes)
+    def initialize(relation_namer, heading, attributes)
       @heading = heading
       @attributes = attributes
-      @table = Orel::SqlGenerator::Table.new(@heading)
+      @table = Orel::SqlGenerator::Table.new(relation_namer, @heading)
       @persisted = false
       @destroyed = false
     end

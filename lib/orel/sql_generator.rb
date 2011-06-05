@@ -10,18 +10,23 @@ module Orel
     def self.creation_statements(classes)
       tables = classes.map { |klass|
         klass.headings.map { |heading|
-          Orel::SqlGenerator::Table.new(heading)
+          Orel::SqlGenerator::Table.new(klass.relation_namer, heading)
         }
       }
 
       foreign_keys = classes.map { |klass|
         klass.headings.map { |heading|
           heading.foreign_keys.map { |foreign_key|
-            parent_table = Orel::SqlGenerator::Table.new(foreign_key.parent_heading)
-            child_table = Orel::SqlGenerator::Table.new(foreign_key.child_heading)
+            parent_table = Orel::SqlGenerator::Table.new(klass.relation_namer, foreign_key.parent_heading)
+            child_table = Orel::SqlGenerator::Table.new(klass.relation_namer, foreign_key.child_heading)
             parent_attributes = foreign_key.parent_key.attributes
             child_attributes = foreign_key.child_key.attributes
-            Orel::SqlGenerator::ForeignKey.new(parent_table.name, parent_attributes, child_table.name, child_attributes)
+            Orel::SqlGenerator::ForeignKey.new(
+              parent_table,
+              parent_attributes,
+              child_table,
+              child_attributes
+            )
           }
         }
       }
@@ -45,9 +50,11 @@ module Orel
 
     class Table
       include Quoting
-      def initialize(heading)
+      def initialize(relation_namer, heading)
+        @relation_namer = relation_namer
         @heading = heading
       end
+      attr_reader :relation_namer
       def name
         @heading.name
       end
@@ -58,9 +65,14 @@ module Orel
       end
       def unique_keys
         @heading.keys.map { |key|
-          key_name = [name, key.attributes.map { |a| a.name }].flatten.join("_")
-          UniqueKey.new(key_name, key.attributes)
+          UniqueKey.new(
+            @relation_namer.unique_key_name(key.attributes.map { |a| a.name }),
+            key.attributes
+          )
         }
+      end
+      def foreign_key_constraint_name(table_name)
+        @relation_namer.foreign_key_constraint_name(name, table_name)
       end
       def create_statement
         sql = []
@@ -134,17 +146,17 @@ module Orel
 
     class ForeignKey
       include Quoting
-      def initialize(parent_table_name, parent_attributes, child_table_name, child_attributes)
-        @parent_table_name = parent_table_name
+      def initialize(parent_table, parent_attributes, child_table, child_attributes)
+        @parent_table = parent_table
         @parent_attributes = parent_attributes
-        @child_table_name = child_table_name
+        @child_table = child_table
         @child_attributes = child_attributes
       end
       def alter_statement
-        name = [@child_table_name, @parent_table_name, "fk"].join("_")
+        name = @child_table.foreign_key_constraint_name(@parent_table.name)
         child_attribute_names = @child_attributes.map { |a| qc a.name }
         parent_attribute_names = @parent_attributes.map { |a| qc a.name }
-        "ALTER TABLE #{qt @child_table_name} ADD CONSTRAINT #{qc name} FOREIGN KEY (#{child_attribute_names.join(',')}) REFERENCES #{qt @parent_table_name} (#{parent_attribute_names.join(',')}) ON DELETE NO ACTION ON UPDATE NO ACTION"
+        "ALTER TABLE #{qt @child_table.name} ADD CONSTRAINT #{qc name} FOREIGN KEY (#{child_attribute_names.join(',')}) REFERENCES #{qt @parent_table.name} (#{parent_attribute_names.join(',')}) ON DELETE NO ACTION ON UPDATE NO ACTION"
       end
     end
 

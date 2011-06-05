@@ -5,7 +5,7 @@ module Orel
 
     # Internal: Initialize a new SimpleAssociations
     #
-    # parent   - Orel::Object that is the parent.
+    # parent       - Orel::Object that is the parent.
     # relation_set - Orel::Relation::Set in which to find headings.
     #
     def initialize(parent, relation_set)
@@ -57,7 +57,7 @@ module Orel
     def one(name)
       unless @associations[name]
         heading = @relation_set.child(name) or raise InvalidRelation, name
-        @associations[name] = OneProxy.new(@parent, heading)
+        @associations[name] = OneProxy.new(@parent.class.relation_namer, @parent, heading)
       end
       @associations[name]
     end
@@ -65,18 +65,19 @@ module Orel
     def many(name)
       unless @associations[name]
         heading = @relation_set.child(name) or raise InvalidRelation, name
-        @associations[name] = ManyProxy.new(@parent, heading)
+        @associations[name] = ManyProxy.new(@parent.class.relation_namer, @parent, heading)
       end
       @associations[name]
     end
 
     class OneProxy
 
-      def initialize(parent, heading)
+      def initialize(relation_namer, parent, heading)
+        @relation_namer = relation_namer
         @parent = parent
         @heading = heading
         @attributes = Attributes.new(@heading)
-        @operator = Operator.new(@heading, @attributes)
+        @operator = Operator.new(@relation_namer, @heading, @attributes)
       end
 
       def set(attributes)
@@ -93,7 +94,8 @@ module Orel
 
       Record = Struct.new(:attributes, :operator)
 
-      def initialize(parent, heading)
+      def initialize(relation_namer, parent, heading)
+        @relation_namer = relation_namer
         @parent = parent
         @heading = heading
         @records = []
@@ -107,7 +109,7 @@ module Orel
       # Returns nothing.
       def <<(attributes)
         attrs = Attributes.new(@heading, attributes)
-        operator = Operator.new(@heading, attrs)
+        operator = Operator.new(@relation_namer, @heading, attrs)
         @records << Record.new(attrs, operator)
         nil
       end

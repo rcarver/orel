@@ -15,8 +15,8 @@ Feature: Perform relational algebra
       """
     When I run some Orel code:
       """
-      Orel.execute "INSERT INTO user (first_name, last_name) VALUES ('John', 'Smith')"
-      Orel.execute "INSERT INTO user (first_name, last_name) VALUES ('Mary', 'Smith')"
+      Orel.execute "INSERT INTO users (first_name, last_name) VALUES ('John', 'Smith')"
+      Orel.execute "INSERT INTO users (first_name, last_name) VALUES ('Mary', 'Smith')"
 
       algebra = Orel::Algebra.new(User)
       algebra.project
@@ -30,7 +30,7 @@ Feature: Perform relational algebra
       """
     Then the output should contain:
       """
-      SELECT * FROM `user`
+      SELECT * FROM `users`
       ---
       John,Smith
       Mary,Smith
@@ -51,8 +51,8 @@ Feature: Perform relational algebra
       """
     When I run some Orel code:
       """
-      Orel.execute "INSERT INTO user (first_name, last_name) VALUES ('John', 'Smith')"
-      Orel.execute "INSERT INTO user (first_name, last_name) VALUES ('Mary', 'Smith')"
+      Orel.execute "INSERT INTO users (first_name, last_name) VALUES ('John', 'Smith')"
+      Orel.execute "INSERT INTO users (first_name, last_name) VALUES ('Mary', 'Smith')"
 
       algebra = Orel::Algebra.new(User)
       algebra.restrict(:first_name => "John")
@@ -67,7 +67,7 @@ Feature: Perform relational algebra
       """
     Then the output should contain:
       """
-      SELECT * FROM `user` WHERE `user`.`first_name` = 'John'
+      SELECT * FROM `users` WHERE `users`.`first_name` = 'John'
       ---
       John,Smith
       ---
@@ -95,11 +95,11 @@ Feature: Perform relational algebra
       """
     When I run some Orel code:
       """
-      Orel.execute "INSERT INTO user (first_name, last_name) VALUES ('John', 'Smith')"
-      Orel.execute "INSERT INTO user (first_name, last_name) VALUES ('Mary', 'Smith')"
-      Orel.execute "INSERT INTO thing (first_name, last_name, name) VALUES ('John', 'Smith', 'Car')"
-      Orel.execute "INSERT INTO thing (first_name, last_name, name) VALUES ('John', 'Smith', 'Boat')"
-      Orel.execute "INSERT INTO thing (first_name, last_name, name) VALUES ('Mary', 'Smith', 'Boat')"
+      Orel.execute "INSERT INTO users (first_name, last_name) VALUES ('John', 'Smith')"
+      Orel.execute "INSERT INTO users (first_name, last_name) VALUES ('Mary', 'Smith')"
+      Orel.execute "INSERT INTO things (first_name, last_name, name) VALUES ('John', 'Smith', 'Car')"
+      Orel.execute "INSERT INTO things (first_name, last_name, name) VALUES ('John', 'Smith', 'Boat')"
+      Orel.execute "INSERT INTO things (first_name, last_name, name) VALUES ('Mary', 'Smith', 'Boat')"
 
       algebra = Orel::Algebra.new(User)
       algebra.join(Thing)
@@ -114,7 +114,7 @@ Feature: Perform relational algebra
       """
     Then the output should contain:
       """
-      SELECT * FROM `user` INNER JOIN `thing` ON `thing`.`first_name` = `user`.`first_name` AND `thing`.`last_name` = `user`.`last_name`
+      SELECT * FROM `users` INNER JOIN `things` ON `things`.`first_name` = `users`.`first_name` AND `things`.`last_name` = `users`.`last_name`
       ---
       John,Smith,Boat
       John,Smith,Car

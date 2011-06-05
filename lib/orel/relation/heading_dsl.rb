@@ -5,6 +5,7 @@ module Orel
       def initialize(klass, set, namer, child_name=nil, &block)
         @klass = klass
         @set = set
+        @namer = namer
         @child_name = child_name
         @block = block
 
@@ -19,7 +20,7 @@ module Orel
       end
 
       def att(name, domain)
-        @heading.attributes << Attribute.new(@heading, name, domain.new)
+        @heading.attributes << Attribute.new(@heading, @namer, name, domain.new)
       end
 
       def ref(klass, child_name=nil)

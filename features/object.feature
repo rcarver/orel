@@ -48,7 +48,7 @@ Feature: Use the objects that back relations.
       user = User.new :first_name => "John", :last_name => "Smith"
       user.save
       puts user.id.inspect
-      Orel::Test.show "SELECT id, first_name, last_name from user"
+      Orel::Test.show "SELECT id, first_name, last_name from users"
       """
     Then the output should contain:
       """
@@ -75,7 +75,7 @@ Feature: Use the objects that back relations.
       """
       user = User.create :first_name => "John", :last_name => "Smith", :age => 10
       user.save
-      Orel::Test.show "SELECT first_name, last_name, age from user"
+      Orel::Test.show "SELECT first_name, last_name, age from users"
       """
     Then the output should contain:
       """
@@ -112,9 +112,9 @@ Feature: Use the objects that back relations.
       thing = Thing.new User => user, :name => "box"
       thing.save
       Orel::Test.show <<-SQL
-        SELECT user.id, user.first_name, user.last_name, thing.id, thing.user_id, thing.name
-        FROM user, thing
-        WHERE user.id = thing.user_id
+        SELECT users.id, users.first_name, users.last_name, things.id, things.user_id, things.name
+        FROM users, things
+        WHERE users.id = things.user_id
       SQL
       """
     Then the output should contain:
@@ -150,9 +150,9 @@ Feature: Use the objects that back relations.
       thing = Thing.new User => user, :name => "box"
       thing.save
       Orel::Test.show <<-SQL
-        SELECT user.first_name, user.last_name, thing.name
-        FROM user, thing
-        WHERE user.first_name = thing.first_name and user.last_name = thing.last_name
+        SELECT users.first_name, users.last_name, things.name
+        FROM users, things
+        WHERE users.first_name = things.first_name and users.last_name = things.last_name
       SQL
       """
     Then the output should contain:
@@ -183,7 +183,7 @@ Feature: Use the objects that back relations.
       user.first_name = "Bob"
       user.save
       puts user.id.inspect
-      Orel::Test.show "SELECT id, first_name, last_name FROM user ORDER BY first_name"
+      Orel::Test.show "SELECT id, first_name, last_name FROM users ORDER BY first_name"
       """
     Then the output should contain:
       """
@@ -212,10 +212,10 @@ Feature: Use the objects that back relations.
       """
       user = User.create :first_name => "Mary", :last_name => "White", :age => 10
       user = User.create :first_name => "John", :last_name => "Smith", :age => 10
-      Orel::Test.show "SELECT first_name, last_name, age FROM user ORDER BY first_name ASC"
+      Orel::Test.show "SELECT first_name, last_name, age FROM users ORDER BY first_name ASC"
       user.age = 30
       user.save
-      Orel::Test.show "SELECT first_name, last_name, age FROM user ORDER BY first_name ASC"
+      Orel::Test.show "SELECT first_name, last_name, age FROM users ORDER BY first_name ASC"
       """
     Then the output should contain:
       """
@@ -246,10 +246,10 @@ Feature: Use the objects that back relations.
       """
       user = User.create :first_name => "Mary", :last_name => "White", :age => 10
       user = User.create :first_name => "John", :last_name => "Smith", :age => 10
-      Orel::Test.show "SELECT first_name, last_name, age FROM user ORDER BY first_name ASC"
+      Orel::Test.show "SELECT first_name, last_name, age FROM users ORDER BY first_name ASC"
       user.first_name = "Bob"
       user.save
-      Orel::Test.show "SELECT first_name, last_name, age FROM user ORDER BY first_name ASC"
+      Orel::Test.show "SELECT first_name, last_name, age FROM users ORDER BY first_name ASC"
       """
     Then the output should contain:
       """
@@ -280,9 +280,9 @@ Feature: Use the objects that back relations.
       """
       user = User.create :first_name => "Mary", :last_name => "White"
       user = User.create :first_name => "John", :last_name => "Smith"
-      Orel::Test.show "SELECT id, first_name, last_name FROM user ORDER BY first_name ASC"
+      Orel::Test.show "SELECT id, first_name, last_name FROM users ORDER BY first_name ASC"
       user.destroy
-      Orel::Test.show "SELECT id, first_name, last_name FROM user ORDER BY first_name ASC"
+      Orel::Test.show "SELECT id, first_name, last_name FROM users ORDER BY first_name ASC"
       """
     Then the output should contain:
       """
@@ -312,9 +312,9 @@ Feature: Use the objects that back relations.
       """
       user = User.create :first_name => "Mary", :last_name => "White", :age => 10
       user = User.create :first_name => "John", :last_name => "Smith", :age => 10
-      Orel::Test.show "SELECT first_name, last_name, age from user"
+      Orel::Test.show "SELECT first_name, last_name, age from users"
       user.destroy
-      Orel::Test.show "SELECT first_name, last_name, age from user"
+      Orel::Test.show "SELECT first_name, last_name, age from users"
       """
     Then the output should contain:
       """
@@ -326,6 +326,4 @@ Feature: Use the objects that back relations.
       Mary,White,10
       ---
       """
-
-
 

@@ -15,7 +15,7 @@ Feature: Create MySQL tables from relational definitions
     When I use Orel to fill my database with tables
     Then my database looks like:
       """
-      CREATE TABLE `user` (
+      CREATE TABLE `users` (
         `id` int(11) NOT NULL AUTO_INCREMENT,
         UNIQUE KEY `user_id` (`id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -36,7 +36,7 @@ Feature: Create MySQL tables from relational definitions
     When I use Orel to fill my database with tables
     Then my database looks like:
       """
-      CREATE TABLE `user` (
+      CREATE TABLE `users` (
         `first_name` varchar(255) NOT NULL,
         `last_name` varchar(255) NOT NULL,
         UNIQUE KEY `user_first_name_last_name` (`first_name`,`last_name`)
@@ -65,7 +65,7 @@ Feature: Create MySQL tables from relational definitions
     When I use Orel to fill my database with tables
     Then my database looks like:
       """
-      CREATE TABLE `user` (
+      CREATE TABLE `users` (
         `id` int(11) NOT NULL AUTO_INCREMENT,
         `name` varchar(255) NOT NULL,
         `age` int(11) NOT NULL,
@@ -101,24 +101,24 @@ Feature: Create MySQL tables from relational definitions
     When I use Orel to fill my database with tables
     Then my database looks like:
       """
-      CREATE TABLE `user` (
-        `id` int(11) NOT NULL AUTO_INCREMENT,
-        `name` varchar(255) NOT NULL,
-        UNIQUE KEY `user_id` (`id`)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
       CREATE TABLE `user_deleted` (
         `at` datetime NOT NULL,
         `user_id` int(11) NOT NULL,
-        UNIQUE KEY `user_deleted_user_id` (`user_id`),
-        CONSTRAINT `user_deleted_user_fk` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+        UNIQUE KEY `user_user_id` (`user_id`),
+        CONSTRAINT `user_deleted_users_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
       CREATE TABLE `user_logins` (
         `at` datetime NOT NULL,
         `user_id` int(11) NOT NULL,
-        KEY `user_logins_user_fk` (`user_id`),
-        CONSTRAINT `user_logins_user_fk` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+        KEY `user_logins_users_fk` (`user_id`),
+        CONSTRAINT `user_logins_users_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+      CREATE TABLE `users` (
+        `id` int(11) NOT NULL AUTO_INCREMENT,
+        `name` varchar(255) NOT NULL,
+        UNIQUE KEY `user_id` (`id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       """
 
@@ -144,26 +144,26 @@ Feature: Create MySQL tables from relational definitions
     When I use Orel to fill my database with tables
     Then my database looks like:
       """
-      CREATE TABLE `user` (
-        `first_name` varchar(255) NOT NULL,
-        `last_name` varchar(255) NOT NULL,
-        UNIQUE KEY `user_first_name_last_name` (`first_name`,`last_name`)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
       CREATE TABLE `user_deleted` (
         `at` datetime NOT NULL,
         `first_name` varchar(255) NOT NULL,
         `last_name` varchar(255) NOT NULL,
-        UNIQUE KEY `user_deleted_first_name_last_name` (`first_name`,`last_name`),
-        CONSTRAINT `user_deleted_user_fk` FOREIGN KEY (`first_name`, `last_name`) REFERENCES `user` (`first_name`, `last_name`) ON DELETE NO ACTION ON UPDATE NO ACTION
+        UNIQUE KEY `user_first_name_last_name` (`first_name`,`last_name`),
+        CONSTRAINT `user_deleted_users_fk` FOREIGN KEY (`first_name`, `last_name`) REFERENCES `users` (`first_name`, `last_name`) ON DELETE NO ACTION ON UPDATE NO ACTION
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
       CREATE TABLE `user_logins` (
         `at` datetime NOT NULL,
         `first_name` varchar(255) NOT NULL,
         `last_name` varchar(255) NOT NULL,
-        KEY `user_logins_user_fk` (`first_name`,`last_name`),
-        CONSTRAINT `user_logins_user_fk` FOREIGN KEY (`first_name`, `last_name`) REFERENCES `user` (`first_name`, `last_name`) ON DELETE NO ACTION ON UPDATE NO ACTION
+        KEY `user_logins_users_fk` (`first_name`,`last_name`),
+        CONSTRAINT `user_logins_users_fk` FOREIGN KEY (`first_name`, `last_name`) REFERENCES `users` (`first_name`, `last_name`) ON DELETE NO ACTION ON UPDATE NO ACTION
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+      CREATE TABLE `users` (
+        `first_name` varchar(255) NOT NULL,
+        `last_name` varchar(255) NOT NULL,
+        UNIQUE KEY `user_first_name_last_name` (`first_name`,`last_name`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       """
 
@@ -191,16 +191,16 @@ Feature: Create MySQL tables from relational definitions
     When I use Orel to fill my database with tables
     Then my database looks like:
       """
-      CREATE TABLE `thing` (
+      CREATE TABLE `things` (
         `id` int(11) NOT NULL AUTO_INCREMENT,
         `name` varchar(255) NOT NULL,
         `user_id` int(11) NOT NULL,
         UNIQUE KEY `thing_id` (`id`),
-        KEY `thing_user_fk` (`user_id`),
-        CONSTRAINT `thing_user_fk` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+        KEY `things_users_fk` (`user_id`),
+        CONSTRAINT `things_users_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-      CREATE TABLE `user` (
+      CREATE TABLE `users` (
         `id` int(11) NOT NULL AUTO_INCREMENT,
         `name` varchar(255) NOT NULL,
         UNIQUE KEY `user_id` (`id`)
@@ -230,15 +230,15 @@ Feature: Create MySQL tables from relational definitions
     When I use Orel to fill my database with tables
     Then my database looks like:
       """
-      CREATE TABLE `thing` (
+      CREATE TABLE `things` (
         `name` varchar(255) NOT NULL,
         `first_name` varchar(255) NOT NULL,
         `last_name` varchar(255) NOT NULL,
         UNIQUE KEY `thing_first_name_last_name_name` (`first_name`,`last_name`,`name`),
-        CONSTRAINT `thing_user_fk` FOREIGN KEY (`first_name`, `last_name`) REFERENCES `user` (`first_name`, `last_name`) ON DELETE NO ACTION ON UPDATE NO ACTION
+        CONSTRAINT `things_users_fk` FOREIGN KEY (`first_name`, `last_name`) REFERENCES `users` (`first_name`, `last_name`) ON DELETE NO ACTION ON UPDATE NO ACTION
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-      CREATE TABLE `user` (
+      CREATE TABLE `users` (
         `first_name` varchar(255) NOT NULL,
         `last_name` varchar(255) NOT NULL,
         UNIQUE KEY `user_first_name_last_name` (`first_name`,`last_name`)
@@ -277,23 +277,23 @@ Feature: Create MySQL tables from relational definitions
     When I use Orel to fill my database with tables
     Then my database looks like:
       """
-      CREATE TABLE `part` (
+      CREATE TABLE `parts` (
         `pno` varchar(255) NOT NULL,
         `name` varchar(255) NOT NULL,
         UNIQUE KEY `part_pno` (`pno`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-      CREATE TABLE `shipment` (
+      CREATE TABLE `shipments` (
         `qty` int(11) NOT NULL,
         `sno` varchar(255) NOT NULL,
         `pno` varchar(255) NOT NULL,
         UNIQUE KEY `shipment_sno_pno` (`sno`,`pno`),
-        KEY `shipment_part_fk` (`pno`),
-        CONSTRAINT `shipment_part_fk` FOREIGN KEY (`pno`) REFERENCES `part` (`pno`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-        CONSTRAINT `shipment_supplier_fk` FOREIGN KEY (`sno`) REFERENCES `supplier` (`sno`) ON DELETE NO ACTION ON UPDATE NO ACTION
+        KEY `shipments_parts_fk` (`pno`),
+        CONSTRAINT `shipments_parts_fk` FOREIGN KEY (`pno`) REFERENCES `parts` (`pno`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+        CONSTRAINT `shipments_suppliers_fk` FOREIGN KEY (`sno`) REFERENCES `suppliers` (`sno`) ON DELETE NO ACTION ON UPDATE NO ACTION
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-      CREATE TABLE `supplier` (
+      CREATE TABLE `suppliers` (
         `sno` varchar(255) NOT NULL,
         `name` varchar(255) NOT NULL,
         UNIQUE KEY `supplier_sno` (`sno`)

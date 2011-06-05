@@ -10,8 +10,9 @@ module Orel
       # name    - Symbol name of the heading.
       # domain  - Orel::Domain describing the type.
       #
-      def initialize(heading, name, domain)
+      def initialize(heading, namer, name, domain)
         @heading = heading
+        @namer = namer
         @name = name
         @domain = domain
       end
@@ -39,16 +40,9 @@ module Orel
         unless domain.respond_to?(:for_foreign_key)
           raise ForeignKeyTranslationError, "#{domain.inspect} does not support foreign keys. It must define `for_foreign_key`."
         end
-        # TODO: expose this naming assumption in a better way. It
-        # should probably be an option to this method and be controller
-        # by the DSL.
-        if name == :id
-          fk_name = [@heading.name, name].join("_").to_sym
-        else
-          fk_name = name
-        end
+        fk_name = @namer.foreign_key_name(name).to_sym
         fk_domain = domain.for_foreign_key
-        self.class.new(nil, fk_name, fk_domain)
+        self.class.new(nil, nil, fk_name, fk_domain)
       end
 
       # Public: Inspect the attribute.
