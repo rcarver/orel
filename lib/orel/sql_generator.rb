@@ -95,7 +95,7 @@ module Orel
         table = Arel::Table.new(@heading.name)
         manager = Arel::InsertManager.new(table.engine);
         manager.into table
-        manager.insert attributes.map { |k, v| [table[k], v] }
+        manager.insert ordered_hash(attributes).map { |k, v| [table[k], v] }
         manager.to_sql
       end
       def upsert_statement(attributes, update)
@@ -114,9 +114,9 @@ module Orel
       end
       def update_statement(attributes, where)
         table = Arel::Table.new(@heading.name)
-        manager = Arel::UpdateManager.new(table.engine);
+        manager = Arel::UpdateManager.new(table.engine)
         manager.table table
-        manager.set attributes.map { |k, v| [table[k], v] }
+        manager.set ordered_hash(attributes).map { |k, v| [table[k], v] }
         where.each { |k, v|
           manager.where table[k].eq(v)
         }
@@ -124,12 +124,20 @@ module Orel
       end
       def delete_statement(where)
         table = Arel::Table.new(@heading.name)
-        manager = Arel::DeleteManager.new(table.engine);
+        manager = Arel::DeleteManager.new(table.engine)
         manager.from table
-        where.each { |k, v|
+        ordered_hash(where).each { |k, v|
           manager.where table[k].eq(v)
         }
         manager.to_sql
+      end
+    protected
+      def ordered_hash(hash)
+        keys = hash.keys.map { |k| k.to_s }.sort
+        keys.map { |k|
+          sym = k.to_sym
+          [sym, hash[sym]]
+        }
       end
     end
 
