@@ -33,14 +33,25 @@ module Orel
       dsl._apply!
     end
 
+    # Public: Get a table to perform operations on.
+    #
+    # child_name - Symbol name of the child relation (default: get the parent relation).
+    #
+    # Returns an Orel::Table.
+    # Raises a RuntimeError if a heading cannot be found.
+    def get_table(child_name=nil)
+      Orel::Table.new(relation_namer, get_heading(child_name))
+    end
+
     # Internal: Get the heading of this relation.
     #
     # child_name - Symbol name of the child relation (default: get the parent relation).
     #
-    # Returns an Orel::Relation::Heading or nil.
+    # Returns an Orel::Relation::Heading.
+    # Raises a RuntimeError if a heading cannot be found.
     def get_heading(child_name=nil)
       if child_name
-        relation_set.child(child_name)
+        relation_set.child(child_name) or raise "No child heading #{child_name.inspect}"
       else
         relation_set.base
       end
