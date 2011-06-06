@@ -15,10 +15,8 @@ module Orel
       attr_names = attrs.map { |a| a.name }
       key = @heading.get_key(:primary)
       key_names = key.attributes.map { |a| a.name }
-      result = Orel.execute("SELECT #{attr_names.join(',')} FROM #{@heading.name} ORDER BY #{key_names.join(',')}").to_a
-      result.map { |row|
-        Hash[*attr_names.zip(row).flatten]
-      }
+      result = execute("SELECT #{attr_names.join(',')} FROM #{@heading.name} ORDER BY #{key_names.join(',')}")
+      result.each(:as => :hash, :symbolize_keys => true)
     end
 
     # Public: Get the number of rows in the table.
@@ -29,13 +27,33 @@ module Orel
       rows ? rows.first[0] : 0
     end
 
+    # Public: Use Arel to query the table.
+    #
+    # yields the Arel::SelectManager and the Arel::Table.
+    #
+    # Examples
+    #
+    #     table.query { |q, table|
+    #       q.project table[:name]
+    #       q.where table[:points].gt(30)
+    #     }
+    #
+    # Returns an Array where each element is a Hash representing the row.
+    def query
+      table = Arel::Table.new(@heading.name)
+      manager = Arel::SelectManager.new(table.engine)
+      manager.from table
+      yield manager, table
+      execute(manager.to_sql).each(:as => :hash, :symbolize_keys => true)
+    end
+
     # Public: Insert data into the table.
     #
     # attributes - Hash of key/values to insert.
     #
     # Returns nothing.
     def insert(options)
-      Orel.execute(@table.insert_statement(options))
+      execute(@table.insert_statement(options))
     end
 
     # Public: Insert data into the table but update one or more values
@@ -57,7 +75,7 @@ module Orel
     def upsert(options)
       insert = options.fetch(:insert)
       update = options.fetch(:update)
-      Orel.execute(@table.upsert_statement(insert, update))
+      execute(@table.upsert_statement(insert, update))
     end
 
     # Public: Update data in the table.
@@ -77,7 +95,7 @@ module Orel
     def update(options)
       find = options.fetch(:find)
       set  = options.fetch(:set)
-      Orel.execute(@table.update_statement(set, find))
+      execute(@table.update_statement(set, find))
     end
 
     # Public: Delete data from the table.
@@ -90,7 +108,18 @@ module Orel
     #
     # Returns nothing.
     def delete(options)
-      Orel.execute(@table.delete_statement(options))
+      execute(@table.delete_statement(options))
+    end
+
+  protected
+
+    def execute(statement)
+      begin
+        Orel.execute(statement)
+      rescue StandardError => e
+        debug_sql_error(statement)
+        raise
+      end
     end
 
   end

@@ -66,4 +66,22 @@ describe Orel::Table do
       { :first_name => "Mary", :last_name => "Smith", :age => 32 }
     ]
   end
+
+  specify "#query" do
+    subject.insert(:first_name => "John", :last_name => "Smith", :age => 30)
+    subject.insert(:first_name => "Mary", :last_name => "Smith", :age => 32)
+    subject.insert(:first_name => "Mary", :last_name => "Doe", :age => 32)
+
+    result = subject.query { |q, table|
+      q.project table[:first_name]
+      q.where table[:last_name].eq("Smith")
+      q.order table[:age].desc
+    }
+
+    result.should == [
+      { :first_name => "Mary" },
+      { :first_name => "John" }
+    ]
+  end
+
 end
