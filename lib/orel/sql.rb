@@ -1,10 +1,6 @@
 module Orel
   module Sql
 
-    def self.create_tables!(classes)
-      Orel::SqlGenerator.creation_statements(classes).each { |s| Orel.execute(s) }
-    end
-
     def insert(attributes)
       table = Orel::Sql::Table.new(get_heading)
       Orel.execute(table.insert_statement(attributes))

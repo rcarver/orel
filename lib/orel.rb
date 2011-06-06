@@ -83,7 +83,9 @@ module Orel
 
   def self.create_tables!
     finalize!
-    Orel::Sql.create_tables!(classes)
+    Orel::SqlGenerator.creation_statements(classes).each { |statement|
+      Orel.execute(statement)
+    }
   end
 
   def self.get_database_structure
