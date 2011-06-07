@@ -9,22 +9,36 @@ module Orel
 
     # Public: Get all rows in the table. The results are ordered by the primary key.
     #
+    # Examples
+    #
+    #     table.row_list
+    #     # => [{ :name => "John", :points => 30 }, { :name => "Mary", :points => 50 }]
+    #
     # Returns an Array where each element is a Hash representing the row.
     def row_list
-      attrs = @heading.attributes
-      attr_names = attrs.map { |a| a.name }
-      key = @heading.get_key(:primary)
-      key_names = key.attributes.map { |a| a.name }
-      result = execute("SELECT #{attr_names.join(',')} FROM #{@heading.name} ORDER BY #{key_names.join(',')}")
-      result.each(:as => :hash, :symbolize_keys => true)
+      query { |q, table|
+        @heading.attributes.each { |a|
+          q.project table[a.name]
+        }
+        @heading.get_key(:primary).attributes.each { |a|
+          q.order table[a.name].asc
+        }
+      }
     end
 
     # Public: Get the number of rows in the table.
     #
+    # Examples
+    #
+    #     table.row_count
+    #     # => 2
+    #
     # Returns an Integer.
     def row_count
-      rows = Orel.execute("SELECT COUNT(*) FROM #{@heading.name}")
-      rows ? rows.first[0] : 0
+      rows = query { |q, table|
+        q.project Arel::Nodes::SqlLiteral.new('COUNT(*) count')
+      }
+      rows.first[:count]
     end
 
     # Public: Use Arel to query the table.
@@ -37,6 +51,7 @@ module Orel
     #       q.project table[:name]
     #       q.where table[:points].gt(30)
     #     }
+    #     # => [{ :name => "Mary", :points => 50 }]
     #
     # Returns an Array where each element is a Hash representing the row.
     def query
@@ -51,9 +66,13 @@ module Orel
     #
     # attributes - Hash of key/values to insert.
     #
+    # Examples
+    #
+    #     table.insert(:name => "John", :age => 30)
+    #
     # Returns nothing.
-    def insert(options)
-      execute(@table.insert_statement(options))
+    def insert(attributes)
+      execute(@table.insert_statement(attributes))
     end
 
     # Public: Insert data into the table but update one or more values
