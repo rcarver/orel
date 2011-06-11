@@ -5,7 +5,6 @@ module Orel
 
     def initialize(relation_namer, heading)
       @heading = heading
-      @table = Orel::SqlGenerator::Table.new(relation_namer, heading)
     end
 
     # Public: Get all rows in the table. The results are ordered by the primary key.
@@ -73,7 +72,7 @@ module Orel
     #
     # Returns nothing.
     def insert(attributes)
-      execute(@table.insert_statement(attributes))
+      execute(insert_statement(attributes))
     end
 
     # Public: Insert data into the table but update one or more values
@@ -81,8 +80,12 @@ module Orel
     #
     # options - Hash with keys:
     #           :insert - Hash of attributes to insert.
-    #           :update - Hash with keys :values and :with describing
-    #                     how to perform an update.
+    #           :update - Hash describing how to perform the update.
+    #                     :values - An array of Symbols describing the
+    #                               attributes to update.
+    #                     :with   - How you'd like to change the value
+    #                               of each attribute. Options are
+    #                               :increment or :replace.
     #
     # Examples
     #
@@ -93,9 +96,7 @@ module Orel
     #
     # Returns nothing.
     def upsert(options)
-      insert = options.fetch(:insert)
-      update = options.fetch(:update)
-      execute(@table.upsert_statement(insert, update))
+      execute(upsert_statement(options))
     end
 
     # Public: Update data in the table.
@@ -113,9 +114,7 @@ module Orel
     #
     # Returns nothing.
     def update(options)
-      find = options.fetch(:find)
-      set  = options.fetch(:set)
-      execute(@table.update_statement(set, find))
+      execute(update_statement(options))
     end
 
     # Public: Delete data from the table.
@@ -127,8 +126,8 @@ module Orel
     #     table.delete(:name => "John")
     #
     # Returns nothing.
-    def delete(options)
-      execute(@table.delete_statement(options))
+    def delete(attributes)
+      execute(delete_statement(attributes))
     end
 
     # Public: Delete all data from the table.
@@ -138,7 +137,63 @@ module Orel
       execute "TRUNCATE TABLE `#{@heading.name}`"
     end
 
+    def insert_statement(attributes)
+      table = Arel::Table.new(@heading.name)
+      manager = Arel::InsertManager.new(table.engine);
+      manager.into table
+      manager.insert ordered_hash(attributes).map { |k, v| [table[k], v] }
+      manager.to_sql
+    end
+
+    def upsert_statement(options)
+      insert = options.fetch(:insert) or raise ArgumentError, "Missing :insert attributes"
+      update = options.fetch(:update) or raise ArgumentError, "Missing :update options"
+      values = update[:values] or raise ArgumentError, "Missing :values to update"
+      update_with = update[:with] or raise ArgumentError, "Missing :with describing how to update"
+      values.all? { |v| insert.key?(v) } or raise ArgumentError, "All :values to update must have attributes to insert"
+      update_statement = case update_with
+      when :increment
+        values.map { |v| "#{v}=#{v}+VALUES(#{v})" }.join(',')
+      when :replace
+        values.map { |v| "#{v}=VALUES(#{v})" }
+      else
+        raise ArgumentError, "Unknown value for :with - #{with.inspect}"
+      end
+      "#{insert_statement(insert)} ON DUPLICATE KEY UPDATE #{update_statement}"
+    end
+
+    def update_statement(options)
+      find = options[:find] or raise ArgumentError, "Missing :find attributes"
+      set  = options[:set] or raise ArgumentError, "Missing :set attributes"
+      table = Arel::Table.new(@heading.name)
+      manager = Arel::UpdateManager.new(table.engine)
+      manager.table table
+      manager.set ordered_hash(set).map { |k, v| [table[k], v] }
+      find.each { |k, v|
+        manager.where table[k].eq(v)
+      }
+      manager.to_sql
+    end
+
+    def delete_statement(attributes)
+      table = Arel::Table.new(@heading.name)
+      manager = Arel::DeleteManager.new(table.engine)
+      manager.from table
+      ordered_hash(attributes).each { |k, v|
+        manager.where table[k].eq(v)
+      }
+      manager.to_sql
+    end
+
   protected
+
+    def ordered_hash(hash)
+      keys = hash.keys.map { |k| k.to_s }.sort
+      keys.map { |k|
+        sym = k.to_sym
+        [sym, hash[sym]]
+      }
+    end
 
     def execute(statement)
       begin
