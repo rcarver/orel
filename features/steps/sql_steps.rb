@@ -10,7 +10,7 @@ When /^I use Orel to fill my database with tables$/ do
     Orel.create_tables!
     puts "tables created!"
   EOF
-  When %{I run "ruby -I ../lib create.rb"}
+  When %{I run `ruby -I ../lib create.rb`}
   Then %{the output should contain:}, "tables created!"
 end
 
@@ -22,7 +22,7 @@ Then /^my database looks like:$/ do |string|
     puts Orel.get_database_structure
     puts "end"
   EOF
-  When %{I run "ruby -I ../lib show.rb"}
+  When %{I run `ruby -I ../lib show.rb`}
   Then %{the output should contain:}, "begin\n#{string}\nend"
 end
 
