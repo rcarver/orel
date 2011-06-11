@@ -3,7 +3,7 @@ module Orel
   class Table
     include Orel::SqlDebugging
 
-    def initialize(relation_namer, heading)
+    def initialize(heading)
       @heading = heading
     end
 

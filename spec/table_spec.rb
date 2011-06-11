@@ -3,9 +3,8 @@ require 'helper'
 describe Orel::Table do
 
   let(:klass) { UsersAndThings::User }
-  let(:namer) { Orel::Relation::Namer.for_class(klass) }
 
-  subject { described_class.new(namer, klass.get_heading) }
+  subject { described_class.new(klass.get_heading) }
 
   describe "public methods" do
 
