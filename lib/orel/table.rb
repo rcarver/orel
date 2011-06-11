@@ -72,7 +72,7 @@ module Orel
     #
     # Returns nothing.
     def insert(attributes)
-      execute(insert_statement(attributes))
+      execute(insert_statement(attributes), :insert)
     end
 
     # Public: Insert data into the table but update one or more values
@@ -195,9 +195,13 @@ module Orel
       }
     end
 
-    def execute(statement)
+    def execute(statement, op=:execute)
       begin
-        Orel.execute(statement)
+        case op
+        when :execute: Orel.execute(statement)
+        when :insert:  Orel.insert(statement)
+        else raise ArgumentError, "Unknown execution operation #{op.inspect}"
+        end
       rescue StandardError => e
         debug_sql_error(statement)
         raise

@@ -91,54 +91,6 @@ module Orel
         sql << "ENGINE=InnoDB DEFAULT CHARSET=utf8"
         sql.join(" ")
       end
-      def insert_statement(attributes)
-        table = Arel::Table.new(@heading.name)
-        manager = Arel::InsertManager.new(table.engine);
-        manager.into table
-        manager.insert ordered_hash(attributes).map { |k, v| [table[k], v] }
-        manager.to_sql
-      end
-      def upsert_statement(attributes, update)
-        values = update[:values] or raise ArgumentError, "Missing :values to update"
-        update_with = update[:with] or raise ArgumentError, "Missing :with describing how to update"
-        values.all? { |v| attributes.key?(v) } or raise ArgumentError, "All :values to update must have attributes to insert"
-        update_statement = case update_with
-        when :increment
-          values.map { |v| "#{v}=#{v}+VALUES(#{v})" }.join(',')
-        when :replace
-          values.map { |v| "#{v}=VALUES(#{v})" }
-        else
-          raise ArgumentError, "Unknown value for :with - #{with.inspect}"
-        end
-        "#{insert_statement(attributes)} ON DUPLICATE KEY UPDATE #{update_statement}"
-      end
-      def update_statement(attributes, where)
-        table = Arel::Table.new(@heading.name)
-        manager = Arel::UpdateManager.new(table.engine)
-        manager.table table
-        manager.set ordered_hash(attributes).map { |k, v| [table[k], v] }
-        where.each { |k, v|
-          manager.where table[k].eq(v)
-        }
-        manager.to_sql
-      end
-      def delete_statement(where)
-        table = Arel::Table.new(@heading.name)
-        manager = Arel::DeleteManager.new(table.engine)
-        manager.from table
-        ordered_hash(where).each { |k, v|
-          manager.where table[k].eq(v)
-        }
-        manager.to_sql
-      end
-    protected
-      def ordered_hash(hash)
-        keys = hash.keys.map { |k| k.to_s }.sort
-        keys.map { |k|
-          sym = k.to_sym
-          [sym, hash[sym]]
-        }
-      end
     end
 
     class Column

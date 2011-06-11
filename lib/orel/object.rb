@@ -63,7 +63,7 @@ module Orel
       @attributes = Attributes.new(@heading, attributes)
       @class_associations = ClassAssociations.new(self.class, @attributes)
       @simple_associations = SimpleAssociations.new(self, self.class.relation_set)
-      @operator = Operator.new(self.class.relation_namer, @heading, @attributes)
+      @operator = Operator.new(@heading, @attributes)
       @validator = Validator.new(self, @heading, @attributes)
     end
 

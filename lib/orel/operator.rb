@@ -4,18 +4,16 @@ module Orel
   # describe the current values. With that information we can do  basic
   # ORM CRUD operations on behalf of Orel objects.
   class Operator
-    include Orel::SqlDebugging
 
     # Internal: Create a new Operator
     #
-    # table      - Orel::SqlGenerator::Table to manipulate.
     # heading    - Orel::Relation::Heading that describes the table.
     # attributes - Orel::Attributes used to manipulate that heading.
     #
-    def initialize(relation_namer, heading, attributes)
+    def initialize(heading, attributes)
       @heading = heading
       @attributes = attributes
-      @table = Orel::SqlGenerator::Table.new(relation_namer, @heading)
+      @table = Orel::Table.new(heading)
       @persisted = false
       @destroyed = false
     end
@@ -45,20 +43,12 @@ module Orel
       keys = serial ? [serial.name] : []
 
       attributes_to_insert = @attributes.hash_excluding_keys(keys)
-      statement = @table.insert_statement(attributes_to_insert)
 
-      begin
-        auto_id = Orel.insert(statement)
-
-        if serial
-          @attributes[serial.name] = auto_id
-        end
-
-        @persisted = true
-      rescue StandardError => e
-        debug_sql_error(statement)
-        raise
+      auto_id = @table.insert(attributes_to_insert)
+      if serial
+        @attributes[serial.name] = auto_id
       end
+      @persisted = true
     end
 
     # Internal: Update the non-key values of my attributes in the relation
@@ -78,14 +68,10 @@ module Orel
       # TODO: since we're not updating attributes in the primary key,
       # it's possible to have nothing to update. That's weird, right?
       unless attributes_to_update.empty?
-        statement = @table.update_statement(attributes_to_update, attributes_for_key)
-
-        begin
-          Orel.execute(statement)
-        rescue StandardError => e
-          debug_sql_error(statement)
-          raise
-        end
+        @table.update(
+          :find => attributes_for_key,
+          :set  => attributes_to_update
+        )
       end
     end
 
@@ -95,16 +81,9 @@ module Orel
     # Raises errors if something goes wrong while executing sql.
     def destroy
       attributes_for_key = hash_of_current_primary_key
-      statement = @table.delete_statement(attributes_for_key)
 
-      begin
-        Orel.execute(statement)
-
-        @destroyed = true
-      rescue StandardError => e
-        debug_sql_error(statement)
-        raise
-      end
+      @table.delete(attributes_for_key)
+      @destroyed = true
     end
 
   protected
