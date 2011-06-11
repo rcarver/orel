@@ -1,6 +1,7 @@
 module Orel
   # An Orel::Table lets you perform basic sql operations on a heading.
   class Table
+    include Orel::SqlDebugging
 
     def initialize(relation_namer, heading)
       @heading = heading
@@ -79,8 +80,8 @@ module Orel
     # if there is a primary key conflict.
     #
     # options - Hash with keys:
-    #         - :insert - Hash of attributes to insert.
-    #         - :update - Hash with keys :values and :with describing
+    #           :insert - Hash of attributes to insert.
+    #           :update - Hash with keys :values and :with describing
     #                     how to perform an update.
     #
     # Examples
@@ -100,8 +101,8 @@ module Orel
     # Public: Update data in the table.
     #
     # options - Hash with keys:
-    #         - :find - Hash of attributes to find.
-    #         - :set  - Hash of attributes to change on the found rows.
+    #           :find - Hash of attributes to find.
+    #           :set  - Hash of attributes to change on the found rows.
     #
     # Examples
     #
@@ -128,6 +129,13 @@ module Orel
     # Returns nothing.
     def delete(options)
       execute(@table.delete_statement(options))
+    end
+
+    # Public: Delete all data from the table.
+    #
+    # Returns nothing.
+    def truncate!
+      execute "TRUNCATE TABLE `#{@heading.name}`"
     end
 
   protected

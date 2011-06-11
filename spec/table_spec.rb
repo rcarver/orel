@@ -67,6 +67,16 @@ describe Orel::Table do
     ]
   end
 
+  specify "#truncate" do
+    subject.insert(:first_name => "John", :last_name => "Smith", :age => 30)
+    subject.insert(:first_name => "John", :last_name => "Hancock", :age => 31)
+    subject.insert(:first_name => "Mary", :last_name => "Smith", :age => 32)
+
+    subject.truncate!
+
+    subject.row_count.should == 0
+  end
+
   specify "#query" do
     subject.insert(:first_name => "John", :last_name => "Smith", :age => 30)
     subject.insert(:first_name => "Mary", :last_name => "Smith", :age => 32)
