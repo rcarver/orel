@@ -49,4 +49,12 @@ describe Orel::Relation::Namer do
     it_should_behave_like "a Namer creating names for 'user'"
   end
 
+  context "with a transformer" do
+    let(:transformer) {
+      lambda { |n| n.sub(/namespaced_/, '') }
+    }
+    subject { described_class.new("namespaced_user", true, transformer) }
+    its(:heading_name) { should == :users }
+    it_should_behave_like "a Namer creating names for 'user'"
+  end
 end

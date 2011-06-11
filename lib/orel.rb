@@ -40,6 +40,10 @@ module Orel
     @classes ||= Set.new
   end
 
+  def self.name_transformer(&block)
+    Orel::Relation::Namer.transformer(&block)
+  end
+
   def self.finalize!
     return if @finalized
     @finalized = true

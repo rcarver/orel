@@ -2,17 +2,22 @@ module Orel
   module Relation
     class Namer
 
-      def self.for_class(klass)
-        Namer.new(klass.name.underscore.gsub(/\//, '_'), true)
+      def self.transformer(&block)
+        @transformer = block
       end
 
-      def initialize(name, pluralize)
-        @name = name
+      def self.for_class(klass)
+        Namer.new(klass.name.underscore.gsub(/\//, '_'), true, @transformer)
+      end
+
+      def initialize(name, pluralize, transformer=nil)
+        @name = transformer ? transformer.call(name) : name
         @pluralize = pluralize
+        @transformer = transformer
       end
 
       def for_child(name)
-        Namer.new([@name, name].join("_"), false)
+        Namer.new([@name, name].join("_"), false, @transformer)
       end
 
       def heading_name
