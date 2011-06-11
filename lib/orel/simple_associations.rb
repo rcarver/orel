@@ -77,7 +77,7 @@ module Orel
         @parent = parent
         @heading = heading
         @attributes = Attributes.new(@heading)
-        @operator = Operator.new(@relation_namer, @heading, @attributes)
+        @operator = Operator.new(@heading, @attributes)
       end
 
       def set(attributes)
@@ -109,7 +109,7 @@ module Orel
       # Returns nothing.
       def <<(attributes)
         attrs = Attributes.new(@heading, attributes)
-        operator = Operator.new(@relation_namer, @heading, attrs)
+        operator = Operator.new(@heading, attrs)
         @records << Record.new(attrs, operator)
         nil
       end
