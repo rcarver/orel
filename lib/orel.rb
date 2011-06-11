@@ -3,7 +3,12 @@ require 'logger'
 
 require 'arel'
 require 'active_model'
+require 'active_support/inflector'
 require 'sourcify'
+
+# Database implementations may not be assumed in the future.
+require 'active_record'
+require 'mysql2'
 
 require 'orel/sql_debugging'
 require 'orel/algebra'

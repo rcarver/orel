@@ -1,8 +1,5 @@
 require 'orel'
 require 'rspec'
-
-require 'active_record'
-require 'mysql2'
 require 'database_cleaner'
 
 Orel.logger = Logger.new(File.dirname(__FILE__) + "/../log/test.log")
