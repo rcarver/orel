@@ -18,8 +18,8 @@ require 'orel/domains'
 require 'orel/object'
 require 'orel/operator'
 require 'orel/relation'
+require 'orel/schema_generator'
 require 'orel/simple_associations'
-require 'orel/sql_generator'
 require 'orel/table'
 require 'orel/validator'
 
@@ -88,14 +88,14 @@ module Orel
 
   def self.create_tables!
     finalize!
-    Orel::SqlGenerator.creation_statements(classes).each { |statement|
+    headings = classes.map { |klass| klass.relation_set.to_a }.flatten
+    Orel::SchemaGenerator.creation_statements(headings).each { |statement|
       Orel.execute(statement)
     }
   end
 
   def self.get_database_structure
     connection.structure_dump.strip
-    #classes.map { |klass| klass.sql.show_create_tables }.flatten
   end
 
 end

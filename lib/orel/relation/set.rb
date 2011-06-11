@@ -14,6 +14,10 @@ module Orel
         @headings.each(&block)
       end
 
+      def to_a
+        @headings
+      end
+
       def <<(heading)
         @headings << heading
       end

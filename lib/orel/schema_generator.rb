@@ -1,33 +1,29 @@
 module Orel
-  module SqlGenerator
+  module SchemaGenerator
 
     # Internal: Get the sql statements to generate a schema for
-    # some set of classes.
+    # some set of headings.
     #
-    # classes - Array of classes that implment Orel::Relation.
+    # headings - Array of Orel::Relation::Heading.
     #
     # Returns an Array of Strings.
-    def self.creation_statements(classes)
-      tables = classes.map { |klass|
-        klass.headings.map { |heading|
-          Orel::SqlGenerator::Table.new(heading.namer, heading)
-        }
+    def self.creation_statements(headings)
+      tables = headings.map { |heading|
+        Orel::SchemaGenerator::Table.new(heading.namer, heading)
       }
 
-      foreign_keys = classes.map { |klass|
-        klass.headings.map { |heading|
-          heading.foreign_keys.map { |foreign_key|
-            parent_table = Orel::SqlGenerator::Table.new(heading.namer, foreign_key.parent_heading)
-            child_table = Orel::SqlGenerator::Table.new(heading.namer, foreign_key.child_heading)
-            parent_attributes = foreign_key.parent_key.attributes
-            child_attributes = foreign_key.child_key.attributes
-            Orel::SqlGenerator::ForeignKey.new(
-              parent_table,
-              parent_attributes,
-              child_table,
-              child_attributes
-            )
-          }
+      foreign_keys = headings.map { |heading|
+        heading.foreign_keys.map { |foreign_key|
+          parent_table = Orel::SchemaGenerator::Table.new(heading.namer, foreign_key.parent_heading)
+          child_table = Orel::SchemaGenerator::Table.new(heading.namer, foreign_key.child_heading)
+          parent_attributes = foreign_key.parent_key.attributes
+          child_attributes = foreign_key.child_key.attributes
+          Orel::SchemaGenerator::ForeignKey.new(
+            parent_table,
+            parent_attributes,
+            child_table,
+            child_attributes
+          )
         }
       }
 
