@@ -9,7 +9,6 @@ module Orel
 
       def initialize(namer)
         @namer = namer
-        @name = namer.heading_name
         @attributes = []
         @keys = []
         @references = []
@@ -21,7 +20,9 @@ module Orel
       # Public: Name of this heading.
       #
       # Returns a Symbol.
-      attr_reader :name
+      def name
+        @namer.heading_name
+      end
 
       # Public: The relational attributes in this heading.
       # Attributes define the fields in a relation.
@@ -43,7 +44,8 @@ module Orel
       attr_reader :foreign_keys
 
       # Public: The references in this heading. References
-      # describe how this heading references other heading.
+      # describe how this heading references headings in
+      # other classes.
       #
       # Returns an Array of Orel::Relation::Reference.
       attr_reader :references

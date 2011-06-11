@@ -23,7 +23,7 @@ module Orel
       end
 
       def att(name, domain)
-        @heading.attributes << Attribute.new(@heading, @heading.namer, name, domain.new)
+        @heading.attributes << Attribute.new(@heading, @namer, name, domain.new)
       end
 
       def ref(klass, child_name=nil)
