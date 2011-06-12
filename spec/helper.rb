@@ -5,8 +5,6 @@ require 'database_cleaner'
 Orel.logger = Logger.new(File.dirname(__FILE__) + "/../log/test.log")
 Orel.logger.info "\n\nBeginning test #{Time.now}\n"
 
-# We need to establish a connection for AR::Base instead of Orel
-# so that database_cleaner can do its thing.
 ActiveRecord::Base.establish_connection(
   :adapter => 'mysql2',
   :database => 'orel_test',

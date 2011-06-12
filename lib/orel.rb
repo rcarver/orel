@@ -53,19 +53,15 @@ module Orel
   end
 
   def self.logger=(logger)
-    active_record_connection_class.logger = logger
+    active_record_base.logger = logger
   end
 
   def self.logger
-    active_record_connection_class.logger ||= Logger.new("/dev/null")
+    active_record_base.logger ||= Logger.new("/dev/null")
   end
 
-  def self.establish_connection(options)
-    active_record_connection_class.establish_connection(options)
-  end
-
-  def self.connection
-    active_record_connection_class.connection
+  def self.active_record_base=(klass)
+    @active_record_base = klass
   end
 
   def self.current_database_name
@@ -104,7 +100,7 @@ module Orel
 
   # Internal
   def self.arel_table(heading)
-    Arel::Table.new(heading.name, active_record_connection_class)
+    Arel::Table.new(heading.name, active_record_base)
   end
 
 protected
@@ -113,10 +109,12 @@ protected
     @classes ||= Set.new
   end
 
-  # Subclass AR so that Orel can maintain its own connection. By default
-  # Orel will inherit the global AR connection.
-  def self.active_record_connection_class
-    @active_record_connection_class ||= Class.new(ActiveRecord::Base)
+  def self.connection
+    active_record_base.connection
+  end
+
+  def self.active_record_base
+    @active_record_base ||= ActiveRecord::Base
   end
 
 end

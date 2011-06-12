@@ -4,7 +4,7 @@ require 'stringio'
 Orel.logger = Logger.new(File.dirname(__FILE__) + "/../../log/test.log")
 Orel.logger.info "\n\nBeginning test #{Time.now}\n"
 
-Orel.establish_connection(
+ActiveRecord::Base.establish_connection(
   :adapter => 'mysql2',
   :database => 'orel_test',
   :username => 'root'
