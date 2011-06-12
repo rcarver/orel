@@ -1,9 +1,9 @@
 require 'set'
 require 'logger'
 
-require 'arel'
-require 'active_model'
 require 'active_support/inflector'
+require 'active_model'
+require 'arel'
 require 'sourcify'
 
 # Database implementations may not be assumed in the future.
