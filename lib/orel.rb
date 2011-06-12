@@ -36,10 +36,6 @@ require 'orel/relation/set'
 module Orel
   VERSION = "0.0.0"
 
-  def self.classes
-    @classes ||= Set.new
-  end
-
   def self.name_transformer(&block)
     Orel::Relation::Namer.transformer(&block)
   end
@@ -57,15 +53,19 @@ module Orel
   end
 
   def self.logger=(logger)
-    @logger = logger
+    active_record_connection_class.logger = logger
   end
 
   def self.logger
-    @logger ||= Logger.new("/dev/null")
+    active_record_connection_class.logger ||= Logger.new("/dev/null")
+  end
+
+  def self.establish_connection(options)
+    active_record_connection_class.establish_connection(options)
   end
 
   def self.connection
-    Arel::Table.engine.connection
+    active_record_connection_class.connection
   end
 
   def self.current_database_name
@@ -100,6 +100,23 @@ module Orel
 
   def self.get_database_structure
     connection.structure_dump.strip
+  end
+
+  # Internal
+  def self.arel_table(heading)
+    Arel::Table.new(heading.name, active_record_connection_class)
+  end
+
+protected
+
+  def self.classes
+    @classes ||= Set.new
+  end
+
+  # Subclass AR so that Orel can maintain its own connection. By default
+  # Orel will inherit the global AR connection.
+  def self.active_record_connection_class
+    @active_record_connection_class ||= Class.new(ActiveRecord::Base)
   end
 
 end

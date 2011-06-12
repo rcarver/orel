@@ -11,7 +11,7 @@ module Orel
     def initialize(klass)
       @klass = klass
       @heading = klass.get_heading
-      @table = Arel::Table.new(@heading.name)
+      @table = Orel.arel_table(@heading)
       @manager = Arel::SelectManager.new(@table.engine)
       @manager.from @table
     end
@@ -44,7 +44,7 @@ module Orel
     # Returns Orel::Algebra for chaining.
     def join(klass)
       join_heading = klass.get_heading
-      join_table = Arel::Table.new(join_heading.name)
+      join_table = Orel.arel_table(join_heading)
 
       join_reference = join_heading.get_child_reference(klass)
       raise "Missing reference #{klass} for #{@klass}" unless join_reference

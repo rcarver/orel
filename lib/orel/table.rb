@@ -55,7 +55,7 @@ module Orel
     #
     # Returns an Array where each element is a Hash representing the row.
     def query
-      table = Arel::Table.new(@heading.name)
+      table = Orel.arel_table(@heading)
       manager = Arel::SelectManager.new(table.engine)
       manager.from table
       yield manager, table
@@ -138,7 +138,7 @@ module Orel
     end
 
     def insert_statement(attributes)
-      table = Arel::Table.new(@heading.name)
+      table = Orel.arel_table(@heading)
       manager = Arel::InsertManager.new(table.engine);
       manager.into table
       manager.insert ordered_hash(attributes).map { |k, v| [table[k], v] }
@@ -165,7 +165,7 @@ module Orel
     def update_statement(options)
       find = options[:find] or raise ArgumentError, "Missing :find attributes"
       set  = options[:set] or raise ArgumentError, "Missing :set attributes"
-      table = Arel::Table.new(@heading.name)
+      table = Orel.arel_table(@heading)
       manager = Arel::UpdateManager.new(table.engine)
       manager.table table
       manager.set ordered_hash(set).map { |k, v| [table[k], v] }
@@ -176,7 +176,7 @@ module Orel
     end
 
     def delete_statement(attributes)
-      table = Arel::Table.new(@heading.name)
+      table = Orel.arel_table(@heading)
       manager = Arel::DeleteManager.new(table.engine)
       manager.from table
       ordered_hash(attributes).each { |k, v|
