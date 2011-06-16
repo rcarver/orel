@@ -1,7 +1,18 @@
 module Orel
   module SchemaGenerator
 
-    # Internal: Get the sql statements to generate a schema for
+    # Public: Get the sql statements to generate a schema for
+    # some classes.
+    #
+    # classes - Classes that implement Orel::Relation.
+    #
+    # Returns an Array of Strings.
+    def self.class_creation_statements(classes)
+      headings = classes.map { |klass| klass.relation_set.to_a }.flatten
+      creation_statements(headings)
+    end
+
+    # Public: Get the sql statements to generate a schema for
     # some set of headings.
     #
     # headings - Array of Orel::Relation::Heading.

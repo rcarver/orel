@@ -88,8 +88,7 @@ module Orel
 
   def self.create_tables!
     finalize!
-    headings = classes.map { |klass| klass.relation_set.to_a }.flatten
-    Orel::SchemaGenerator.creation_statements(headings).each { |statement|
+    Orel::SchemaGenerator.class_creation_statements(classes).each { |statement|
       Orel.execute(statement)
     }
   end
@@ -103,6 +102,10 @@ module Orel
     Arel::Table.new(heading.name, active_record_base)
   end
 
+  def self.active_record_base
+    @active_record_base ||= ActiveRecord::Base
+  end
+
 protected
 
   def self.classes
@@ -111,10 +114,6 @@ protected
 
   def self.connection
     active_record_base.connection
-  end
-
-  def self.active_record_base
-    @active_record_base ||= ActiveRecord::Base
   end
 
 end
