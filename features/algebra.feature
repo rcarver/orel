@@ -30,11 +30,12 @@ Feature: Perform relational algebra
       """
     Then the output should contain:
       """
-      SELECT * FROM `users` 
+      SELECT * FROM `users`
       ---
       John,Smith
       Mary,Smith
       ---
+
       """
 
   Scenario: Perform a restriction
@@ -67,10 +68,11 @@ Feature: Perform relational algebra
       """
     Then the output should contain:
       """
-      SELECT * FROM `users`  WHERE `users`.`first_name` = 'John'
+      SELECT * FROM `users` WHERE `users`.`first_name` = 'John'
       ---
       John,Smith
       ---
+
       """
 
   Scenario: Perform an inner join
