@@ -5,7 +5,9 @@ When /^I run some Orel code:$/ do |string|
     Orel.recreate_database!
     Orel.create_tables!
     #{string}
+    puts "done running code"
   EOF
   When %{I run `ruby -I ../lib runner.rb`}
+  Then %{the output should contain:}, "done running code"
 end
 
