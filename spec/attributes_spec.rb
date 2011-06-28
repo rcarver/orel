@@ -99,7 +99,7 @@ describe Orel::Attributes do
       end
       its(:changed?) { should be_true }
       its(:changed) { should == [:name] }
-      its(:changes) { should == { "name" => [nil, 'Bob'] } }
+      its(:changes) { should == { :name => [nil, 'Bob'] } }
       its(:previous_changes) { should be_empty }
       its(:changed_attributes) { should == { :name => nil } }
     end
@@ -110,7 +110,7 @@ describe Orel::Attributes do
       end
       its(:changed?) { should be_true }
       its(:changed) { should == [:name] }
-      its(:changes) { should == { "name" => ['John', 'Bob'] } }
+      its(:changes) { should == { :name => ['John', 'Bob'] } }
       its(:previous_changes) { should be_empty }
       its(:changed_attributes) { should == { :name => 'John' } }
     end
