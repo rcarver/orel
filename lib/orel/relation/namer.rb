@@ -1,3 +1,5 @@
+require 'digest/md5'
+
 module Orel
   module Relation
     class Namer
@@ -39,7 +41,13 @@ module Orel
 
       # Used to generate sql
       def unique_key_name(attribute_names)
-        [@name, attribute_names].flatten.join('_').to_sym
+        short_names = attribute_names.map do |a|
+          a.to_s.split('_').map do |part|
+            part[0,1]
+          end.join
+        end
+        full_name = [short_names, Digest::MD5.hexdigest(attribute_names.join('::'))].join('_')
+        full_name[0,64].to_sym
       end
 
       # Used to generate sql

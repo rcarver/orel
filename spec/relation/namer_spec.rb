@@ -21,7 +21,7 @@ describe Orel::Relation::Namer do
       subject.foreign_key_name(:id).should == :user_id
     end
     specify "a unique key name" do
-      subject.unique_key_name([:first_name, :last_name]).should == :user_first_name_last_name
+      subject.unique_key_name([:first_name, :last_name]).should == ('fn_ln_' + Digest::MD5.hexdigest('first_name::last_name')).to_sym
     end
     specify "a foreign key constraint name" do
       pending
