@@ -46,7 +46,7 @@ module Orel
             part[0,1]
           end.join
         end
-        full_name = [short_names, Digest::MD5.hexdigest(attribute_names.join('::'))].join('_')
+        full_name = [@name.split('_').map { |part| part[0,1] }.join, short_names, Digest::MD5.hexdigest(attribute_names.join('::'))].join('_')
         full_name[0,64].to_sym
       end
 
