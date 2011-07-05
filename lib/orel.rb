@@ -99,7 +99,8 @@ module Orel
 
   # Internal
   def self.arel_table(heading)
-    Arel::Table.new(heading.name, active_record_base)
+    @arel_tables ||= {}
+    @arel_tables[heading.name] ||= Arel::Table.new(heading.name, active_record_base)
   end
 
   def self.active_record_base
