@@ -300,6 +300,47 @@ Feature: Create MySQL tables from relational definitions
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       """
 
+  Scenario: Create a one-to-many relationship using a non-primary natural key
+    Given I have these class definitions:
+      """
+      class User
+        extend Orel::Relation
+        heading do
+          key { first_name / last_name }
+          key(:nickname) { nickname }
+          att :first_name, Orel::Domains::String
+          att :last_name, Orel::Domains::String
+          att :nickname, Orel::Domains::String
+        end
+      end
+      class Friend
+        extend Orel::Relation
+        heading do
+          key { User / name }
+          ref User, :key => :nickname
+          att :name, Orel::Domains::String
+        end
+      end
+      """
+    When I use Orel to fill my database with tables
+    Then my database looks like:
+      """
+      CREATE TABLE `friends` (
+        `name` varchar(255) NOT NULL,
+        `nickname` varchar(255) NOT NULL,
+        UNIQUE KEY `f_n_n_8aa89beed2de25db76784f7e9e8f06ac` (`nickname`,`name`),
+        CONSTRAINT `friends_users_fk` FOREIGN KEY (`nickname`) REFERENCES `users` (`nickname`) ON DELETE NO ACTION ON UPDATE NO ACTION
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+      CREATE TABLE `users` (
+        `first_name` varchar(255) NOT NULL,
+        `last_name` varchar(255) NOT NULL,
+        `nickname` varchar(255) NOT NULL,
+        UNIQUE KEY `u_fn_ln_453236cc5833e48a53bb6efb24da3d77` (`first_name`,`last_name`),
+        UNIQUE KEY `u_n_e80674170aae03909a55625e9cc9cf97` (`nickname`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+      """
+
   Scenario: Create a many-to-many relationship with natural keys
     Given I have these class definitions:
       """

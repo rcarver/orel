@@ -2,9 +2,10 @@ module Orel
   module Relation
     class Reference
 
-      def initialize(parent_class, parent_heading_name, child_class, child_heading_name, child_key_name)
+      def initialize(parent_class, parent_heading_name, parent_key_name, child_class, child_heading_name, child_key_name)
         @parent_class = parent_class
         @parent_heading_name = parent_heading_name
+        @parent_key_name = parent_key_name
         @child_class = child_class
         @child_heading_name = child_heading_name
         @child_key_name = child_key_name
@@ -27,7 +28,7 @@ module Orel
       end
 
       def parent_key
-        parent_heading.get_key(:primary)
+        parent_heading.get_key(@parent_key_name)
       end
 
       def child_key

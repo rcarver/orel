@@ -35,11 +35,13 @@ module Orel
             # Constantize a string.
             klass = identifier.split("::").inject(Object) { |o, i| o.const_get(i) }
 
-            # TODO: we might need to allow you to reference other keys.
-            key_name = :primary
-
             klass_heading = klass.get_heading
-            heading_key = klass_heading.get_key(key_name) or raise "Missing key #{key_name.inspect} in heading #{@heading.inspect}"
+            references = @heading.references.find_all { |r| r.parent_class == klass }
+
+            raise ArgumentError, "Heading #{@heading.name} has no reference to #{klass}" if references.empty?
+            raise ArgumentError, "Heading #{@heading.name} has multiple references to #{klass}" if references.size > 1
+
+            heading_key = references.first.parent_key
             heading_key.attributes.each { |attribute|
               key.attributes << attribute.to_foreign_key
             }
