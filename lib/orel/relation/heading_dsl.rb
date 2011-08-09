@@ -26,7 +26,7 @@ module Orel
         @heading.attributes << Attribute.new(@heading, @namer, name, domain.new)
       end
 
-      def ref(parent_klass, options={}, child_name=nil)
+      def ref(parent_klass, options={})
         parent_key_name = options.delete(:key) || :primary
         raise ArgumentError, "Unhandled options were passed to ref: #{options.keys.inspect}" unless options.keys.empty?
         reference = Reference.new(parent_klass, nil, parent_key_name || :primary, @klass, @child_name, :primary)
