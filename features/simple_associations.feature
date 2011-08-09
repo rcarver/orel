@@ -33,6 +33,7 @@ Feature: Classes can define more than one relation
       user[:status] = { :value => "changed" }
       user.save
       show
+      puts user[:status].value.inspect
       """
     Then the output should contain:
       """
@@ -42,6 +43,7 @@ Feature: Classes can define more than one relation
       ---
       1,John,Smith,changed
       ---
+      "changed"
       """
 
   Scenario: Store data in a simple one-to-many relation
@@ -78,6 +80,7 @@ Feature: Classes can define more than one relation
       user[:logins] << { :ip => "198.0.0.1" }
       user.save
       show
+      puts user[:logins].map { |login| login.ip }.sort.inspect
       """
     Then the output should contain:
       """
@@ -90,5 +93,6 @@ Feature: Classes can define more than one relation
       1,John,Smith,127.0.0.1
       1,John,Smith,198.0.0.1
       ---
+      ["10.0.0.1", "127.0.0.1", "198.0.0.1"]
       """
 

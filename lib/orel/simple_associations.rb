@@ -88,6 +88,12 @@ module Orel
         @attributes[@parent.class] = @parent
         @operator.create_or_update
       end
+
+    protected
+
+      def method_missing(message, *args, &block)
+        @attributes[message]
+      end
     end
 
     class ManyProxy
@@ -99,6 +105,12 @@ module Orel
         @parent = parent
         @heading = heading
         @records = []
+      end
+
+      include Enumerable
+
+      def each
+        @records.each { |r| yield r.attributes }
       end
 
       # Public: Add a new record to the simple association.
