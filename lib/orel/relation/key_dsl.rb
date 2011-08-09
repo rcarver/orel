@@ -32,8 +32,9 @@ module Orel
         identifiers.each { |identifier|
           case identifier
           when /^[A-Z]/
-            # TODO: we'll need to support namespaced consts.
-            klass = Object.const_get(identifier)
+            # Constantize a string.
+            klass = identifier.split("::").inject(Object) { |o, i| o.const_get(i) }
+
             # TODO: we might need to allow you to reference other keys.
             key_name = :primary
 

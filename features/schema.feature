@@ -1,7 +1,7 @@
 @schema @mysql
 Feature: Create MySQL tables from relational definitions
 
-  Scenario: Create a table with surrogate
+  Scenario: Create a table with surrogate keys
     Given I have these class definitions:
       """
       class User
@@ -40,6 +40,28 @@ Feature: Create MySQL tables from relational definitions
         `first_name` varchar(255) NOT NULL,
         `last_name` varchar(255) NOT NULL,
         UNIQUE KEY `u_fn_ln_453236cc5833e48a53bb6efb24da3d77` (`first_name`,`last_name`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+      """
+
+  Scenario: Create a namespaced table with surrogate keys
+    Given I have these class definitions:
+      """
+      module Something
+        class User
+          extend Orel::Relation
+          heading do
+            key { id }
+            att :id, Orel::Domains::Serial
+          end
+        end
+      end
+      """
+    When I use Orel to fill my database with tables
+    Then my database looks like:
+      """
+      CREATE TABLE `something_users` (
+        `id` int(11) NOT NULL AUTO_INCREMENT,
+        UNIQUE KEY `su_i_b80bb7740288fda1f201890375a60c8f` (`id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       """
 
@@ -164,6 +186,39 @@ Feature: Create MySQL tables from relational definitions
         `first_name` varchar(255) NOT NULL,
         `last_name` varchar(255) NOT NULL,
         UNIQUE KEY `u_fn_ln_453236cc5833e48a53bb6efb24da3d77` (`first_name`,`last_name`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+      """
+
+  Scenario: Create child relation with a namespaced class.
+    Given I have these class definitions:
+      """
+      module Something
+        class User
+          extend Orel::Relation
+          heading do
+            key { name }
+            att :name, Orel::Domains::String
+          end
+          heading :deleted do
+            key { Something::User }
+            att :at, Orel::Domains::DateTime
+          end
+        end
+      end
+      """
+    When I use Orel to fill my database with tables
+    Then my database looks like:
+      """
+      CREATE TABLE `something_user_deleted` (
+        `at` datetime NOT NULL,
+        `name` varchar(255) NOT NULL,
+        UNIQUE KEY `sud_n_b068931cc450442b63f5b3d276ea4297` (`name`),
+        CONSTRAINT `something_user_deleted_something_users_fk` FOREIGN KEY (`name`) REFERENCES `something_users` (`name`) ON DELETE NO ACTION ON UPDATE NO ACTION
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+      CREATE TABLE `something_users` (
+        `name` varchar(255) NOT NULL,
+        UNIQUE KEY `su_n_b068931cc450442b63f5b3d276ea4297` (`name`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       """
 
