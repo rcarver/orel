@@ -27,20 +27,22 @@ module Orel
         child_heading.foreign_keys << ForeignKey.new(parent_heading, parent_key, child_heading, child_key)
       end
 
-      def parent_key
-        parent_heading.get_key(@parent_key_name)
-      end
-
-      def child_key
-        child_heading.get_key(@child_key_name)
-      end
-
       def parent_heading
         @parent_class.get_heading(@parent_heading_name)
       end
 
       def child_heading
         @child_class.get_heading(@child_heading_name)
+      end
+
+      def parent_key
+        key = parent_heading.get_key(@parent_key_name)
+        key or raise "#{parent_heading.name} has no key #{@parent_key_name.inspect}"
+      end
+
+      def child_key
+        key = child_heading.get_key(@child_key_name)
+        key or raise "#{child_heading.name} has no key #{@child_key_name.inspect}"
       end
 
     end

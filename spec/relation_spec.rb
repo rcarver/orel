@@ -11,7 +11,7 @@ describe Orel::Relation do
     it "raises an error if asking for a non-existent child" do
       expect {
         subject.get_heading(:no_child_name)
-      }.to raise_error(RuntimeError, "No child heading :no_child_name")
+      }.to raise_error(RuntimeError, "UsersAndThings::User has no heading :no_child_name")
     end
   end
 
@@ -23,7 +23,7 @@ describe Orel::Relation do
     it "raises an error if asking for a non-existent child" do
       expect {
         subject.table(:no_child_name)
-      }.to raise_error(RuntimeError, "No child heading :no_child_name")
+      }.to raise_error(RuntimeError, "UsersAndThings::User has no heading :no_child_name")
     end
   end
 end

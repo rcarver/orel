@@ -51,7 +51,7 @@ module Orel
     # Raises a RuntimeError if a heading cannot be found.
     def get_heading(child_name=nil)
       if child_name
-        relation_set.child(child_name) or raise "No child heading #{child_name.inspect}"
+        relation_set.child(child_name) or raise "#{self.name} has no heading #{child_name.inspect}"
       else
         relation_set.base
       end
