@@ -28,7 +28,7 @@ end
 describe "ActiveModel details" do
 
   let(:user) {
-    UsersAndThings::User.new(:first_name => "John", :last_name => "Smith")
+    UsersAndThings::User.new(:first_name => "John", :last_name => "Smith", :age => 33)
   }
 
   let(:thing) {
