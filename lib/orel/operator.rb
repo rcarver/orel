@@ -19,8 +19,8 @@ module Orel
     end
 
     # Internal: Determine if our attributes have been stored in the heading.
-    attr_reader :persisted
-    alias_method :persisted?, :persisted
+    attr_accessor :persisted
+    alias_method  :persisted?, :persisted
 
     # Internal: Determine if our attributes have been removed from the heading.
     attr_reader :destroyed

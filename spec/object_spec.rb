@@ -28,7 +28,7 @@ end
 
 describe Orel::Object do
   let(:invalid_user_attrs) { {} }
-  let(:valid_user_attrs)   { { :first_name => "John", :last_name => "Doe", :age => 33 } }
+  let(:valid_user_attrs)   { { :first_name => "John", :last_name => "Smith", :age => 33 } }
 
   let(:invalid_thing_attrs) { {} }
   let(:valid_thing_attrs)   { { :name => "Box", UsersAndThings::User => UsersAndThings::User.create!(valid_user_attrs) } }
@@ -66,26 +66,18 @@ describe Orel::Object do
   end
 
   describe "finding existing records" do
-    subject { UsersAndThings::User.create!(valid_user_attrs) }
+    before { UsersAndThings::User.create!(valid_user_attrs) }
 
     describe ".find_by_primary_key" do
-      it "may be used with ordered args" do
-        record = UsersAndThings::User.find_by_primary_key("John", "Doe")
-        record.should_not be_nil
+      it "delegates to the finder" do
+        UsersAndThings::User._finder.should_receive(:find_by_key).with(:primary, "John", "Smith").and_return(:yay)
+        UsersAndThings::User.find_by_primary_key("John", "Smith").should == :yay
       end
-      it "may be used with hash args" do
-        record = UsersAndThings::User.find_by_primary_key(:first_name => "John", :last_name => "Doe")
-        record.should_not be_nil
-      end
-      it "returns nil if nothing is found" do
-        record = UsersAndThings::User.find_by_primary_key("John", "Smith")
-        record.should be_nil
-      end
-      it "raises an ArgumentError if the number of arguments does not match this size of the primary key" do
-        expect { UsersAndThings::User.find_by_primary_key("John") }.to raise_error(ArgumentError)
-      end
-      it "raises an ArgumentError if the hash args don't match the attributes in the key" do
-        expect { UsersAndThings::User.find_by_primary_key(:first_name => "John", :other => "Doe") }.to raise_error(ArgumentError)
+    end
+    describe ".find_by_key" do
+      it "delegates to the finder" do
+        UsersAndThings::User._finder.should_receive(:find_by_key).with(:other, "John", "Smith").and_return(:yay)
+        UsersAndThings::User.find_by_key(:other, "John", "Smith").should == :yay
       end
     end
   end
@@ -139,6 +131,37 @@ describe Orel::Object do
         subject.save.should be_true
         UsersAndThings::User.table.row_count.should == 1
         UsersAndThings::User.table.row_list.first[:first_name].should == "Dave"
+      end
+    end
+  end
+
+  describe "equality" do
+    context "a class with natural keys" do
+      specify "two unpersisted objects are equal if all their attributes are equal" do
+        user1 = UsersAndThings::User.new(valid_user_attrs)
+        user2 = UsersAndThings::User.new(valid_user_attrs)
+        (user1 == user2).should == true
+        (user1.eql?(user2)).should == true
+      end
+      specify "two unpersisted objects are NOT equal if not all their attributes are equal" do
+        user1 = UsersAndThings::User.new(valid_user_attrs)
+        user2 = UsersAndThings::User.new(valid_user_attrs.merge(:age => 100))
+        (user1 == user2).should == false
+        (user1.eql?(user2)).should == false
+      end
+    end
+    context "a class with a surrogate key" do
+      specify "two unpersisted objects are equal if all their attributes are equal" do
+        thing1 = UsersAndThings::Thing.new(valid_thing_attrs)
+        thing2 = UsersAndThings::Thing.new(valid_thing_attrs)
+        (thing1 == thing2).should == true
+        (thing1.eql?(thing2)).should == true
+      end
+      specify "a persisted object is not equal to a non-persisted object" do
+        thing1 = UsersAndThings::Thing.create!(valid_thing_attrs)
+        thing2 = UsersAndThings::Thing.new(valid_thing_attrs)
+        (thing1 == thing2).should == false
+        (thing1.eql?(thing2)).should == false
       end
     end
   end

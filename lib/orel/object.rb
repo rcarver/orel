@@ -213,6 +213,20 @@ module Orel
       end
     end
 
+    def eql?(other)
+      if other.is_a?(self.class)
+        attributes.hash == other.attributes.hash
+      else
+        false
+      end
+    end
+
+    alias_method :==, :eql?
+
+    def persisted!
+      @operator.persisted = true
+    end
+
   protected
 
     def primary_key
