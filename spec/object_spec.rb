@@ -77,5 +77,27 @@ describe Orel::Object do
         UsersAndThings::User.table.row_count.should == 1
       end
     end
+    context "an existing but invalid record" do
+      subject { UsersAndThings::User.create!(valid_attrs) }
+      before do
+        subject.first_name = nil
+      end
+      it "returns false and does not update the record" do
+        subject.save.should be_false
+        UsersAndThings::User.table.row_count.should == 1
+        UsersAndThings::User.table.row_list.first[:first_name].should == "John"
+      end
+    end
+    context "a existing valid record" do
+      subject { UsersAndThings::User.create!(valid_attrs) }
+      before do
+        subject.first_name = "Dave"
+      end
+      it "returns true and persists the record" do
+        subject.save.should be_true
+        UsersAndThings::User.table.row_count.should == 1
+        UsersAndThings::User.table.row_list.first[:first_name].should == "Dave"
+      end
+    end
   end
 end
