@@ -28,6 +28,10 @@ module Orel
     def valid?
       @errors = new_errors
       @heading.attributes.each { |attribute|
+        unless @object.persisted?
+          next if attribute.domain.is_a?(Orel::Domains::Serial)
+        end
+
         # TODO: implement domain specific validations
         value = @attributes[attribute.name]
         if value.nil?

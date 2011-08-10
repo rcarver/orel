@@ -27,33 +27,36 @@ describe Orel::Object, "validation" do
 end
 
 describe Orel::Object do
-  let(:invalid_attrs) { {} }
-  let(:valid_attrs)   { { :first_name => "John", :last_name => "Doe", :age => 33 } }
+  let(:invalid_user_attrs) { {} }
+  let(:valid_user_attrs)   { { :first_name => "John", :last_name => "Doe", :age => 33 } }
+
+  let(:invalid_thing_attrs) { {} }
+  let(:valid_thing_attrs)   { { :name => "Box", UsersAndThings::User => UsersAndThings::User.create!(valid_user_attrs) } }
 
   describe "creating new records" do
     context "an invalid record" do
       specify ".create returns an invalid record and does not persist anything" do
-        result = UsersAndThings::User.create(invalid_attrs)
+        result = UsersAndThings::User.create(invalid_user_attrs)
         result.should be_an_instance_of(UsersAndThings::User)
         result.should_not be_valid
         result.should_not be_persisted
         UsersAndThings::User.table.row_count.should == 0
       end
       specify ".create! raises an error and does not persist anything" do
-        expect { UsersAndThings::User.create!(invalid_attrs) }.to raise_error(Orel::Object::InvalidRecord)
+        expect { UsersAndThings::User.create!(invalid_user_attrs) }.to raise_error(Orel::Object::InvalidRecord)
         UsersAndThings::User.table.row_count.should == 0
       end
     end
     context "a valid record" do
       specify ".create returns a valid and persisted record" do
-        result = UsersAndThings::User.create(valid_attrs)
+        result = UsersAndThings::User.create(valid_user_attrs)
         result.should be_an_instance_of(UsersAndThings::User)
         result.should be_valid
         result.should be_persisted
         UsersAndThings::User.table.row_count.should == 1
       end
       specify ".create! returns a valid and persisted record" do
-        result = UsersAndThings::User.create(valid_attrs)
+        result = UsersAndThings::User.create(valid_user_attrs)
         result.should be_an_instance_of(UsersAndThings::User)
         result.should be_valid
         result.should be_persisted
@@ -62,23 +65,62 @@ describe Orel::Object do
     end
   end
 
+  describe "finding existing records" do
+    subject { UsersAndThings::User.create!(valid_user_attrs) }
+
+    describe ".find_by_primary_key" do
+      it "may be used with ordered args" do
+        record = UsersAndThings::User.find_by_primary_key("John", "Doe")
+        record.should_not be_nil
+      end
+      it "may be used with hash args" do
+        record = UsersAndThings::User.find_by_primary_key(:first_name => "John", :last_name => "Doe")
+        record.should_not be_nil
+      end
+      it "returns nil if nothing is found" do
+        record = UsersAndThings::User.find_by_primary_key("John", "Smith")
+        record.should be_nil
+      end
+      it "raises an ArgumentError if the number of arguments does not match this size of the primary key" do
+        expect { UsersAndThings::User.find_by_primary_key("John") }.to raise_error(ArgumentError)
+      end
+      it "raises an ArgumentError if the hash args don't match the attributes in the key" do
+        expect { UsersAndThings::User.find_by_primary_key(:first_name => "John", :other => "Doe") }.to raise_error(ArgumentError)
+      end
+    end
+  end
+
   describe "#save" do
-    context "a new invalid record" do
-      subject { UsersAndThings::User.new(invalid_attrs) }
+    context "a new invalid record with natural keys" do
+      subject { UsersAndThings::User.new(invalid_user_attrs) }
       it "returns false and does not persist the record" do
         subject.save.should be_false
         UsersAndThings::User.table.row_count.should == 0
       end
     end
-    context "a new valid record" do
-      subject { UsersAndThings::User.new(valid_attrs) }
+    context "a new invalid with a surrogate key" do
+      subject { UsersAndThings::Thing.new(invalid_thing_attrs) }
+      it "returns false and does not persist the record" do
+        subject.save.should be_false
+        UsersAndThings::Thing.table.row_count.should == 0
+      end
+    end
+    context "a new valid record with natural keys" do
+      subject { UsersAndThings::User.new(valid_user_attrs) }
       it "returns true and persists the record" do
         subject.save.should be_true
         UsersAndThings::User.table.row_count.should == 1
       end
     end
+    context "a new valid record with a surrogate key" do
+      subject { UsersAndThings::Thing.new(valid_thing_attrs) }
+      it "returns true and persists the record" do
+        subject.save.should be_true
+        UsersAndThings::Thing.table.row_count.should == 1
+      end
+    end
     context "an existing but invalid record" do
-      subject { UsersAndThings::User.create!(valid_attrs) }
+      subject { UsersAndThings::User.create!(valid_user_attrs) }
       before do
         subject.first_name = nil
       end
@@ -89,7 +131,7 @@ describe Orel::Object do
       end
     end
     context "a existing valid record" do
-      subject { UsersAndThings::User.create!(valid_attrs) }
+      subject { UsersAndThings::User.create!(valid_user_attrs) }
       before do
         subject.first_name = "Dave"
       end
