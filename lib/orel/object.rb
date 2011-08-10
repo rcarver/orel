@@ -33,6 +33,7 @@ module Orel
   #
   module Object
 
+    InvalidRecord = Class.new(StandardError)
     NoHeadingError = Class.new(StandardError)
 
     def self.included(base)
@@ -45,10 +46,22 @@ module Orel
 
       # Public: Create and save a new object.
       #
-      # Returns an instance of the class this was called on.
+      # Returns an instance of the class. This object is NOT guaranteed
+      #   to be valid or pesisted.
       def create(*args)
         object = new(*args)
         object.save
+        object
+      end
+
+      # Public: Create and persist a new object but raise an exception
+      # if the object is not valid.
+      #
+      # Returns an instance of the class.
+      # Raises Orel::Object::InvalidRecord if the object is not valid.
+      def create!(*args)
+        object = new(*args)
+        object.save or raise InvalidRecord
         object
       end
     end
@@ -115,8 +128,13 @@ module Orel
     #
     # Returns nothing.
     def save
-      @operator.create_or_update
-      @simple_associations.save
+      if valid?
+        @operator.create_or_update
+        @simple_associations.save
+        true
+      else
+        false
+      end
     end
 
     # Public: Stop persisting this object. If the object has never been persisted,
