@@ -21,6 +21,11 @@ module Orel
         attrs = Hash[*key.attributes.map { |a| a.name }.zip(args).flatten]
       end
 
+      results = find_all(attrs)
+      results.empty? ? nil : results.first
+    end
+
+    def find_all(attrs)
       results = @table.query { |q, table|
         @heading.attributes.each { |a|
           q.project table[a.name]
@@ -28,16 +33,18 @@ module Orel
         attrs.each { |k, v|
           q.where table[k].eq(v)
         }
-        q.take 1
       }
 
       if results.empty?
-        nil
+        []
       else
-        object = @klass.new(results.first)
-        object.persisted!
-        object
+        results.map { |result|
+          object = @klass.new(result)
+          object.persisted!
+          object
+        }
       end
     end
+
   end
 end

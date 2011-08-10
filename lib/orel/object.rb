@@ -73,6 +73,10 @@ module Orel
         _finder.find_by_key(key_name, *args)
       end
 
+      def find_all(*args)
+        _finder.find_all(*args)
+      end
+
       def _finder
         @_finder ||= Orel::Finder.new(self, self.table, self.get_heading)
       end

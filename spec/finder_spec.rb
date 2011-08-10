@@ -20,6 +20,29 @@ describe Orel::Finder do
         expect { subject.find_by_key(:other, "John") }.to raise_error(ArgumentError, "Key :other does not exist")
       end
     end
+
+    describe "#find_all" do
+      before do
+        @user1 = UsersAndThings::User.create! :first_name => "John", :last_name => "Smith", :age => 33
+        @user2 = UsersAndThings::User.create! :first_name => "Mary", :last_name => "Smith", :age => 33
+        @user3 = UsersAndThings::User.create! :first_name => "Mary", :last_name => "Jones", :age => 33
+      end
+      it "returns an empty array if nothing is found" do
+        UsersAndThings::User.find_all(:first_name => "Bob").should == []
+      end
+      it "returns matching records" do
+        records = UsersAndThings::User.find_all(:last_name => "Smith")
+        records.size.should == 2
+        records.should =~ [@user1, @user2]
+      end
+      specify "the resulting records are valid and persisted" do
+        records = UsersAndThings::User.find_all(:first_name => "John")
+        records.size.should == 1
+        records.first.should be_persisted
+        records.first.should be_valid
+      end
+
+    end
   end
 
   describe "a class with a composite natural key" do

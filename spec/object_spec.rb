@@ -80,6 +80,12 @@ describe Orel::Object do
         UsersAndThings::User.find_by_key(:other, "John", "Smith").should == :yay
       end
     end
+    describe ".find_all" do
+      it "delegates to the finder" do
+        UsersAndThings::User._finder.should_receive(:find_all).with(:attr1 => "ok", :attr2 => "ko").and_return(:yay)
+        UsersAndThings::User.find_all(:attr1 => "ok", :attr2 => "ko").should == :yay
+      end
+    end
   end
 
   describe "#save" do
