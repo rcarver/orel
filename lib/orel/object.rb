@@ -64,6 +64,18 @@ module Orel
         object.save or raise InvalidRecord
         object
       end
+
+      def find_by_primary_key(*args)
+        _finder.find_by_key(:primary, *args)
+      end
+
+      def find_by_key(key_name, *args)
+        _finder.find_by_key(key_name, *args)
+      end
+
+      def _finder
+        @_finder ||= Orel::Finder.new(self, self.table, self.get_heading)
+      end
     end
 
     # Public: Initialize a new object.
