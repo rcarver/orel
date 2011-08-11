@@ -58,9 +58,9 @@ module Orel
       unless @associations[name]
         heading = @relation_set.child(name) or raise InvalidRelation, name
         heading_attrs = heading_pk_attribute_names(heading)
-        pk_attrs = class_pk_attribute_names
+        parent_attrs = parent_pk_attribute_names
         # If the heading's pk is the class's pk, it's a 1:1.
-        if pk_attrs == heading_attrs
+        if parent_attrs == heading_attrs
           @associations[name] = OneProxy.new(@parent.class.relation_namer, @parent, heading)
         else
           @associations[name] = ManyProxy.new(@parent.class.relation_namer, @parent, heading)
@@ -73,11 +73,22 @@ module Orel
       heading.get_key(:primary).attributes.map { |a| a.name }
     end
 
-    def class_pk_attribute_names
-      @pk_attribute_names ||= @parent.class.get_heading.get_key(:primary).attributes.map { |a| a.name }
+    def parent_pk_attribute_names
+      @pk_attribute_names ||= heading_pk_attribute_names(@parent.class.get_heading)
     end
 
-    class OneProxy
+    class Proxy
+      def _parent_keys
+        @_parent_keys ||= @parent.class.get_heading.get_key(:primary).attributes.map { |a| a.name }
+      end
+      def _to_hash(attributes)
+        hash = attributes.hash
+        _parent_keys.each { |k| hash.delete(k) }
+        hash
+      end
+    end
+
+    class OneProxy < Proxy
 
       def initialize(relation_namer, parent, heading)
         @relation_namer = relation_namer
@@ -98,15 +109,18 @@ module Orel
         end
       end
 
+      # Public: Determine existence of a record.
+      #
+      # Returns a Boolean.
       def nil?
         @attributes.hash.empty?
       end
 
+      # Public: Get the data of the record.
+      #
+      # Returns a Hash.
       def to_hash
-        hash = @attributes.hash
-        keys = @parent.class.get_heading.get_key(:primary).attributes.map { |a| a.name }
-        keys.each { |k| hash.delete(k) }
-        hash
+        _to_hash(@attributes)
       end
 
       def _set(attributes)
@@ -120,12 +134,14 @@ module Orel
 
     protected
 
+      # All other messages are interpreted as method calls on
+      # the underlying record.
       def method_missing(message, *args, &block)
         @attributes[message]
       end
     end
 
-    class ManyProxy
+    class ManyProxy < Proxy
 
       Record = Struct.new(:attributes, :operator)
 
@@ -148,18 +164,30 @@ module Orel
 
       include Enumerable
 
+      # Public: Iterate over the records. Enumerable is supported.
+      #
+      # Yields a Hash for each record.
       def each
-        @records.each { |r| yield _to_hash(r.attributes.hash) }
+        @records.each { |r| yield _to_hash(r.attributes) }
       end
 
+      # Public: Get the records as an Array.
+      #
+      # Returns an Array of Hash.
+      def to_a
+        @records.map { |r| _to_hash(r.attributes) }
+      end
+
+      # Public: Get the number of records.
+      #
+      # Returns an Integer.
       def size
         @records.size
       end
 
-      def to_a
-        @records.map { |r| _to_hash(r.attributes.hash) }
-      end
-
+      # Public: Determine emptiness.
+      #
+      # Returns a Boolean.
       def empty?
         @records.empty?
       end
@@ -186,14 +214,6 @@ module Orel
           record.attributes[@parent.class] = @parent
           record.operator.create_or_update
         }
-      end
-
-    protected
-
-      def _to_hash(hash)
-        keys = @parent.class.get_heading.get_key(:primary).attributes.map { |a| a.name }
-        keys.each { |k| hash.delete(k) }
-        hash
       end
 
     end
