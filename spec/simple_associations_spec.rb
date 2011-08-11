@@ -78,25 +78,41 @@ describe Orel::SimpleAssociations do
   describe "reading data" do
     let(:instance1) { described_class.new(parent, relation_set) }
     subject         { described_class.new(parent, relation_set) }
+
     context "a 1:1 association" do
-      before do
-        instance1[:status] = { :value => "ok" }
-        instance1.save
+      context "without data" do
+        it "is nil" do
+          subject[:status].should be_nil
+        end
       end
-      it "retrieves the data" do
-        subject[:status].should_not be_nil
-        subject[:status].value.should == "ok"
-        subject[:status].to_hash.should == { :value => "ok" }
+      context "with data" do
+        before do
+          instance1[:status] = { :value => "ok" }
+          instance1.save
+        end
+        it "retrieves the data" do
+          subject[:status].should_not be_nil
+          subject[:status].value.should == "ok"
+          subject[:status].to_hash.should == { :value => "ok" }
+        end
       end
     end
+
     context "a M:1 association" do
-      before do
-        instance1[:ips] << { :ip => "127.0.0.1" }
-        instance1[:ips] << { :ip => "192.168.0.1" }
-        instance1.save
+      context "without data" do
+        it "is empty" do
+          subject[:ips].should be_empty
+        end
       end
-      it "retrieves the data" do
-        subject[:ips].to_a.should =~ [{ :ip => "127.0.0.1" }, { :ip => "192.168.0.1" }]
+      context "with data" do
+        before do
+          instance1[:ips] << { :ip => "127.0.0.1" }
+          instance1[:ips] << { :ip => "192.168.0.1" }
+          instance1.save
+        end
+        it "retrieves the data" do
+          subject[:ips].to_a.should =~ [{ :ip => "127.0.0.1" }, { :ip => "192.168.0.1" }]
+        end
       end
     end
   end
