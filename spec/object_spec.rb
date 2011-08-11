@@ -88,52 +88,73 @@ describe Orel::Object do
     end
   end
 
-  describe "#save" do
-    context "a new invalid record with natural keys" do
-      subject { UsersAndThings::User.new(invalid_user_attrs) }
-      it "returns false and does not persist the record" do
+  describe "saving records" do
+    shared_examples "an invalid record being saved" do
+      specify "#save returns false and does not persist the record" do
         subject.save.should be_false
-        UsersAndThings::User.table.row_count.should == 0
+        klass.table.row_count.should == 0
+      end
+      specify "#save! raises an error and does not persist the record" do
+        expect { subject.save! }.to raise_error(Orel::Object::InvalidRecord)
+        klass.table.row_count.should == 0
       end
     end
-    context "a new invalid with a surrogate key" do
-      subject { UsersAndThings::Thing.new(invalid_thing_attrs) }
-      it "returns false and does not persist the record" do
-        subject.save.should be_false
-        UsersAndThings::Thing.table.row_count.should == 0
-      end
-    end
-    context "a new valid record with natural keys" do
-      subject { UsersAndThings::User.new(valid_user_attrs) }
-      it "returns true and persists the record" do
+
+    shared_examples "a valid record being saved" do
+      specify "#save returns true and persists the record" do
         subject.save.should be_true
-        UsersAndThings::User.table.row_count.should == 1
+        klass.table.row_count.should == 1
+      end
+      specify "#save! returns true and persists the record" do
+        expect { subject.save! }.not_to raise_error(Orel::Object::InvalidRecord)
+        klass.table.row_count.should == 1
       end
     end
-    context "a new valid record with a surrogate key" do
-      subject { UsersAndThings::Thing.new(valid_thing_attrs) }
-      it "returns true and persists the record" do
-        subject.save.should be_true
-        UsersAndThings::Thing.table.row_count.should == 1
+
+    describe "a new, invalid record" do
+      context "with natural keys" do
+        let(:klass) { UsersAndThings::User }
+        subject { klass.new(invalid_user_attrs) }
+        it_should_behave_like "an invalid record being saved"
+      end
+      context "with a surrogate key" do
+        let(:klass) { UsersAndThings::Thing }
+        subject { klass.new(invalid_thing_attrs) }
+        it_should_behave_like "an invalid record being saved"
       end
     end
-    context "an existing but invalid record" do
+
+    describe "a new, valid record" do
+      context "with natural keys" do
+        let(:klass) { UsersAndThings::User }
+        subject { klass.new(valid_user_attrs) }
+        it_should_behave_like "a valid record being saved"
+      end
+      context "with a surrogate key" do
+        let(:klass) { UsersAndThings::Thing }
+        subject { klass.new(valid_thing_attrs) }
+        it_should_behave_like "a valid record being saved"
+      end
+    end
+
+    context "an existing, invalid record" do
       subject { UsersAndThings::User.create!(valid_user_attrs) }
       before do
         subject.first_name = nil
       end
-      it "returns false and does not update the record" do
+      specify "#save returns false and does not update the record" do
         subject.save.should be_false
         UsersAndThings::User.table.row_count.should == 1
         UsersAndThings::User.table.row_list.first[:first_name].should == "John"
       end
     end
-    context "a existing valid record" do
+
+    context "an existing, valid record" do
       subject { UsersAndThings::User.create!(valid_user_attrs) }
       before do
         subject.first_name = "Dave"
       end
-      it "returns true and persists the record" do
+      specify "#save returns true and persists the record" do
         subject.save.should be_true
         UsersAndThings::User.table.row_count.should == 1
         UsersAndThings::User.table.row_list.first[:first_name].should == "Dave"

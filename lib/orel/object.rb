@@ -142,7 +142,7 @@ module Orel
     # are stored. If the object defines a Serial key, that attribute will have
     # a value after calling save.
     #
-    # Returns nothing.
+    # Returns a Boolean true if the save was successful.
     def save
       if valid?
         @operator.create_or_update
@@ -151,6 +151,14 @@ module Orel
       else
         false
       end
+    end
+
+    # Public: Persist the object's current attributes.
+    #
+    # Returns a Boolean true if the save was successful.
+    # Raises Orel::Object::InvalidRecord if the save was NOT successful.
+    def save!
+      save or raise InvalidRecord
     end
 
     # Public: Stop persisting this object. If the object has never been persisted,
