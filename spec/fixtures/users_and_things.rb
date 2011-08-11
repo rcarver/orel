@@ -13,7 +13,7 @@ module UsersAndThings
       key { UsersAndThings::User }
       att :value, Orel::Domains::String
     end
-    # 1:M simple associations
+    # M:1 simple associations
     heading :ips do
       key { UsersAndThings::User / ip }
       att :ip, Orel::Domains::String

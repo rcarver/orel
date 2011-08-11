@@ -1,6 +1,6 @@
 require 'helper'
 
-describe Orel::SimpleAssociations do
+describe Orel::SimpleAssociations, "on a class with natural keys" do
 
   let(:relation_set) { UsersAndThings::User.relation_set }
   let(:parent) { UsersAndThings::User.create(:first_name => "John", :last_name => "Smith", :age => 33) }
@@ -61,8 +61,7 @@ describe Orel::SimpleAssociations do
         it "provides the data like an array" do
           subject[:ips].size.should == 2
           subject[:ips].should_not be_empty
-          subject[:ips].to_a.should =~ [{ :ip => "127.0.0.1" }, { :ip => "192.168.0.1" }]
-          subject[:ips].map.should =~ [{ :ip => "127.0.0.1" }, { :ip => "192.168.0.1" }]
+          subject[:ips].map { |r| r.to_hash }.should =~ [{ :ip => "127.0.0.1" }, { :ip => "192.168.0.1" }]
         end
       end
       context "#save" do
@@ -114,9 +113,13 @@ describe Orel::SimpleAssociations do
           instance1.save
         end
         it "has the records" do
-          subject[:ips].to_a.should =~ [{ :ip => "127.0.0.1" }, { :ip => "192.168.0.1" }]
+          subject[:ips].map { |r| r.to_hash }.should =~ [{ :ip => "127.0.0.1" }, { :ip => "192.168.0.1" }]
         end
       end
     end
   end
+end
+
+describe Orel::SimpleAssociations, "on a class with a surrogate key" do
+  pending
 end

@@ -77,9 +77,10 @@ module Orel
       @pk_attribute_names ||= heading_pk_attribute_names(@parent.class.get_heading)
     end
 
-    class Proxy
+    module ProxyHelper
+      # The primary key names in the parent.
       def _parent_keys
-        @_parent_keys ||= @parent.class.get_heading.get_key(:primary).attributes.map { |a| a.name }
+        @_parent_keys ||= _parent.class.get_heading.get_key(:primary).attributes.map { |a| a.to_foreign_key.name }
       end
       def _to_hash(attributes)
         hash = attributes.hash
@@ -88,7 +89,31 @@ module Orel
       end
     end
 
+    class Proxy
+      # Get a Hash of key/value pairs in the parent's primary key.
+      def _parent_key_data
+        hash = @parent.class.get_heading.get_key(:primary).attributes.map { |a|
+          [a.to_foreign_key.name, @parent[a.name]]
+        }
+        Hash[*hash.flatten]
+      end
+      # Query to find existing data belonging to the parent.
+      def _find_existing_data
+        parent_data = _parent_key_data
+        results = Table.new(@heading).query { |q, table|
+          @heading.attributes.each { |a|
+            q.project table[a.name]
+          }
+          parent_data .each { |k, v|
+            q.where table[k].eq(v)
+          }
+          yield q, table if block_given?
+        }
+      end
+    end
+
     class OneProxy < Proxy
+      include ProxyHelper
 
       def initialize(relation_namer, parent, heading)
         @relation_namer = relation_namer
@@ -99,10 +124,7 @@ module Orel
 
         # Populate from existing data if the record is persisted.
         if @parent.persisted?
-          attrs = Hash[*@parent.class.get_heading.get_key(:primary).attributes.map { |a| [a.name, @parent[a.name]] }.flatten]
-          results = Table.new(@heading).query { |q, table|
-            @heading.attributes.each { |a| q.project table[a.name] }
-            attrs.each { |k, v| q.where table[k].eq(v) }
+          results = _find_existing_data { |q, table|
             q.take 1
           }
           _set(results.first) if results.any?
@@ -143,11 +165,23 @@ module Orel
           @attributes[message]
         end
       end
+
+      # For ProxyHelper
+      def _parent; @parent end
     end
 
     class ManyProxy < Proxy
 
-      Record = Struct.new(:attributes, :operator)
+      class Record < Struct.new(:_parent, :attributes, :operator)
+        include ProxyHelper
+        def to_hash
+          _to_hash(attributes)
+        end
+      protected
+        def method_missing(message, *args, &block)
+          attributes[message]
+        end
+      end
 
       def initialize(relation_namer, parent, heading)
         @relation_namer = relation_namer
@@ -157,11 +191,7 @@ module Orel
 
         # Populate from existing data if the record is persisted.
         if @parent.persisted?
-          attrs = Hash[*@parent.class.get_heading.get_key(:primary).attributes.map { |a| [a.name, @parent[a.name]] }.flatten]
-          results = Table.new(@heading).query { |q, table|
-            @heading.attributes.each { |a| q.project table[a.name] }
-            attrs.each { |k, v| q.where table[k].eq(v) }
-          }
+          results = _find_existing_data
           results.each { |r| self << r }
         end
       end
@@ -172,14 +202,7 @@ module Orel
       #
       # Yields a Hash for each record.
       def each
-        @records.each { |r| yield _to_hash(r.attributes) }
-      end
-
-      # Public: Get the records as an Array.
-      #
-      # Returns an Array of Hash.
-      def to_a
-        @records.map { |r| _to_hash(r.attributes) }
+        @records.each { |r| yield r }
       end
 
       # Public: Get the number of records.
@@ -205,7 +228,7 @@ module Orel
       def <<(attributes)
         attrs = Attributes.new(@heading, attributes)
         operator = Operator.new(@heading, attrs)
-        @records << Record.new(attrs, operator)
+        @records << Record.new(@parent, attrs, operator)
         nil
       end
 
