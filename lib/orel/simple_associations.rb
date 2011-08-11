@@ -87,6 +87,10 @@ module Orel
         @operator = Operator.new(@heading, @attributes)
       end
 
+      def nil?
+        @attributes.hash.empty?
+      end
+
       def _set(attributes)
         attributes.each { |k, v| @attributes[k] = v }
       end

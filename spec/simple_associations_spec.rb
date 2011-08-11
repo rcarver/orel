@@ -5,21 +5,22 @@ describe Orel::SimpleAssociations do
   let(:relation_set) { UsersAndThings::User.relation_set }
   let(:parent) { UsersAndThings::User.create(:first_name => "John", :last_name => "Smith", :age => 33) }
 
-  subject {
-    described_class.new(parent, relation_set)
-  }
-
-  it "can determine whether an association exists or not" do
-    subject.should be_include(:status)
-    subject.should be_include(:ips)
-    subject.should_not be_include(:other)
+  describe "in general" do
+    subject { described_class.new(parent, relation_set) }
+    it "can determine whether an association exists or not" do
+      subject.should be_include(:status)
+      subject.should be_include(:ips)
+      subject.should_not be_include(:other)
+    end
   end
 
   describe "writing data" do
+    subject { described_class.new(parent, relation_set) }
+
     context "a 1:1 association" do
       context "before it's set" do
         it "is nil" do
-          subject[:status].nil?
+          subject[:status].should be_nil
         end
       end
       context "after it's set" do
