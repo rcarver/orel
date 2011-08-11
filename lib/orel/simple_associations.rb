@@ -85,10 +85,28 @@ module Orel
         @heading = heading
         @attributes = Attributes.new(@heading)
         @operator = Operator.new(@heading, @attributes)
+
+        # Populate from existing data if the record is persisted.
+        if @parent.persisted?
+          attrs = Hash[*@parent.class.get_heading.get_key(:primary).attributes.map { |a| [a.name, @parent[a.name]] }.flatten]
+          results = Table.new(@heading).query { |q, table|
+            @heading.attributes.each { |a| q.project table[a.name] }
+            attrs.each { |k, v| q.where table[k].eq(v) }
+            q.take 1
+          }
+          _set(results.first) if results.any?
+        end
       end
 
       def nil?
         @attributes.hash.empty?
+      end
+
+      def to_hash
+        hash = @attributes.hash
+        keys = @parent.class.get_heading.get_key(:primary).attributes.map { |a| a.name }
+        keys.each { |k| hash.delete(k) }
+        hash
       end
 
       def _set(attributes)
@@ -116,12 +134,22 @@ module Orel
         @parent = parent
         @heading = heading
         @records = []
+
+        # Populate from existing data if the record is persisted.
+        if @parent.persisted?
+          attrs = Hash[*@parent.class.get_heading.get_key(:primary).attributes.map { |a| [a.name, @parent[a.name]] }.flatten]
+          results = Table.new(@heading).query { |q, table|
+            @heading.attributes.each { |a| q.project table[a.name] }
+            attrs.each { |k, v| q.where table[k].eq(v) }
+          }
+          results.each { |r| self << r }
+        end
       end
 
       include Enumerable
 
       def each
-        @records.each { |r| yield r.attributes.hash }
+        @records.each { |r| yield _to_hash(r.attributes.hash) }
       end
 
       def size
@@ -129,7 +157,7 @@ module Orel
       end
 
       def to_a
-        @records.map { |r| r.attributes.hash }
+        @records.map { |r| _to_hash(r.attributes.hash) }
       end
 
       def empty?
@@ -159,6 +187,15 @@ module Orel
           record.operator.create_or_update
         }
       end
+
+    protected
+
+      def _to_hash(hash)
+        keys = @parent.class.get_heading.get_key(:primary).attributes.map { |a| a.name }
+        keys.each { |k| hash.delete(k) }
+        hash
+      end
+
     end
 
   end
