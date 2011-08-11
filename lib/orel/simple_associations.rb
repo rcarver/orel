@@ -59,11 +59,11 @@ module Orel
         heading = @relation_set.child(name) or raise InvalidRelation, name
         heading_attrs = heading_pk_attribute_names(heading)
         pk_attrs = class_pk_attribute_names
-        # If the heading's pk is the class's pk and more, it's a M:1.
-        if (heading_attrs & pk_attrs).size == pk_attrs.size && heading_attrs.size > pk_attrs.size
-          @associations[name] = ManyProxy.new(@parent.class.relation_namer, @parent, heading)
-        else
+        # If the heading's pk is the class's pk, it's a 1:1.
+        if pk_attrs == heading_attrs
           @associations[name] = OneProxy.new(@parent.class.relation_namer, @parent, heading)
+        else
+          @associations[name] = ManyProxy.new(@parent.class.relation_namer, @parent, heading)
         end
       end
       @associations[name]
