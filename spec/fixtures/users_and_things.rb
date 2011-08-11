@@ -8,6 +8,16 @@ module UsersAndThings
       att :last_name, Orel::Domains::String
       att :age, Orel::Domains::Integer
     end
+    # 1:1 simple association
+    heading :status do
+      key { UsersAndThings::User }
+      att :value, Orel::Domains::String
+    end
+    # 1:M simple associations
+    heading :ips do
+      key { UsersAndThings::User / ip }
+      att :ip, Orel::Domains::String
+    end
   end
 
   class Thing
