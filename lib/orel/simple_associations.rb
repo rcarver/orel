@@ -113,7 +113,7 @@ module Orel
       #
       # Returns a Boolean.
       def nil?
-        @attributes.hash.empty?
+        @attributes.empty?
       end
 
       # Public: Get the data of the record.

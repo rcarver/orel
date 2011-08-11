@@ -86,6 +86,10 @@ module Orel
       end
     end
 
+    def empty?
+      @attributes.empty?
+    end
+
     def hash
       @attributes.clone
     end

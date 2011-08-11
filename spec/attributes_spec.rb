@@ -25,6 +25,11 @@ describe Orel::Attributes do
     subject {
       Orel::Attributes.new(thing_heading)
     }
+    it "can tell you if any attributes have been set or not" do
+      subject.should be_empty
+      subject[:name] = "Box"
+      subject.should_not be_empty
+    end
     it "can tell you if it has an attribute or not" do
       subject.att?(:name).should be_true
       subject.att?(:foo).should be_false
