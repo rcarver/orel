@@ -14,13 +14,16 @@ describe Orel::SimpleAssociations do
     end
   end
 
-  describe "writing data" do
+  describe "reading and writing" do
     subject { described_class.new(parent, relation_set) }
 
     context "a 1:1 association" do
       context "before it's set" do
         it "is nil" do
           subject[:status].should be_nil
+        end
+        it "throws an error if you access a property" do
+          expect { subject[:status].value }.to raise_error(NoMethodError, "The 1:1 association is nil")
         end
       end
       context "after it's set" do
@@ -75,7 +78,7 @@ describe Orel::SimpleAssociations do
     end
   end
 
-  describe "reading data" do
+  describe "retrieving data from a persisted instance" do
     let(:instance1) { described_class.new(parent, relation_set) }
     subject         { described_class.new(parent, relation_set) }
 
@@ -90,7 +93,7 @@ describe Orel::SimpleAssociations do
           instance1[:status] = { :value => "ok" }
           instance1.save
         end
-        it "retrieves the data" do
+        it "has the data" do
           subject[:status].should_not be_nil
           subject[:status].value.should == "ok"
           subject[:status].to_hash.should == { :value => "ok" }
@@ -110,7 +113,7 @@ describe Orel::SimpleAssociations do
           instance1[:ips] << { :ip => "192.168.0.1" }
           instance1.save
         end
-        it "retrieves the data" do
+        it "has the records" do
           subject[:ips].to_a.should =~ [{ :ip => "127.0.0.1" }, { :ip => "192.168.0.1" }]
         end
       end

@@ -137,7 +137,11 @@ module Orel
       # All other messages are interpreted as method calls on
       # the underlying record.
       def method_missing(message, *args, &block)
-        @attributes[message]
+        if nil?
+          raise NoMethodError, "The 1:1 association is nil"
+        else
+          @attributes[message]
+        end
       end
     end
 
