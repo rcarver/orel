@@ -74,7 +74,7 @@ module Orel
     end
 
     def parent_pk_attribute_names
-      @pk_attribute_names ||= heading_pk_attribute_names(@parent.class.get_heading)
+      @pk_attribute_names ||= @parent.class.get_heading.get_key(:primary).attributes.map { |a| a.to_foreign_key.name }
     end
 
     module ProxyHelper
