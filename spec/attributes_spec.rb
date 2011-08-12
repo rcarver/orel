@@ -61,11 +61,11 @@ describe Orel::Attributes do
     it "can give you a hash of current values" do
       subject[:name] = "Box"
       subject[UsersAndThings::User] = user
-      subject.hash.should == { :name => "Box", :first_name => "John", :last_name => "Smith" }
+      subject.to_hash.should == { :name => "Box", :first_name => "John", :last_name => "Smith" }
     end
     specify "if you modify the hash of current values it doesn't affect the real values" do
       subject[:name] = "Box"
-      hash = subject.hash
+      hash = subject.to_hash
       hash[:name] = "Junk"
       subject[:name].should == "Box"
     end

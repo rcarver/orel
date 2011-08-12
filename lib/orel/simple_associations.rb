@@ -83,7 +83,7 @@ module Orel
         @_parent_keys ||= _parent.class.get_heading.get_key(:primary).attributes.map { |a| a.to_foreign_key.name }
       end
       def _to_hash(attributes)
-        hash = attributes.hash
+        hash = attributes.to_hash
         _parent_keys.each { |k| hash.delete(k) }
         hash
       end

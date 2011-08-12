@@ -239,7 +239,7 @@ module Orel
 
     def eql?(other)
       if other.is_a?(self.class)
-        attributes.hash == other.attributes.hash
+        attributes.to_hash == other.attributes.to_hash
       else
         false
       end
@@ -248,7 +248,7 @@ module Orel
     alias_method :==, :eql?
 
     def hash
-      attributes.hash.hash
+      attributes.to_hash.hash
     end
 
     def persisted!

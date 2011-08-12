@@ -62,7 +62,7 @@ module Orel
       if serial = get_serial_key_attribute
         attributes_to_update = @attributes.hash_excluding_keys([serial.name])
       else
-        attributes_to_update = @attributes.hash
+        attributes_to_update = @attributes.to_hash
       end
 
       # TODO: since we're not updating attributes in the primary key,

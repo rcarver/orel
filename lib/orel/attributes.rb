@@ -90,7 +90,7 @@ module Orel
       @attributes.empty?
     end
 
-    def hash
+    def to_hash
       @attributes.clone
     end
 
