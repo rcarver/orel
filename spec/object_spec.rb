@@ -176,6 +176,12 @@ describe Orel::Object do
         (user1 == user2).should == false
         (user1.eql?(user2)).should == false
       end
+      specify "two equal objects, one persisted not not persisted are equal" do
+        user1 = UsersAndThings::User.create(valid_user_attrs)
+        user2 = UsersAndThings::User.new(valid_user_attrs)
+        (user1 == user2).should == true
+        (user1.eql?(user2)).should == true
+      end
     end
     context "a class with a surrogate key" do
       specify "two unpersisted objects are equal if all their attributes are equal" do
