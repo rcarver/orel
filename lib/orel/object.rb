@@ -247,6 +247,10 @@ module Orel
 
     alias_method :==, :eql?
 
+    def hash
+      attributes.hash.hash
+    end
+
     def persisted!
       @operator.persisted = true
     end

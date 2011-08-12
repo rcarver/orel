@@ -198,4 +198,37 @@ describe Orel::Object do
       end
     end
   end
+
+  describe "hashability" do
+    let(:hash) { {} }
+
+    context "a class with natural keys" do
+      specify "two equal objects hash the same" do
+        user1 = UsersAndThings::User.new(valid_user_attrs)
+        user2 = UsersAndThings::User.new(valid_user_attrs)
+        hash[user1] = 1
+        hash[user2].should == 1
+      end
+      specify "two different objects hash differently" do
+        user1 = UsersAndThings::User.new(valid_user_attrs)
+        user2 = UsersAndThings::User.new(valid_user_attrs.merge(:first_name => "Dave"))
+        hash[user1] = 1
+        hash[user2].should be_nil
+      end
+    end
+    context "a class with a surrogate key" do
+      specify "two equal objects hash the same" do
+        thing1 = UsersAndThings::Thing.new(valid_thing_attrs)
+        thing2 = UsersAndThings::Thing.new(valid_thing_attrs)
+        hash[thing1] = 1
+        hash[thing2].should == 1
+      end
+      specify "two different objects hash differently" do
+        thing1 = UsersAndThings::Thing.new(valid_thing_attrs)
+        thing2 = UsersAndThings::Thing.new(valid_thing_attrs.merge(:name => "cup"))
+        hash[thing1] = 1
+        hash[thing2].should be_nil
+      end
+    end
+  end
 end
