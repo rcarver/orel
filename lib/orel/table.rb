@@ -16,7 +16,7 @@ module Orel
     #
     # Returns an Array where each element is a Hash representing the row.
     def row_list
-      query { |q, table|
+      query("#{self.class} List rows in #{@heading.name}") { |q, table|
         @heading.attributes.each { |a|
           q.project table[a.name]
         }
@@ -35,7 +35,7 @@ module Orel
     #
     # Returns an Integer.
     def row_count
-      rows = query { |q, table|
+      rows = query("#{self.class} Count rows in #{@heading.name}") { |q, table|
         q.project Arel::Nodes::SqlLiteral.new('COUNT(*) count')
       }
       rows.first[:count]
@@ -54,12 +54,12 @@ module Orel
     #     # => [{ :name => "Mary", :points => 50 }]
     #
     # Returns an Array where each element is a Hash representing the row.
-    def query
+    def query(description=nil)
       table = Orel.arel_table(@heading)
       manager = Arel::SelectManager.new(table.engine)
       manager.from table
       yield manager, table
-      execute(manager.to_sql).each(:as => :hash, :symbolize_keys => true)
+      execute(manager.to_sql, description || "#{self.class} Query #{@heading.name}").each(:as => :hash, :symbolize_keys => true)
     end
 
     # Public: Insert data into the table.
@@ -72,7 +72,7 @@ module Orel
     #
     # Returns nothing.
     def insert(attributes)
-      execute(insert_statement(attributes), :insert)
+      execute(insert_statement(attributes), "#{self.class} Insert into #{@heading.name}", :insert)
     end
 
     # Public: Insert data into the table but update one or more values
@@ -96,7 +96,7 @@ module Orel
     #
     # Returns nothing.
     def upsert(options)
-      execute(upsert_statement(options))
+      execute(upsert_statement(options), "#{self.class} Upsert into #{@heading.name}")
     end
 
     # Public: Update data in the table.
@@ -114,7 +114,7 @@ module Orel
     #
     # Returns nothing.
     def update(options)
-      execute(update_statement(options))
+      execute(update_statement(options), "#{self.class} Update #{@heading.name}")
     end
 
     # Public: Delete data from the table.
@@ -127,7 +127,7 @@ module Orel
     #
     # Returns nothing.
     def delete(attributes)
-      execute(delete_statement(attributes))
+      execute(delete_statement(attributes), "#{self.class} Delete from #{@heading.name}")
     end
 
     # Public: Delete all data from the table.
@@ -195,11 +195,11 @@ module Orel
       }
     end
 
-    def execute(statement, op=:execute)
+    def execute(statement, description=nil, op=:execute)
       begin
         case op
-        when :execute: Orel.execute(statement)
-        when :insert:  Orel.insert(statement)
+        when :execute: Orel.execute(statement, description)
+        when :insert:  Orel.insert(statement, description)
         else raise ArgumentError, "Unknown execution operation #{op.inspect}"
         end
       rescue StandardError => e

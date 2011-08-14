@@ -98,9 +98,9 @@ module Orel
         Hash[*hash.flatten]
       end
       # Query to find existing data belonging to the parent.
-      def _find_existing_data
+      def _find_existing_data(description)
         parent_data = _parent_key_data
-        results = Table.new(@heading).query { |q, table|
+        results = Table.new(@heading).query("#{Orel::SimpleAssociations} #{description}") { |q, table|
           @heading.attributes.each { |a|
             q.project table[a.name]
           }
@@ -124,7 +124,7 @@ module Orel
 
         # Populate from existing data if the record is persisted.
         if @parent.persisted?
-          results = _find_existing_data { |q, table|
+          results = _find_existing_data("1:1 parent[#{parent.class} child[#{@heading.name}]") { |q, table|
             q.take 1
           }
           _set(results.first) if results.any?
@@ -191,7 +191,7 @@ module Orel
 
         # Populate from existing data if the record is persisted.
         if @parent.persisted?
-          results = _find_existing_data
+          results = _find_existing_data("M:1 parent[#{parent.class}] children[#{heading.name}]")
           results.each { |r| self << r }
         end
       end

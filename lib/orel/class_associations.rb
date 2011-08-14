@@ -25,7 +25,7 @@ module Orel
 
     # select * from users where users.first_name = [thing.first_name] limit 1
     def parent(reference)
-      results = reference.parent_class.table.query { |q, table|
+      results = reference.parent_class.table.query("#{self.class} Find parent[#{reference.parent_class}] of child[#{reference.child_class}]") { |q, table|
         reference.parent_class.get_heading.attributes.each { |a|
           q.project table[a.name]
         }
@@ -43,7 +43,7 @@ module Orel
 
     # select * from things where things.first_name = [user.first_name]
     def children(reference)
-      results = reference.child_class.table.query { |q, table|
+      results = reference.child_class.table.query("#{self.class} Find children[#{reference.child_class}] of parent[#{reference.parent_class}]") { |q, table|
         reference.child_class.get_heading.attributes.each { |a|
           q.project table[a.name]
         }
