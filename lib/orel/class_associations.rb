@@ -3,8 +3,6 @@ module Orel
   # many-to-one associations right now.
   class ClassAssociations
 
-    InvalidReference = Class.new(ArgumentError)
-
     def initialize(klass, attributes)
       @klass = klass
       @attributes = attributes
@@ -27,31 +25,37 @@ module Orel
 
     # select * from users where users.first_name = [thing.first_name] limit 1
     def parent(reference)
-      parent_class = reference.parent_class
-      parent_key = reference.parent_key
-      algebra = Orel::Algebra.new(parent_class)
-
-      parent_key.attributes.each { |parent_attribute|
-        child_attribute = parent_attribute.to_foreign_key
-        algebra.restrict(parent_attribute.name => @attributes[child_attribute.name])
+      results = reference.parent_class.table.query { |q, table|
+        reference.parent_class.get_heading.attributes.each { |a|
+          q.project table[a.name]
+        }
+        reference.parent_key.attributes.each { |a|
+          q.where table[a.name].eq(@attributes[a.to_foreign_key.name])
+        }
+        q.take 1
       }
-      algebra.project
-      # TODO: set a limit on the algebra
-      algebra.map { |row| parent_class.new(row) }.first
+      if results.any?
+        object = reference.parent_class.new(results.first)
+        object.persisted!
+        object
+      end
     end
 
     # select * from things where things.first_name = [user.first_name]
     def children(reference)
-      child_class = reference.child_class
-      parent_key = reference.parent_key
-      algebra = Orel::Algebra.new(child_class)
-
-      parent_key.attributes.each { |parent_attribute|
-        child_attribute = parent_attribute.to_foreign_key
-        algebra.restrict(parent_attribute.name => @attributes[child_attribute.name])
+      results = reference.child_class.table.query { |q, table|
+        reference.child_class.get_heading.attributes.each { |a|
+          q.project table[a.name]
+        }
+        reference.parent_key.attributes.each { |a|
+          q.where table[a.to_foreign_key.name].eq(@attributes[a.to_foreign_key.name])
+        }
       }
-      algebra.project
-      algebra.map { |row| child_class.new(row) }
+      results.map { |row|
+        object = reference.child_class.new(row)
+        object.persisted!
+        object
+      }
     end
 
   end
