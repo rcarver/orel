@@ -11,7 +11,6 @@ require 'active_record'
 require 'mysql2'
 
 require 'orel/sql_debugging'
-require 'orel/algebra'
 require 'orel/attributes'
 require 'orel/class_associations'
 require 'orel/domains'
