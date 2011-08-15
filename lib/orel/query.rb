@@ -24,7 +24,7 @@ module Orel
         object.readonly!
         # The object is locked for query because you should get all
         # of the data you're interested in one shot.
-        object.locked_for_query!
+        #object.locked_for_query!
         object
       }
     end

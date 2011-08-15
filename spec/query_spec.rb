@@ -30,6 +30,7 @@ describe Orel::Query do
   end
 
   specify "a query returns objects that are locked for query" do
+    pending
     user_query.query[0].should be_locked_for_query
   end
 
@@ -46,6 +47,7 @@ describe Orel::Query do
       q.where user[:last_name].eq("Smith")
     }
     results.first.should == @user2
+    pending
     results.first[:ips].map { |r| r.to_hash }.should == [{ :ip => "127.0.0.1" }, { :ip => "192.168.0.1" }]
   end
 
