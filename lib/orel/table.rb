@@ -62,6 +62,35 @@ module Orel
       execute(manager.to_sql, description || "#{self.class} Query #{@heading.name}").each(:as => :hash, :symbolize_keys => true)
     end
 
+    # Public: Add another table to a query. You'll need to specify the
+    # join condition within the query.
+    #
+    # alias - Symbol or String alias name for the table in sql.
+    #
+    # Yield an Arel::Table.
+    #
+    # Examples
+    #
+    #   table1.query { |q, t1|
+    #     q.project t1[:name]
+    #     table2.as { |t2|
+    #       q.join(t2).on(t1[:id].eq(t2[:t1_id]))
+    #       q.where t2[:age].gt(40)
+    #     }
+    #   }
+    #
+    # Returns nil if a block is given, else returns the Arel::Table.
+    def as(aliaz=nil)
+      table = Orel.arel_table(@heading)
+      table = table.alias(aliaz.to_s) if aliaz
+      if block_given?
+        yield table
+        nil
+      else
+        table
+      end
+    end
+
     # Public: Insert data into the table.
     #
     # attributes - Hash of key/values to insert.

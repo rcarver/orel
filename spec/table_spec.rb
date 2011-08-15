@@ -94,6 +94,22 @@ describe Orel::Table do
         { :first_name => "John" }
       ]
     end
+
+    describe "#as" do
+      it "returns an Arel table" do
+        subject.as.should be_an_instance_of(Arel::Table)
+        subject.as.name.should == "users_and_things_users"
+      end
+      it "may be aliased" do
+        subject.as("my_users").name.should == "my_users"
+      end
+      it "yields the table if a block is given" do
+        table = nil
+        result = subject.as { |t| table = t }
+        table.should be_an_instance_of(Arel::Table)
+        result.should be_nil
+      end
+    end
   end
 
   describe "sql statements" do
