@@ -80,62 +80,89 @@ module Orel
     end
 
     class Join
-      def initialize(parent_klass, parent_heading, parent_table, child_class, child_heading, child_table)
+      def initialize(parent_klass, parent_heading, parent_table, join_class, join_heading, join_table)
         @parent_class = parent_klass
         @parent_heading = parent_heading
         @parent_table = parent_table
-        @child_class = child_class
-        @child_heading = child_heading
-        @child_table = child_table
+        @join_class = join_class
+        @join_heading = join_heading
+        @join_table = join_table
         @wheres = []
 
-        @child_reference = @child_heading.get_parent_reference(@parent_class)
-        @parent_reference = @parent_class.get_heading.get_parent_reference(@child_class)
+        @child_reference = @join_heading.get_parent_reference(@parent_class)
+        @parent_reference = @parent_class.get_heading.get_parent_reference(@join_class)
       end
+
       attr_reader :wheres
+      attr_reader :join_table
+
       def join_id
         @join_id ||= "j1"
       end
+
       def attributes
-        @child_heading.attributes.map { |a|
-          @child_table[a.name].as("#{join_id}__#{a.name}")
+        @join_heading.attributes.map { |a|
+          @join_table[a.name].as("#{join_id}__#{a.name}")
         }
       end
-      def join_table
-        @child_table
-      end
+
       def join_conditions
-        if @child_reference
+        case
+        when @child_reference
           @parent_heading.get_key(:primary).attributes.map { |a|
-            @parent_table[a.name].eq(@child_table[a.to_foreign_key.name])
+            @parent_table[a.name].eq(@join_table[a.to_foreign_key.name])
           }
-        elsif @parent_reference
-          @child_heading.get_key(:primary).attributes.map { |a|
-            @parent_table[a.to_foreign_key.name].eq(@child_table[a.name])
+        when @parent_reference
+          @join_heading.get_key(:primary).attributes.map { |a|
+            @parent_table[a.to_foreign_key.name].eq(@join_table[a.name])
           }
+        else
+          raise "No child or parent reference was found for parent:#{@parent_class} join:#{@join_class}"
         end
       end
-      def [](key)
-        JoinProxy.new(self, @child_table[key])
+
+      # Public: Retrieve an attribute from the join table.
+      #
+      # name - Symbol name of the attribute.
+      #
+      # Returns a JoinProxy on which to specify conditions of the
+      #   attribute.
+      def [](name)
+        JoinProxy.new(self, @join_table[name])
       end
+
+      # Public: Limit the results to objects that contain an object in
+      # a child association.
+      #
+      # object - Orel::Object found in a child relationship.
+      #
+      # Returns this Join object.
       def contains(object)
-        unless object.is_a?(@child_class)
-          raise ArgumentError, "Expected a #{@child_class} but got a #{object.class}"
+        unless object.is_a?(@join_class)
+          raise ArgumentError, "Expected a #{@join_class} but got a #{object.class}"
         end
         unless @child_reference
-          raise ArgumentError, "No child reference was found from parent:#{@parent_class.inspect} to child:#{@child_class.inspect}"
+          raise ArgumentError, "No child reference was found from parent:#{@parent_class.inspect} to join:#{@join_class.inspect}"
         end
         @child_reference.parent_key.attributes.each { |a|
           @wheres << @parent_table[a.name].eq(object[a.to_foreign_key.name])
         }
         self
       end
+
+      # Public: Limit the results to objects that have an object as
+      # their parent.
+      #
+      # object - Orel::Object in the parent relationshin the parent
+      #          relationship.
+      #
+      # Returns this Join object.
       def eq(object)
-        unless object.is_a?(@child_class)
-          raise ArgumentError, "Expected a #{@child_class} but got a #{object.class}"
+        unless object.is_a?(@join_class)
+          raise ArgumentError, "Expected a #{@join_class} but got a #{object.class}"
         end
         unless @parent_reference
-          raise ArgumentError, "No parent reference was found from parent:#{@parent_class.inspect} to child:#{child_class.inspect}"
+          raise ArgumentError, "No parent reference was found from parent:#{@parent_class.inspect} to join:#{@join_class.inspect}"
         end
         @parent_reference.parent_key.attributes.each { |a|
           @wheres << @parent_table[a.name].eq(object[a.to_foreign_key.name])
@@ -149,6 +176,10 @@ module Orel
         @join = join
         @attribute = attribute
       end
+
+      # Public: Perform an Arel node operation such as `eq`.
+      #
+      # Returns the underlying Join.
       def method_missing(message, *args)
         @join.wheres << @attribute.__send__(message, *args)
         @join
