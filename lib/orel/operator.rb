@@ -87,7 +87,7 @@ module Orel
     # Returns nothing.
     # Raises errors if something goes wrong while executing sql.
     def destroy
-      raise Orel::ReadonlyError if readonly?
+      raise Orel::ReadonlyError if @readonly
 
       attributes_for_key = hash_of_current_primary_key
 
