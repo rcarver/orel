@@ -86,6 +86,12 @@ describe Orel::Object do
         UsersAndThings::User.find_all(:attr1 => "ok", :attr2 => "ko").should == :yay
       end
     end
+    describe ".query" do
+      it "delegates to the query" do
+        UsersAndThings::User._query.should_receive(:query).with("test query").and_return([:things])
+        UsersAndThings::User.query("test query").should == [:things]
+      end
+    end
   end
 
   describe "saving records" do

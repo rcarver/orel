@@ -77,8 +77,16 @@ module Orel
         _finder.find_all(*args)
       end
 
+      def query(description=nil, &block)
+        _query.query(description, &block)
+      end
+
       def _finder
         @_finder ||= Orel::Finder.new(self, self.table, self.get_heading)
+      end
+
+      def _query
+        @_query ||= Orel::Query.new(self, self.get_heading)
       end
     end
 
