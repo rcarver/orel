@@ -12,6 +12,11 @@ describe Orel::SimpleAssociations, "on a class with natural keys" do
       subject.should be_include(:ips)
       subject.should_not be_include(:other)
     end
+    it "raises an error when it's locked for read" do
+      subject.locked_for_query = true
+      expect { subject[:status] }.to raise_error(Orel::LockedForQueryError)
+      expect { subject[:ips] }.to raise_error(Orel::LockedForQueryError)
+    end
   end
 
   describe "reading and writing" do

@@ -14,6 +14,8 @@ module Orel
       @associations = {}
     end
 
+    attr_accessor :locked_for_query
+
     # Public: Determine if a simple association is defined.
     #
     # name - Symbol name of the association.
@@ -56,15 +58,23 @@ module Orel
 
     def get(name)
       unless @associations[name]
+        # If a lock is set on this object, disallow any new relationships
+        # to be instanciated.
+        raise Orel::LockedForQueryError if @locked_for_query
+
         heading = @relation_set.child(name) or raise InvalidRelation, name
         heading_attrs = heading_pk_attribute_names(heading)
         parent_attrs = parent_pk_attribute_names
+
         # If the heading's pk is the class's pk, it's a 1:1.
         if parent_attrs == heading_attrs
           @associations[name] = OneProxy.new(@parent.class.relation_namer, @parent, heading)
         else
           @associations[name] = ManyProxy.new(@parent.class.relation_namer, @parent, heading)
         end
+
+        # Populate the instance if this object is persisted.
+        @associations[name]._populate! if @parent.persisted?
       end
       @associations[name]
     end
@@ -121,14 +131,6 @@ module Orel
         @heading = heading
         @attributes = Attributes.new(@heading)
         @operator = Operator.new(@heading, @attributes)
-
-        # Populate from existing data if the record is persisted.
-        if @parent.persisted?
-          results = _find_existing_data("1:1 parent[#{parent.class} child[#{@heading.name}]") { |q, table|
-            q.take 1
-          }
-          _set(results.first) if results.any?
-        end
       end
 
       # Public: Determine existence of a record.
@@ -152,6 +154,13 @@ module Orel
       def _save
         @attributes[@parent.class] = @parent
         @operator.create_or_update
+      end
+
+      def _populate!
+        results = _find_existing_data("1:1 parent[#{@parent.class} child[#{@heading.name}]") { |q, table|
+          q.take 1
+        }
+        _set(results.first) if results.any?
       end
 
     protected
@@ -188,12 +197,6 @@ module Orel
         @parent = parent
         @heading = heading
         @records = []
-
-        # Populate from existing data if the record is persisted.
-        if @parent.persisted?
-          results = _find_existing_data("M:1 parent[#{parent.class}] children[#{heading.name}]")
-          results.each { |r| self << r }
-        end
       end
 
       include Enumerable
@@ -243,6 +246,10 @@ module Orel
         }
       end
 
+      def _populate!
+        results = _find_existing_data("M:1 parent[#{@parent.class}] children[#{@heading.name}]")
+        results.each { |r| self << r }
+      end
     end
 
   end

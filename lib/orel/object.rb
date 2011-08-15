@@ -237,6 +237,22 @@ module Orel
       end
     end
 
+    # Public: Determine if this object is readonly. If it is, then no attributes
+    # may be written or state persisted.
+    #
+    # Returns a Boolean.
+    def readonly?
+      @attributes.readonly && @operator.readonly
+    end
+
+    # Public: Determine if this object is locked for query. If it is, then
+    # no associations may be used to retrieve data.
+    #
+    # Returns a Boolean.
+    def locked_for_query?
+      @class_associations.locked_for_query && @simple_associations.locked_for_query
+    end
+
     def eql?(other)
       if other.is_a?(self.class)
         attributes.to_hash == other.attributes.to_hash
@@ -253,6 +269,16 @@ module Orel
 
     def persisted!
       @operator.persisted = true
+    end
+
+    def readonly!
+      @attributes.readonly = true
+      @operator.readonly = true
+    end
+
+    def locked_for_read!
+      @class_associations.locked_for_query = true
+      @simple_associations.locked_for_query = true
     end
 
   protected

@@ -8,7 +8,12 @@ module Orel
       @attributes = attributes
     end
 
+    attr_accessor :locked_for_query
+
     def [](klass)
+      # Disallow queries if this instance has been locked.
+      raise Orel::LockedForQueryError if @locked_for_query
+
       if parent_reference = @klass.get_heading.get_parent_reference(klass)
         return parent(parent_reference)
       end

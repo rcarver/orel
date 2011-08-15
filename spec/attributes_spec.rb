@@ -45,6 +45,10 @@ describe Orel::Attributes do
     it "throws an error if try to set an attribute that doesn't exist" do
       expect { subject[:foo] = "bar" }.to raise_error(Orel::Attributes::InvalidAttribute)
     end
+    it "throws an error if you set an attribute in readonly mode" do
+      subject.readonly = true
+      expect { subject[:name] = "bar" }.to raise_error(Orel::ReadonlyError)
+    end
     it "can set values for a reference" do
       subject[:first_name].should be_nil
       subject[:last_name].should be_nil

@@ -16,7 +16,10 @@ module Orel
       @table = Orel::Table.new(heading)
       @persisted = false
       @destroyed = false
+      @readonly = false
     end
+
+    attr_accessor :readonly
 
     # Internal: Determine if our attributes have been stored in the heading.
     attr_accessor :persisted
@@ -39,6 +42,8 @@ module Orel
     # Returns nothing.
     # Raises errors if something goes wrong while executing sql.
     def create
+      raise Orel::ReadonlyError if @readonly
+
       serial = get_serial_key_attribute
       keys = serial ? [serial.name] : []
 
@@ -57,6 +62,8 @@ module Orel
     # Returns nothing.
     # Raises errors if something goes wrong while executing sql.
     def update
+      raise Orel::ReadonlyError if @readonly
+
       attributes_for_key = hash_of_current_primary_key
 
       if serial = get_serial_key_attribute
@@ -80,6 +87,8 @@ module Orel
     # Returns nothing.
     # Raises errors if something goes wrong while executing sql.
     def destroy
+      raise Orel::ReadonlyError if readonly?
+
       attributes_for_key = hash_of_current_primary_key
 
       @table.delete(attributes_for_key)

@@ -18,7 +18,11 @@ module Orel
       # For ActiveModel::Dirty
       @previously_changed = {}
       @changed_attributes = {}
+
+      @readonly = false
     end
+
+    attr_accessor :readonly
 
     # Public: Determine if a key is in the heading.
     #
@@ -63,7 +67,10 @@ module Orel
     # Raises InvalidAttribute if the key is not an attribute in my heading.
     # Raises ArgumentError if the key is a class and the value is not an instance of that class.
     # Raises InvalidReference if the key is a class but it is not a reference of the heading.
+    # Raises Orel::ReadonlyError if in readonly mode.
     def []=(key, value)
+      raise Orel::ReadonlyError if @readonly
+
       if key.is_a?(Orel::Relation)
         klass = key
         object = value

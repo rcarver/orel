@@ -37,6 +37,14 @@ require 'orel/relation/set'
 module Orel
   VERSION = "0.0.0"
 
+  # Public: Exception thrown if an association is queried on an object
+  # that has been marked as locked from querying.
+  LockedForQueryError = Class.new(RuntimeError)
+
+  # Public: Exception thrown if an object or association is written
+  # to when it has been marked as readonly.
+  ReadonlyError = Class.new(RuntimeError)
+
   def self.name_transformer(&block)
     Orel::Relation::Namer.transformer(&block)
   end
