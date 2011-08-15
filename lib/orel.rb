@@ -20,6 +20,7 @@ require 'orel/operator'
 require 'orel/relation'
 require 'orel/schema_generator'
 require 'orel/simple_associations'
+require 'orel/query'
 require 'orel/table'
 require 'orel/validator'
 
