@@ -25,9 +25,12 @@ describe Orel::Query do
     user_query.query[0].should be_persisted
   end
 
-  specify "a query returns read locked objects" do
-    pending
-    user_query.query[0].should be_locked_for_read
+  specify "a query returns objects that are readonly" do
+    user_query.query[0].should be_readonly
+  end
+
+  specify "a query returns objects that are locked for query" do
+    user_query.query[0].should be_locked_for_query
   end
 
   specify "a query that limits results using a condition" do
@@ -42,12 +45,6 @@ describe Orel::Query do
       q.join  user[:ips]
       q.where user[:last_name].eq("Smith")
     }
-
-    # TODO: introduce some concept of "query lock" on an object that
-    # forbids it from pulling data from its associations.
-    # user.lock_reads!
-    # Orel.should_not_receive(:execute)
-
     results.first.should == @user2
     results.first[:ips].map { |r| r.to_hash }.should == [{ :ip => "127.0.0.1" }, { :ip => "192.168.0.1" }]
   end

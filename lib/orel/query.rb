@@ -18,7 +18,13 @@ module Orel
       }
       results.map { |row|
         object = @klass.new(row)
+        # The object is persisited because it came from the databse.
         object.persisted!
+        # The object is readonly because it's a complex relation
+        object.readonly!
+        # The object is locked for query because you should get all
+        # of the data you're interested in one shot.
+        object.locked_for_query!
         object
       }
     end

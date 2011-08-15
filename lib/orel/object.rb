@@ -276,7 +276,7 @@ module Orel
       @operator.readonly = true
     end
 
-    def locked_for_read!
+    def locked_for_query!
       @class_associations.locked_for_query = true
       @simple_associations.locked_for_query = true
     end
