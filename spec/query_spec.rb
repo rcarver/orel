@@ -43,14 +43,13 @@ describe Orel::Query do
 
   context "1:M simple association" do
     specify "a query that joins a M:1 simple association" do
+      # NOTE: that this is an inner join (user1 is not returned)
       results = user_query.query { |q, user|
-        q.join  user[:ips]
-        q.where user[:last_name].eq("Smith")
+        q.join user[:ips]
       }
       results.first.should == @user2
       results.first[:ips].map { |r| r.to_hash }.should == [{ :ip => "127.0.0.1" }, { :ip => "192.168.0.1" }]
     end
-
     specify "a query that specifies a condition on a simple assoication's attributes" do
       results = user_query.query { |q, user|
         q.where user[:ips][:ip].eq("127.0.0.1")
