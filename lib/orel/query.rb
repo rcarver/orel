@@ -64,10 +64,10 @@ module Orel
         # Extract association projections from the row.
         association_projections = {}
         projected_joins.each { |join|
-          join_id = "#{join.join_id}__"
+          join_id = join.join_id
           association_projections[join.join_class] = {}
           row.each { |key, value|
-            if key[0,join_id.size] == join_id
+            if key[0, join_id.size] == join_id
               name = key[(join_id.size)..-1]
               row.delete(key)
               association_projections[join.join_class][name] = value
@@ -141,7 +141,9 @@ module Orel
       def join(join)
         add_join(join)
         @projected_joins << join
-        @select_manager.project(*join.attributes)
+        join.project_attributes.each { |a|
+          @select_manager.project(a)
+        }
         nil
       end
 
@@ -183,12 +185,12 @@ module Orel
           klass = key
           heading = key.get_heading
           table = Orel.arel_table(heading)
-          @joins[heading.name] ||= Join.new(join_id, @klass, @heading, @table, klass, heading, table)
+          @joins[heading.name] ||= Join.new(make_join_id, @klass, @heading, @table, klass, heading, table)
         else
           if @simple_associations.include?(key)
             heading = @klass.get_heading(key)
             table = Orel.arel_table(heading)
-            @joins[heading.name] ||= Join.new(join_id, @klass, @heading, @table, key, heading, table)
+            @joins[heading.name] ||= Join.new(make_join_id, @klass, @heading, @table, key, heading, table)
           else
             @table[key]
           end
@@ -197,9 +199,8 @@ module Orel
 
     protected
 
-      def join_id
-        id = @join_id += 1
-        "j#{id}"
+      def make_join_id
+        "j#{@join_id += 1}__"
       end
     end
 
@@ -223,9 +224,10 @@ module Orel
       attr_reader :join_class
       attr_reader :join_id
 
-      def attributes
+      def project_attributes
         @join_heading.attributes.map { |a|
-          @join_table[a.name].as("#{join_id}__#{a.name}")
+          column_alias = "#{join_id}#{a.name}"
+          @join_table[a.name].as(Arel::SqlLiteral.new(column_alias))
         }
       end
 
