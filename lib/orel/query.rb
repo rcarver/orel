@@ -11,9 +11,9 @@ module Orel
         @heading.attributes.each { |a| select_manager.project table[a.name] }
 
         if block_given?
-          query_proxy = QueryProxy.new(select_manager, @heading)
-          table_proxy = TableProxy.new(table, @klass, @heading)
-          yield query_proxy, table_proxy
+          query = Select.new(select_manager, @heading)
+          relation = Relation.new(table, @klass, @heading)
+          yield query, relation
         end
       }
       results.map { |row|
@@ -29,7 +29,7 @@ module Orel
       }
     end
 
-    class QueryProxy
+    class Select
       def initialize(select_manager, heading)
         @select_manager = select_manager
         @heading = heading
@@ -73,13 +73,26 @@ module Orel
       end
     end
 
-    class TableProxy
+    class Relation
       def initialize(table, klass, heading)
         @table = table
         @klass = klass
         @heading = heading
         @simple_associations = SimpleAssociations.new(klass, klass.relation_set)
       end
+
+      # Public: Get an attribute or association, with the intent of
+      # adding it to the current query.
+      #
+      # key - Symbol attribute, Class or symbol of simple association.
+      #
+      # Examples
+      #
+      #   table_proxy[:name] # => Arel::Nodes::Node
+      #   table_proxy[:simple_association] # => Orel::Query::Join
+      #   table_proxy[OrelClassReference] # => Orel::Query::Join
+      #
+      # Returns an object suitable for passing to QueryProxy methods.
       def [](key)
         case key
         when Class
@@ -144,10 +157,9 @@ module Orel
       #
       # name - Symbol name of the attribute.
       #
-      # Returns a JoinProxy on which to specify conditions of the
-      #   attribute.
+      # Returns a JoinProxy on which to specify conditions of the attribute.
       def [](name)
-        JoinProxy.new(self, @join_table[name])
+        JoinCondition.new(self, @join_table[name])
       end
 
       # Public: Limit the results to objects that have an object as
@@ -177,7 +189,7 @@ module Orel
       end
     end
 
-    class JoinProxy
+    class JoinCondition
       def initialize(join, attribute)
         @join = join
         @attribute = attribute
