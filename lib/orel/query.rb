@@ -1,5 +1,6 @@
 module Orel
   class Query
+    include Orel::SqlDebugging
 
     def initialize(klass, heading)
       @klass = klass
@@ -7,16 +8,25 @@ module Orel
     end
 
     def query(description=nil)
-      results = @klass.table.query(description || "Orel::Query") { |select_manager, table|
-        @heading.attributes.each { |a| select_manager.project table[a.name] }
+      # Setup Arel query engine.
+      table = Orel.arel_table(@heading)
+      manager = Arel::SelectManager.new(table.engine)
+      manager.from table
 
-        if block_given?
-          query = Select.new(select_manager, @heading)
-          relation = Relation.new(table, @klass, @heading)
-          yield query, relation
-        end
-      }
-      results.map { |row|
+      # Overlay Orel heading and association information.
+      query = Select.new(manager, @heading)
+      relation = Relation.new(table, @klass, @heading)
+
+      # Always project the full heading so that we can instantiate
+      # fully valid objects.
+      @heading.attributes.each { |a| manager.project table[a.name] }
+
+      # Yield to customize the query.
+      yield query, relation if block_given?
+
+      # Turn rows into objects.
+      objects = []
+      execute(manager.to_sql, description || "#{self.class} on #{@klass}").each(:as => :hash, :symbolize_keys => true) { |row|
         object = @klass.new(row)
         # The object is persisited because it came from the databse.
         object.persisted!
@@ -25,8 +35,20 @@ module Orel
         # The object is locked for query because you should get all
         # of the data you're interested in one shot.
         #object.locked_for_query!
-        object
+        objects << object
       }
+      objects
+    end
+
+  protected
+
+    def execute(statement, description=nil)
+      begin
+        Orel.execute(statement, description)
+      rescue StandardError => e
+        debug_sql_error(statement)
+        raise
+      end
     end
 
     class Select
