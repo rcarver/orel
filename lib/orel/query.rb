@@ -161,31 +161,18 @@ module Orel
         unless object.is_a?(@join_class)
           raise ArgumentError, "Expected a #{@join_class} but got a #{object.class}"
         end
-        unless @parent_reference
-          raise ArgumentError, "No parent reference was found from parent:#{@class.inspect} to join:#{@join_class.inspect}"
+        case
+        when @parent_reference
+          @parent_reference.parent_key.attributes.each { |a|
+            @wheres << @table[a.name].eq(object[a.to_foreign_key.name])
+          }
+        when @child_reference
+          @child_reference.parent_key.attributes.each { |a|
+            @wheres << @table[a.name].eq(object[a.to_foreign_key.name])
+          }
+        else
+          raise ArgumentError, "No reference was found from class:#{@class.inspect} to join:#{@join_class.inspect}"
         end
-        @parent_reference.parent_key.attributes.each { |a|
-          @wheres << @table[a.name].eq(object[a.to_foreign_key.name])
-        }
-        self
-      end
-
-      # Public: Limit the results to objects that contain an object in
-      # a child association.
-      #
-      # object - Orel::Object found in a child relationship.
-      #
-      # Returns this Join object.
-      def contains(object)
-        unless object.is_a?(@join_class)
-          raise ArgumentError, "Expected a #{@join_class} but got a #{object.class}"
-        end
-        unless @child_reference
-          raise ArgumentError, "No child reference was found from class:#{@class.inspect} to join:#{@join_class.inspect}"
-        end
-        @child_reference.parent_key.attributes.each { |a|
-          @wheres << @table[a.name].eq(object[a.to_foreign_key.name])
-        }
         self
       end
     end
