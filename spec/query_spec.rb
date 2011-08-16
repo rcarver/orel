@@ -6,7 +6,7 @@ describe Orel::Query do
     @user1 = UsersAndThings::User.create!(:first_name => "John", :last_name => "Doe", :age => 30)
     @thing1 = UsersAndThings::Thing.create!(UsersAndThings::User => @user1, :name => "box")
 
-    @user2 = UsersAndThings::User.create!(:first_name => "John", :last_name => "Smith", :age => 30)
+    @user2 = UsersAndThings::User.create!(:first_name => "John", :last_name => "Smith", :age => 33)
     @thing2 = UsersAndThings::Thing.create!(UsersAndThings::User => @user2, :name => "table")
     @user2[:ips] << { :ip => "127.0.0.1" }
     @user2[:ips] << { :ip => "192.168.0.1" }
@@ -95,6 +95,18 @@ describe Orel::Query do
       results = thing_query.query { |q, thing|
         q.where thing[UsersAndThings::User][:first_name].eq("John")
         q.where thing[UsersAndThings::User][:last_name].eq("Smith")
+      }
+      results.should == [@thing2]
+    end
+    specify "a query that specifies a gt comparison" do
+      results = user_query.query { |q, user|
+        q.where user[:age].gt(31)
+      }
+      results.should == [@user2]
+    end
+    specify "a query that specifies a gt comparison on a join" do
+      results = thing_query.query { |q, thing|
+        q.where thing[UsersAndThings::User][:age].gt(31)
       }
       results.should == [@thing2]
     end
