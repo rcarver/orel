@@ -24,23 +24,72 @@ module Orel
       # Yield to customize the query.
       yield query, relation if block_given?
 
-      # Turn rows into objects.
-      objects = []
-      execute(manager.to_sql, description || "#{self.class} on #{@klass}").each(:as => :hash, :symbolize_keys => true) { |row|
-        object = @klass.new(row)
+      # Execute the query.
+      rows = execute(manager.to_sql, description || "#{self.class} on #{@klass}")
+
+      # Extract objects from rows.
+      if query.projected_joins.empty?
+        objects = extract_objects_without_joins(rows)
+      else
+        objects = extract_objects_with_joins(query.projected_joins, rows)
+      end
+
+      # Finalize and return the objects.
+      objects.each { |object|
         # The object is persisited because it came from the databse.
         object.persisted!
+
         # The object is readonly because it's a complex relation
         object.readonly!
+
         # The object is locked for query because you should get all
         # of the data you're interested in one shot.
-        #object.locked_for_query!
-        objects << object
+        object.locked_for_query!
       }
-      objects
     end
 
   protected
+
+    def extract_objects_without_joins(rows)
+      rows.each(:as => :hash).map { |row|
+        @klass.new(row)
+      }
+    end
+
+    def extract_objects_with_joins(projected_joins, rows)
+      objects = []
+      objects_hash = {}
+      rows.each(:as => :hash) { |row|
+
+        # Extract association projections from the row.
+        association_projections = {}
+        projected_joins.each { |join|
+          join_id = "#{join.join_id}__"
+          association_projections[join.join_class] = {}
+          row.each { |key, value|
+            if key[0,join_id.size] == join_id
+              name = key[(join_id.size)..-1]
+              row.delete(key)
+              association_projections[join.join_class][name] = value
+            end
+          }
+        }
+
+        # Only instantiate the object once.
+        if objects_hash[row]
+          object = objects_hash[row]
+        else
+          object = objects_hash[row] = @klass.new(row)
+          objects << object
+        end
+
+        projected_joins.each { |join|
+          # TODO: support all types of associations.
+          object[join.join_class] << association_projections[join.join_class]
+        }
+      }
+      objects
+    end
 
     def execute(statement, description=nil)
       begin
@@ -56,7 +105,10 @@ module Orel
         @select_manager = select_manager
         @heading = heading
         @joins = {}
+        @projected_joins = []
       end
+
+      attr_reader :projected_joins
 
       # Public: Specify a condition on the query.
       #
@@ -68,7 +120,7 @@ module Orel
       def where(condition)
         case condition
         when Join
-          _add_join(condition)
+          add_join(condition)
           condition.wheres.each { |where| @select_manager.where(where) }
         when Arel::Nodes::Node
           @select_manager.where(condition)
@@ -87,15 +139,15 @@ module Orel
       #
       # Returns nothing.
       def join(join)
-        _add_join(join)
-        return # no-op for now
-        @select_manager.project(*join.attributes) if join.projected?
+        add_join(join)
+        @projected_joins << join
+        @select_manager.project(*join.attributes)
         nil
       end
 
     protected
 
-      def _add_join(join)
+      def add_join(join)
         unless @joins[join.join_id]
           @select_manager.join(join.join_table).on(*join.join_conditions)
           @joins[join.join_id] = true
@@ -128,14 +180,15 @@ module Orel
       def [](key)
         case key
         when Class
+          klass = key
           heading = key.get_heading
           table = Orel.arel_table(heading)
-          @joins[heading.name] ||= Join.new(join_id, @klass, @heading, @table, key, heading, table)
+          @joins[heading.name] ||= Join.new(join_id, @klass, @heading, @table, klass, heading, table)
         else
           if @simple_associations.include?(key)
             heading = @klass.get_heading(key)
             table = Orel.arel_table(heading)
-            @joins[heading.name] ||= Join.new(join_id, @klass, @heading, @table, nil, heading, table)
+            @joins[heading.name] ||= Join.new(join_id, @klass, @heading, @table, key, heading, table)
           else
             @table[key]
           end
@@ -167,6 +220,7 @@ module Orel
 
       attr_reader :wheres
       attr_reader :join_table
+      attr_reader :join_class
       attr_reader :join_id
 
       def attributes

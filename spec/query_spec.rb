@@ -31,7 +31,6 @@ describe Orel::Query do
   end
 
   specify "a query returns objects that are locked for query" do
-    pending
     user_query.query[0].should be_locked_for_query
   end
 
