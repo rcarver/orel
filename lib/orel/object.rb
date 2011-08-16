@@ -116,14 +116,13 @@ module Orel
     # Raises an error if an unknown association is requested
     #   or if the attribute is not defined.
     def [](key)
-      case key
-      when Class: @class_associations[key]
+      case
+      when key.is_a?(Class) && key < Orel::Object
+        @class_associations[key]
+      when @simple_associations.include?(key)
+        @simple_associations[key]
       else
-        if @simple_associations.include?(key)
-          @simple_associations[key]
-        else
-          @attributes[key]
-        end
+        @attributes[key]
       end
     end
 
@@ -287,6 +286,19 @@ module Orel
     def locked_for_query!
       @class_associations.locked_for_query = true
       @simple_associations.locked_for_query = true
+    end
+
+    # Used to store associated data found in a join query.
+    def _store_association(association, data)
+      raise "Cannot store when persisted" if persisted?
+      case
+      when association.is_a?(Class) && association < Orel::Object
+        @class_associations._store(association, data)
+      when @simple_associations.include?(association)
+        @simple_associations._store(association, data)
+      else
+        raise ArgumentError, "Cannot store an assocation of type #{association.inspect}"
+      end
     end
 
   protected

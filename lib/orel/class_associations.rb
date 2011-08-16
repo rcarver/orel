@@ -26,6 +26,20 @@ module Orel
     # NOTE: @attributes must align with the heading we're talking about
     # so this isn't quite right when we deal with child relations.
 
+    def _store(klass, data)
+      # ClassAssociations need to maintain a cache of the associated
+      # objects. That cache can  be invalidated by a change to
+      # @attributes that change the key that define the relationship.
+      # Once we have that, we can prepopulate objects into that cache
+      # with this method.
+      if @klass.get_heading.get_parent_reference(klass)
+        # @attributes[klass] = klass.new(data)
+      end
+      if klass.get_heading.get_parent_reference(@klass)
+        # @attributes[klass] << klass.new(data)
+      end
+    end
+
   protected
 
     # select * from users where users.first_name = [thing.first_name] limit 1

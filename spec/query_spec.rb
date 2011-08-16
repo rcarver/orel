@@ -43,7 +43,6 @@ describe Orel::Query do
 
   context "1:M simple association" do
     specify "a query that joins a M:1 simple association" do
-      # NOTE: that this is an inner join (user1 is not returned)
       results = user_query.query { |q, user|
         q.join user[:ips]
       }
@@ -59,6 +58,17 @@ describe Orel::Query do
   end
 
   context "M:1 reference" do
+    specify "a query that joins a M:1 reference" do
+      results = thing_query.query { |q, thing|
+        q.join thing[UsersAndThings::User]
+      }
+      pending
+      hash = Hash[*results.map { |r| [r, r[UsersAndThings::User]] }.flatten]
+      hash.should == {
+        @thing1 => @user1,
+        @thing2 => @user2
+      }
+    end
     specify "a query that specifies a condition using an object" do
       results = thing_query.query { |q, thing|
         q.where thing[UsersAndThings::User].eq(@user1)

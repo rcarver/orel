@@ -54,6 +54,14 @@ module Orel
       @associations.values.each { |a| a._save }
     end
 
+    def _store(name, data)
+      case association = get(name)
+      when OneProxy then association._set(data)
+      when ManyProxy then association << data
+      else raise "Cannot store to a #{association.class}"
+      end
+    end
+
   protected
 
     def get(name)

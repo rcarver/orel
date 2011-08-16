@@ -84,8 +84,7 @@ module Orel
         end
 
         projected_joins.each { |join|
-          # TODO: support all types of associations.
-          object[join.join_class] << association_projections[join.join_class]
+          object._store_association(join.join_class, association_projections[join.join_class])
         }
       }
       objects
