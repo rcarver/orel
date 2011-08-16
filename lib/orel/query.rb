@@ -65,8 +65,8 @@ module Orel
       #
       # Returns nothing.
       def join(join)
-        return # no-op for now
         _add_join(join)
+        return # no-op for now
         @select_manager.project(*join.attributes) if join.projected?
         nil
       end
