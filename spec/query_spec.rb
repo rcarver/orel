@@ -91,4 +91,14 @@ describe Orel::Query do
     end
   end
 
+  context "complex queries" do
+    specify "a query that specifies two conditions on a join" do
+      results = thing_query.query { |q, thing|
+        q.where thing[UsersAndThings::User][:first_name].eq("John")
+        q.where thing[UsersAndThings::User][:last_name].eq("Smith")
+      }
+      results.should == [@thing2]
+    end
+  end
+
 end

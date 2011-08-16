@@ -46,7 +46,7 @@ module Orel
       def where(condition)
         case condition
         when Join
-          @select_manager.join(condition.join_table).on(*condition.join_conditions)
+          _add_join(condition)
           condition.wheres.each { |where| @select_manager.where(where) }
         when Arel::Nodes::Node
           @select_manager.where(condition)
@@ -66,10 +66,18 @@ module Orel
       # Returns nothing.
       def join(join)
         return # no-op for now
-        @joins[join.join_id] = join
+        _add_join(join)
         @select_manager.project(*join.attributes) if join.projected?
-        @select_manager.join(join.join_table).on(*join.join_conditions)
         nil
+      end
+
+    protected
+
+      def _add_join(join)
+        unless @joins[join.join_id]
+          @select_manager.join(join.join_table).on(*join.join_conditions)
+          @joins[join.join_id] = true
+        end
       end
     end
 
@@ -79,6 +87,8 @@ module Orel
         @klass = klass
         @heading = heading
         @simple_associations = SimpleAssociations.new(klass, klass.relation_set)
+        @join_id = 0
+        @joins = {}
       end
 
       # Public: Get an attribute or association, with the intent of
@@ -98,21 +108,29 @@ module Orel
         when Class
           heading = key.get_heading
           table = Orel.arel_table(heading)
-          Join.new(@klass, @heading, @table, key, heading, table)
+          @joins[heading.name] ||= Join.new(join_id, @klass, @heading, @table, key, heading, table)
         else
           if @simple_associations.include?(key)
             heading = @klass.get_heading(key)
             table = Orel.arel_table(heading)
-            Join.new(@klass, @heading, @table, nil, heading, table)
+            @joins[heading.name] ||= Join.new(join_id, @klass, @heading, @table, nil, heading, table)
           else
             @table[key]
           end
         end
       end
+
+    protected
+
+      def join_id
+        id = @join_id += 1
+        "j#{id}"
+      end
     end
 
     class Join
-      def initialize(klass, heading, table, join_class, join_heading, join_table)
+      def initialize(join_id, klass, heading, table, join_class, join_heading, join_table)
+        @join_id = join_id
         @class = klass
         @heading = heading
         @table = table
@@ -127,10 +145,7 @@ module Orel
 
       attr_reader :wheres
       attr_reader :join_table
-
-      def join_id
-        @join_id ||= "j1"
-      end
+      attr_reader :join_id
 
       def attributes
         @join_heading.attributes.map { |a|
