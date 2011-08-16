@@ -44,7 +44,7 @@ module Orel
 
         # The object is locked for query because you should get all
         # of the data you're interested in one shot.
-        object.locked_for_query!
+        object.locked_for_query! if query.locked_for_query
       }
     end
 
@@ -105,9 +105,11 @@ module Orel
         @heading = heading
         @joins = {}
         @projected_joins = []
+        @locked_for_query = true
       end
 
       attr_reader :projected_joins
+      attr_reader :locked_for_query
 
       # Public: Specify a condition on the query.
       #
@@ -143,6 +145,18 @@ module Orel
         join.project_attributes.each { |a|
           @select_manager.project(a)
         }
+        nil
+      end
+
+      # Public: By default, objects returned by a query are locked from
+      # making further queries. This ensures that by default, you're not
+      # doing n+1 queries unintentionally. It's perfectly reasonable to
+      # wish to allow objects to query their associations, in which case
+      # specify `unlock_for_query!`.
+      #
+      # Returns nothing.
+      def unlock_for_query!
+        @locked_for_query = false
         nil
       end
 

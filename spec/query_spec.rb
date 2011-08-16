@@ -34,6 +34,13 @@ describe Orel::Query do
     user_query.query[0].should be_locked_for_query
   end
 
+  specify "a query may allow objects to be further queried" do
+    results = user_query.query { |q, user|
+      q.unlock_for_query!
+    }
+    results[0].should_not be_locked_for_query
+  end
+
   specify "a query that limits results using a condition" do
     results = user_query.query { |q, user|
       q.where user[:last_name].eq("Doe")
