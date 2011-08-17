@@ -33,8 +33,23 @@ module Orel
   #
   module Object
 
-    InvalidRecord = Class.new(StandardError)
     NoHeadingError = Class.new(StandardError)
+
+    class InvalidRecord < StandardError
+      def initialize(object, errors)
+        @object = object
+        @errors = errors
+      end
+      attr_reader :object
+      attr_reader :errors
+      def message
+        msgs = []
+        @errors.each { |attr, messages|
+          msgs << "#{attr}: #{messages.inspect}"
+        }
+        "Errors on #{object.class}: " + msgs.join(", ")
+      end
+    end
 
     def self.included(base)
       base.extend Orel::Relation
@@ -61,7 +76,7 @@ module Orel
       # Raises Orel::Object::InvalidRecord if the object is not valid.
       def create!(*args)
         object = new(*args)
-        object.save or raise InvalidRecord
+        object.save or raise InvalidRecord.new(object, object.errors)
         object
       end
 
@@ -165,7 +180,7 @@ module Orel
     # Returns a Boolean true if the save was successful.
     # Raises Orel::Object::InvalidRecord if the save was NOT successful.
     def save!
-      save or raise InvalidRecord
+      save or raise InvalidRecord.new(self, errors)
     end
 
     # Public: Stop persisting this object. If the object has never been persisted,

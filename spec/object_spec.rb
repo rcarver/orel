@@ -33,6 +33,22 @@ describe Orel::Object do
   let(:invalid_thing_attrs) { {} }
   let(:valid_thing_attrs)   { { :name => "Box", UsersAndThings::User => UsersAndThings::User.create!(valid_user_attrs) } }
 
+  describe "invalid record errors" do
+    let(:user) { UsersAndThings::User.create(invalid_user_attrs) }
+    subject {
+      Orel::Object::InvalidRecord.new(user, user.errors)
+    }
+    it "has a useful message" do
+      subject.message.should =~ /Errors on UsersAndThings::User/
+    end
+    it "provides access to the object" do
+      subject.object.should == user
+    end
+    it "provides access to the errors" do
+      subject.errors.should == user.errors
+    end
+  end
+
   describe "creating new records" do
     context "an invalid record" do
       specify ".create returns an invalid record and does not persist anything" do
