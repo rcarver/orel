@@ -33,7 +33,8 @@ module Orel
             parent_table,
             parent_attributes,
             child_table,
-            child_attributes
+            child_attributes,
+            foreign_key.cascade
           )
         }
       }
@@ -127,17 +128,20 @@ module Orel
 
     class ForeignKey
       include Quoting
-      def initialize(parent_table, parent_attributes, child_table, child_attributes)
+      def initialize(parent_table, parent_attributes, child_table, child_attributes, cascade)
         @parent_table = parent_table
         @parent_attributes = parent_attributes
         @child_table = child_table
         @child_attributes = child_attributes
+        @cascade = cascade
       end
       def alter_statement
         name = @child_table.foreign_key_constraint_name(@parent_table.name)
         child_attribute_names = @child_attributes.map { |a| qc a.name }
         parent_attribute_names = @parent_attributes.map { |a| qc a.name }
-        "ALTER TABLE #{qt @child_table.name} ADD CONSTRAINT #{qc name} FOREIGN KEY (#{child_attribute_names.join(',')}) REFERENCES #{qt @parent_table.name} (#{parent_attribute_names.join(',')}) ON DELETE NO ACTION ON UPDATE NO ACTION"
+        on_delete = "ON DELETE #{@cascade.on_delete}"
+        on_update = "ON UPDATE #{@cascade.on_update}"
+        "ALTER TABLE #{qt @child_table.name} ADD CONSTRAINT #{qc name} FOREIGN KEY (#{child_attribute_names.join(',')}) REFERENCES #{qt @parent_table.name} (#{parent_attribute_names.join(',')}) #{on_delete} #{on_update}"
       end
     end
 

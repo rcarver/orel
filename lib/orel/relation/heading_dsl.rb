@@ -28,8 +28,12 @@ module Orel
 
       def ref(parent_klass, options={})
         parent_key_name = options.delete(:key) || :primary
+        cascade_delete = options.delete(:cascade) || false
         raise ArgumentError, "Unhandled options were passed to ref: #{options.keys.inspect}" unless options.keys.empty?
+
         reference = Reference.new(parent_klass, nil, parent_key_name || :primary, @klass, @child_name, :primary)
+        reference.on_delete = Orel::Relation::Cascade::CASCADE if cascade_delete === true
+
         @heading.references << reference
       end
 

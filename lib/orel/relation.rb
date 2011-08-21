@@ -29,7 +29,7 @@ module Orel
     # Returns nothing.
     def heading(child_name=nil, &block)
       dsl = HeadingDSL.new(self, relation_set, relation_namer, child_name, &block)
-      dsl.ref self if child_name
+      dsl.ref self, :cascade => true if child_name
       dsl._apply!
     end
 

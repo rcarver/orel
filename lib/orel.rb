@@ -25,6 +25,7 @@ require 'orel/table'
 require 'orel/validator'
 
 require 'orel/relation/attribute'
+require 'orel/relation/cascade'
 require 'orel/relation/foreign_key'
 require 'orel/relation/heading'
 require 'orel/relation/heading_dsl'
