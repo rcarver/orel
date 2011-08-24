@@ -69,7 +69,6 @@ describe Orel::Query do
       results = thing_query.query { |q, thing|
         q.join thing[UsersAndThings::User]
       }
-      pending
       hash = Hash[*results.map { |r| [r, r[UsersAndThings::User]] }.flatten]
       hash.should == {
         @thing1 => @user1,
