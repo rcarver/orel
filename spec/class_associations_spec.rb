@@ -29,9 +29,35 @@ describe Orel::ClassAssociations do
       thing1b = subject[UsersAndThings::Thing].find { |r| r.name == "table" }
       thing1b.object_id.should_not == thing1.object_id
     end
-    it "raises an error when it's locked for read" do
+    it "raises an error when it's locked for query" do
       subject.locked_for_query = true
       expect { subject[UsersAndThings::Thing] }.to raise_error(Orel::LockedForQueryError)
+    end
+    context "when records are already available" do
+      before do
+        @a = subject[UsersAndThings::Thing].find { |r| r.name == "table" }
+      end
+      it "returns the previously retrieved record" do
+        b = subject[UsersAndThings::Thing].find { |r| r.name == "table" }
+        @a.object_id.should == b.object_id
+      end
+      it "does not throw locked for query errors" do
+        subject.locked_for_query = true
+        expect { subject[UsersAndThings::Thing] }.not_to raise_error(Orel::LockedForQueryError)
+      end
+    end
+    context "when records have been stored" do
+      before do
+        subject._store(UsersAndThings::Thing, { :name => "test" })
+      end
+      it "returns stored records" do
+        subject[UsersAndThings::Thing].size.should == 1
+        subject[UsersAndThings::Thing].first.name.should == "test"
+      end
+      it "does not throw locked for query errors" do
+        subject.locked_for_query = true
+        expect { subject[UsersAndThings::Thing] }.not_to raise_error(Orel::LockedForQueryError)
+      end
     end
   end
 
@@ -56,6 +82,31 @@ describe Orel::ClassAssociations do
     it "raises an error when it's locked for read" do
       subject.locked_for_query = true
       expect { subject[UsersAndThings::User] }.to raise_error(Orel::LockedForQueryError)
+    end
+    context "when records are already available" do
+      before do
+        @a = subject[UsersAndThings::User]
+      end
+      it "returns the previously retrieved record" do
+        b = subject[UsersAndThings::User]
+        @a.object_id.should == b.object_id
+      end
+      it "does not throw locked for query errors" do
+        subject.locked_for_query = true
+        expect { subject[UsersAndThings::User] }.not_to raise_error(Orel::LockedForQueryError)
+      end
+    end
+    context "when records have been stored" do
+      before do
+        subject._store(UsersAndThings::User, { :first_name => "test" })
+      end
+      it "returns stored records" do
+        subject[UsersAndThings::User].first_name.should == "test"
+      end
+      it "does not throw locked for query errors" do
+        subject.locked_for_query = true
+        expect { subject[UsersAndThings::User] }.not_to raise_error(Orel::LockedForQueryError)
+      end
     end
   end
 

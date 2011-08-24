@@ -6,19 +6,18 @@ module Orel
     def initialize(klass, attributes)
       @klass = klass
       @attributes = attributes
+      @cache = {}
     end
 
     attr_accessor :locked_for_query
 
     def [](klass)
-      # Disallow queries if this instance has been locked.
-      raise Orel::LockedForQueryError if @locked_for_query
 
-      if parent_reference = @klass.get_heading.get_parent_reference(klass)
-        return parent(parent_reference)
+      if reference = @klass.get_heading.get_parent_reference(klass)
+        return @cache[[@klass, klass]] ||= parent(reference)
       end
-      if child_reference = klass.get_heading.get_parent_reference(@klass)
-        return children(child_reference)
+      if reference = klass.get_heading.get_parent_reference(@klass)
+        return @cache[[klass, @klass]] ||= children(reference)
       end
       raise ArgumentError, "#{klass} is neither a parent nor child association of #{@klass}"
     end
@@ -27,16 +26,12 @@ module Orel
     # so this isn't quite right when we deal with child relations.
 
     def _store(klass, data)
-      # ClassAssociations need to maintain a cache of the associated
-      # objects. That cache can  be invalidated by a change to
-      # @attributes that change the key that define the relationship.
-      # Once we have that, we can prepopulate objects into that cache
-      # with this method.
       if @klass.get_heading.get_parent_reference(klass)
-        # @attributes[klass] = klass.new(data)
+        @cache[[@klass, klass]] = klass.new(data)
       end
       if klass.get_heading.get_parent_reference(@klass)
-        # @attributes[klass] << klass.new(data)
+        @cache[[klass, @klass]] ||= Set.new
+        @cache[[klass, @klass]] << klass.new(data)
       end
     end
 
@@ -44,6 +39,8 @@ module Orel
 
     # select * from users where users.first_name = [thing.first_name] limit 1
     def parent(reference)
+      raise Orel::LockedForQueryError if @locked_for_query
+
       results = reference.parent_class.table.query("#{self.class} Find parent[#{reference.parent_class}] of child[#{reference.child_class}]") { |q, table|
         reference.parent_class.get_heading.attributes.each { |a|
           q.project table[a.name]
@@ -62,6 +59,8 @@ module Orel
 
     # select * from things where things.first_name = [user.first_name]
     def children(reference)
+      raise Orel::LockedForQueryError if @locked_for_query
+
       results = reference.child_class.table.query("#{self.class} Find children[#{reference.child_class}] of parent[#{reference.parent_class}]") { |q, table|
         reference.child_class.get_heading.attributes.each { |a|
           q.project table[a.name]
