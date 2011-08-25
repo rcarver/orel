@@ -72,6 +72,8 @@ module Orel
       # Public: Create and persist a new object but raise an exception
       # if the object is not valid.
       #
+      # attributes - Hash of name/value pairs to build the object with.
+      #
       # Returns an instance of the class.
       # Raises Orel::Object::InvalidRecord if the object is not valid.
       def create!(*args)
@@ -80,19 +82,62 @@ module Orel
         object
       end
 
+      # Public: Find a single record by its primary key. Supports arguments
+      # of the Hash or Ordered variety.
+      #
+      # Hash arguments
+      #
+      # attributes - Hash of name/value pairs for each attribute in the
+      #              primary key.
+      #
+      # Ordered arguments
+      #
+      # *args - Array of values that are ordered by the attributes in the
+      #         primary key.
+      #
+      # Examples
+      #
+      #     # Hash arguments
+      #     User.find_by_primary_key(:first_name => "John", :last_name => "Doe")
+      #
+      #     # Ordered arguments
+      #     User.find_by_primary_key("John", "Doe")
+      #
+      # Returns an Orel::Object or nil.
       def find_by_primary_key(*args)
         _finder.find_by_key(:primary, *args)
       end
 
+      # Public: Find a single record by a key. Supports arguments
+      # of the Hash or Ordered variety (see `find_by_primary_key`)
+      #
+      # key_name - Symbol name of the key.
+      # args     - Hash or Ordered arguments.
+      #
+      # Returns an Orel::Object or nil
       def find_by_key(key_name, *args)
         _finder.find_by_key(key_name, *args)
       end
 
+      # Public: Retrieve objects with simple conditions.
+      #
+      # attributes - Hash of name/value pairs describing the values
+      #              of objects to return.
+      #
+      # Examples
+      #
+      #     # Get all users with the last name 'Doe'
+      #     User.find_all(:last_name => "Doe")
+      #
+      #     # Get all users with the first name 'John' and last name 'Doe'
+      #     User.find_all(:first_name => "John", :last_name => "Doe")
+      #
+      # Returns an Array of Orel::Object.
       def find_all(*args)
         _finder.find_all(*args)
       end
 
-      # Public: Get some objects out of a relvar by specifying conditions.
+      # Public: Retrieve objects with complex conditions.
       #
       # description - String description of the query for logging (default: none).
       #
