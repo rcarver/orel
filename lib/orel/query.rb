@@ -1,4 +1,114 @@
 module Orel
+  # Orel queries are modeled after the Arel query language. Think of it as a
+  # subset of the full Arel language with a bit of extra convenience.
+  #
+  # A query's syntax is of the form:
+  #
+  #     Class.query { |select, relation|
+  #       # ...
+  #     }
+  #
+  # The `select` argument is generally named to `q` for query.
+  # The `relation` argument is generally named after the class being queried.
+  #
+  #     User.query { |q, user|
+  #       # ...
+  #     }
+  #
+  # Following is a description of how to use the select and relation objects
+  # to construct a query.
+  #
+  #
+  # Relation
+  #
+  # Instructions for the query are built up backwards, starting with
+  # the relation. The relation only responds to the `[]` method, which
+  # may be called with various types of arguments.
+  #
+  #   * Symbol name of an attribute on the relation.
+  #     Returns an Arel::Node on which any Arel comparison may be used,
+  #     such as `eq`, `gt`, etc.
+  #
+  #   * Symbol name of a simple association on the relation.
+  #     Returns a "join" object which responds to the `eq` operator.
+  #
+  #   * Class of a class association.
+  #     Returns a "join" object which responds to the `eq` operator.
+  #
+  # Relation examples
+  #
+  #     # The name.
+  #     relation[:name].eq('John')
+  #
+  #     # The name of the associated user.
+  #     relation[User][:name].eq('John')
+  #
+  #     # The age of the associated user.
+  #     relation[User][:age].gt(30)
+  #
+  #     # The ip address from the `logins` association.
+  #     relation[:logins][:ip].eq('127.0.0.1')
+  #
+  #     # The associated user. Equality is determined by the primary key.
+  #     relation[User].eq(@user)
+  #
+  #     # The user association.
+  #     relation[User]
+  #
+  #     # The logins association
+  #     relation[:logins]
+  #
+  #
+  # Select
+  #
+  # Relation operations that return Arel::Node-like objects may be passed
+  # to the `where` method. This adds restrictions to the query.
+  #
+  # Relation operations that return an association may be passed to the
+  # `join` method. This results in those associations being pre-loaded
+  # into the resulting objects.
+  #
+  # Select examples
+  #
+  #   # Restrict results to users whose name is John
+  #   select.where relation[:name].eq('John')
+  #
+  #   # Restrict results to users that have logged in from 127.0.0.1
+  #   select.where relation[:logins][:ip].eq('127.0.0.1')
+  #
+  #   # Return users with all of their logins
+  #   select.join relation[:logins]
+  #
+  #
+  # Preload & Lock for Query
+  #
+  # By default, objects returned from queries have the `lock_for_query` bit
+  # set to true. This prevents them from performing queries that fetch
+  # their associations. The intent here is that you should understand
+  # the full set of data required when performing complex queries and design
+  # those queries appropriately. When objects automatically fetch their
+  # associations, it's very easy to introduce N+1 query issues.
+  #
+  # To override this behavior and allow resulting objects to query their
+  # associations, call `unlock_for_query!` on the select.
+  #
+  # Examples
+  #
+  #     # Allow resulting objects to fetch their associations.
+  #     select.unlock_for_query!
+  #
+  # Note that preloading is not always a good idea. In the above example of
+  # returning a user and its logins, the resulting relation contains a full
+  # copy of the user heading for each login. Returning this larger amount
+  # of data over the network may sometimes conflict with the reduced number
+  # of overall queries.
+  #
+  #     | name | ip          |
+  #     |------|-------------|
+  #     | John | 127.0.0.1   |
+  #     | John | 192.168.0.1 |
+  #     | ...etc...          |
+  #
   class Query
     include Orel::SqlDebugging
 
@@ -7,6 +117,13 @@ module Orel
       @heading = heading
     end
 
+    # Public: Perform a query.
+    #
+    # description - String description of the query for logging (default: none).
+    #
+    # Yields Orel::Query::Select, Orel::Query::Relation
+    #
+    # Returns an Array of Orel::Object.
     def query(description=nil)
       # Setup Arel query engine.
       table = Orel.arel_table(@heading)

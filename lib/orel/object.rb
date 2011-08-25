@@ -92,6 +92,28 @@ module Orel
         _finder.find_all(*args)
       end
 
+      # Public: Get some objects out of a relvar by specifying conditions.
+      #
+      # description - String description of the query for logging (default: none).
+      #
+      # Examples
+      #
+      #     # Get all users with the last name 'Doe'.
+      #     User.query { |q, user|
+      #       q.where user[:last_name].eq("Doe")
+      #     }
+      #
+      #     # Get all users that have logged in from 127.0.0.1.
+      #     User.query { |q, user|
+      #       q.where user[:logins][:ip].eq("127.0.0.1")
+      #     }
+      #
+      #     # Get all users and all of otheir logins.
+      #     User.query { |q, user|
+      #       q.join user[:logins]
+      #     }
+      #
+      # Returns an Array of Orel::Object.
       def query(description=nil, &block)
         _query.query(description, &block)
       end
