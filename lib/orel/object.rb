@@ -61,6 +61,10 @@ module Orel
 
       # Public: Create and save a new object.
       #
+      # Examples
+      #
+      #     user = User.create(:first_name => "John", :last_name => "Smith")
+      #
       # Returns an instance of the class. This object is NOT guaranteed
       #   to be valid or pesisted.
       def create(*args)
@@ -73,6 +77,10 @@ module Orel
       # if the object is not valid.
       #
       # attributes - Hash of name/value pairs to build the object with.
+      #
+      # Examples
+      #
+      #     user = User.create!(:first_name => "John", :last_name => "Smith")
       #
       # Returns an instance of the class.
       # Raises Orel::Object::InvalidRecord if the object is not valid.
@@ -113,6 +121,11 @@ module Orel
       #
       # key_name - Symbol name of the key.
       # args     - Hash or Ordered arguments.
+      #
+      # Examples
+      #
+      #     # Hash arguments
+      #     User.find_by_key(:primary, :first_name => "John", :last_name => "Doe")
       #
       # Returns an Orel::Object or nil
       def find_by_key(key_name, *args)

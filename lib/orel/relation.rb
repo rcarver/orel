@@ -1,4 +1,8 @@
 module Orel
+  # The class level DSL that defines `heading` and other class
+  # methods such as `table`. This module may be extended by any
+  # class in order to gain access to these methods without the
+  # need for a full Orel::Object.
   module Relation
 
     def self.extended(klass)

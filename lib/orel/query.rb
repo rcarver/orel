@@ -117,7 +117,7 @@ module Orel
       @heading = heading
     end
 
-    # Public: Perform a query.
+    # Internal: Perform a query.
     #
     # description - String description of the query for logging (default: none).
     #

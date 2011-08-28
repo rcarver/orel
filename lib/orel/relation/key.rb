@@ -1,7 +1,7 @@
 module Orel
   module Relation
-    # A key describes zero or more attributes that
-    # must be unique within a relation.
+    # A key describes zero or more attributes that must be unique within a
+    # relation.
     class Key
 
       # Internal: Initialize a new key.

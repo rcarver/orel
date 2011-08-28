@@ -1,5 +1,7 @@
 module Orel
   module Relation
+    # Relations talk to each other with foreign keys and objects talk to
+    # each other through references. This class bridges that gap.
     class Reference
 
       def initialize(parent_class, parent_heading_name, parent_key_name, child_class, child_heading_name, child_key_name)

@@ -1,12 +1,25 @@
 module Orel
+  # Retrieve instances of Orel::Object that have been persisted.
   class Finder
 
+    # Internal: Initialize a finder.
+    #
+    # klass   - Class that methods will return.
+    # table   - Orel::Table containing data.
+    # heading - Orel::Relation::Heading describing the relation.
+    #
     def initialize(klass, table, heading)
       @klass = klass
       @table = table
       @heading = heading
     end
 
+    # Internal: Look for a record using a key.
+    #
+    # key_name - Symbol name of the key.
+    # args     - Hash or Array of args.
+    #
+    # Returns an Orel::Object or nil.
     def find_by_key(key_name, *args)
       key = @heading.get_key(key_name) or raise ArgumentError, "Key #{key_name.inspect} does not exist"
 
@@ -25,6 +38,11 @@ module Orel
       results.empty? ? nil : results.first
     end
 
+    # Internal: Look for all records with some attribute(s).
+    #
+    # attrs - Hash of key/value pairs describing the attributes.
+    #
+    # Returns an Array of Orel::Object.
     def find_all(attrs)
       results = @table.query { |q, table|
         @heading.attributes.each { |a|

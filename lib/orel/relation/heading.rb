@@ -1,10 +1,9 @@
 module Orel
   module Relation
-    # In most ways, this class describes a standard relational
-    # heading with attributes, keys and foreign keys. On top of
-    # that it introduces references which allow us to talk
-    # describe how classes are related by the headings they
-    # define.
+    # In most ways, this class describes a standard relational heading with
+    # attributes, keys and foreign keys. On top of that it introduces
+    # references which allow us to talk describe how classes are related by
+    # the headings they define.
     class Heading
 
       def initialize(namer)

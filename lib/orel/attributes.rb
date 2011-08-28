@@ -5,7 +5,7 @@ module Orel
     InvalidAttribute = Class.new(ArgumentError)
     InvalidReference = Class.new(ArgumentError)
 
-    # Public: Initialize a new set of attributes.
+    # Internal: Initialize a new set of attributes.
     #
     # heading  - Orel::Releation::Heading that backs it.
     # defaults - Hash of key/value pairs to populate with.
@@ -42,11 +42,10 @@ module Orel
       @attributes[key.to_sym]
     end
 
-    # Public: Set the value of an attribute or reference. If
-    # you pass a Class, each attribute that is part of the
-    # relationship will be set.
+    # Public: Set the value of an attribute or reference. If you pass a Class,
+    # each attribute that is part of the relationship will be set.
     #
-    # key   - Symbol attribute name OR Class of a reference.
+    # key   - Symbol attribute name OR Class of an association.
     # value - Whatever you want to set the value to.
     #
     # Examples

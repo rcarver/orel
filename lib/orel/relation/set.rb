@@ -1,5 +1,6 @@
 module Orel
   module Relation
+    # The set of relations belonging to a class.
     class Set
 
       def initialize(namer)

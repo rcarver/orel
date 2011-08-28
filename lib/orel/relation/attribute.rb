@@ -1,5 +1,6 @@
 module Orel
   module Relation
+    # An attribute in a relation.
     class Attribute
 
       ForeignKeyTranslationError = Class.new(StandardError)
