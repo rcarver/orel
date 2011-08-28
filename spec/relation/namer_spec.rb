@@ -36,6 +36,10 @@ describe Orel::Relation::Namer do
   end
 
   context "without a prefix" do
+    let(:options) {
+      {}
+    }
+
     shared_examples_for "a Namer creating names for 'user'" do
       specify "a foreign key name" do
         subject.foreign_key_name(:name).should == :name
@@ -60,13 +64,13 @@ describe Orel::Relation::Namer do
     end
 
     context "with pluralization" do
-      subject { described_class.new("user", :pluralize => true) }
+      subject { described_class.new("user", options.merge(:pluralize => true)) }
       its(:heading_name) { should == :users }
       it_should_behave_like "a Namer creating names for 'user'"
     end
 
     context "without pluralization" do
-      subject { described_class.new("user", :pluralize => false) }
+      subject { described_class.new("user", options.merge(:pluralize => false)) }
       its(:heading_name) { should == :user }
       it_should_behave_like "a Namer creating names for 'user'"
     end
@@ -75,13 +79,16 @@ describe Orel::Relation::Namer do
       let(:transformer) {
         lambda { |n| n.sub(/namespaced_/, '') }
       }
-      subject { described_class.new("namespaced_user", :pluralize => true, :transformer => transformer) }
-      its(:heading_name) { should == :users }
+      subject { described_class.new("namespaced_user", options.merge(:transformer => transformer)) }
+      its(:heading_name) { should == :user }
       it_should_behave_like "a Namer creating names for 'user'"
     end
   end
 
   context "with a prefix" do
+    let(:options) {
+      { :prefix => 'project_' }
+    }
     shared_examples_for "a Namer creating names for 'user' prefixed with 'project_'" do
       specify "a foreign key name" do
         subject.foreign_key_name(:name).should == :name
@@ -106,13 +113,13 @@ describe Orel::Relation::Namer do
     end
 
     context "with pluralization" do
-      subject { described_class.new("user", :prefix => "project_", :pluralize => true) }
+      subject { described_class.new("user", options.merge(:pluralize => true)) }
       its(:heading_name) { should == :project_users }
       it_should_behave_like "a Namer creating names for 'user' prefixed with 'project_'"
     end
 
     context "without pluralization" do
-      subject { described_class.new("user", :prefix => "project_", :pluralize => false) }
+      subject { described_class.new("user", options.merge(:pluralize => false)) }
       its(:heading_name) { should == :project_user }
       it_should_behave_like "a Namer creating names for 'user' prefixed with 'project_'"
     end
@@ -123,7 +130,7 @@ describe Orel::Relation::Namer do
       }
       it "is not allowed" do
         expect {
-         described_class.new("namespaced_user", :prefix => "project_", :transformer => transformer)
+         described_class.new("namespaced_user", options.merge(:transformer => transformer))
         }.to raise_error(ArgumentError)
       end
     end
