@@ -4,6 +4,9 @@ module Orel
   module Relation
     class Namer
 
+      # The maximum length of a mysql key.
+      MAX_MYSQL_KEY = 64.freeze
+
       def self.transformer(&block)
         @transformer = block
       end
@@ -103,7 +106,7 @@ module Orel
           attribute_names.map { |a| shorten(a) },
           Digest::MD5.hexdigest(attribute_names.join('::'))
         ]
-        parts.join('_')[0, 64].to_sym
+        parts.join('_')[0, MAX_MYSQL_KEY].to_sym
       end
 
       def foreign_key_constraint_name(this_name, other_name)
