@@ -98,13 +98,12 @@ module Orel
       #
       # Returns a Symbol.
       def unique_key_name(attribute_names)
-        short_names = attribute_names.map do |a|
-          a.to_s.split('_').map do |part|
-            part[0,1]
-          end.join
-        end
-        full_name = [ix(@name).split('_').map { |part| part[0,1] }.join, short_names, Digest::MD5.hexdigest(attribute_names.join('::'))].join('_')
-        full_name[0,64].to_sym
+        parts = [
+          shorten(heading_name),
+          attribute_names.map { |a| shorten(a) },
+          Digest::MD5.hexdigest(attribute_names.join('::'))
+        ]
+        parts.join('_')[0, 64].to_sym
       end
 
       def foreign_key_constraint_name(this_name, other_name)
@@ -115,6 +114,10 @@ module Orel
 
       def ix(name)
         [@prefix, name, @suffix].compact.join
+      end
+
+      def shorten(name)
+        name.to_s.split('_').map { |part| part[0, 1] }.join
       end
 
     end
