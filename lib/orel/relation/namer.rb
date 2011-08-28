@@ -8,6 +8,12 @@ module Orel
         @transformer = block
       end
 
+      # Internal: Get a namer for a class. The options on the name
+      # are determined by introspecting the class hierarchy.
+      #
+      # klass - Class to name.
+      #
+      # Returns an Orel::Relation::Namer.
       def self.for_class(klass)
         options = {
           :prefix => _find_prefix(klass),
@@ -31,7 +37,15 @@ module Orel
         parent.table_name_suffix if parent
       end
 
-      def initialize(name, options={})
+      # Internal: Initialize a new namer.
+      #
+      # name    - String singular name.
+      # options - Hash of options. All are required:
+      #           :pluralize - Boolean true to pluralize `name` where appropriate.
+      #           :prefix    - String to prefix to all names.
+      #           :suffix    - String to append to all names.
+      #
+      def initialize(name, options)
         if options[:transformer] && (options[:prefix] || options[:suffix])
           raise ArgumentError, "transformer is deprecated and cannot be used along with prefix or suffix"
         end
@@ -44,10 +58,17 @@ module Orel
         @name = @transformer.call(@name) if @transformer
       end
 
+      # Internal: Get a new instance of Namer that creates names
+      # for a child heading.
+      #
+      # Returns an Orel::Relation::Namer.
       def for_child(name)
         Namer.new([@name, name].join("_"), @options.merge(:pluralize => false))
       end
 
+      # Internal: The name of the heading.
+      #
+      # Returns a Symbol.
       def heading_name
         if @pluralize
           ix(@name.pluralize).to_sym
@@ -56,8 +77,13 @@ module Orel
         end
       end
 
-      # Used in Attribute.
-      def foreign_key_name(attribute_name)
+      # Internal: Transform an attribute name so it can be used
+      # on the other side of a relationship.
+      #
+      # attribute_name - Symbol name of the attribute.
+      #
+      # Returns a Symbol.
+      def foreign_attribute_name(attribute_name)
         if attribute_name == :id
           fk_name = ix([@name, attribute_name].join('_')).to_sym
         else
@@ -65,7 +91,12 @@ module Orel
         end
       end
 
-      # Used to generate sql
+      # Internal: Transform a set of attribute names into the name of
+      # a unique key constraint.
+      #
+      # attribute_names - Array of Symbol names of the attributes in the key.
+      #
+      # Returns a Symbol.
       def unique_key_name(attribute_names)
         short_names = attribute_names.map do |a|
           a.to_s.split('_').map do |part|
@@ -76,7 +107,6 @@ module Orel
         full_name[0,64].to_sym
       end
 
-      # Used to generate sql
       def foreign_key_constraint_name(this_name, other_name)
         [this_name, other_name, 'fk'].join('_').to_sym
       end

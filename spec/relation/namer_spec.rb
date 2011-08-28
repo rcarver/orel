@@ -42,10 +42,10 @@ describe Orel::Relation::Namer do
 
     shared_examples_for "a Namer creating names for 'user'" do
       specify "a foreign key name" do
-        subject.foreign_key_name(:name).should == :name
+        subject.foreign_attribute_name(:name).should == :name
       end
       specify "a foreign key name for the attribute 'id'" do
-        subject.foreign_key_name(:id).should == :user_id
+        subject.foreign_attribute_name(:id).should == :user_id
       end
       specify "a unique key name" do
         subject.unique_key_name([:first_name, :last_name]).should == ('u_fn_ln_' + Digest::MD5.hexdigest('first_name::last_name')).to_sym
@@ -91,10 +91,10 @@ describe Orel::Relation::Namer do
     }
     shared_examples_for "a Namer creating names for 'user' prefixed with 'project_'" do
       specify "a foreign key name" do
-        subject.foreign_key_name(:name).should == :name
+        subject.foreign_attribute_name(:name).should == :name
       end
       specify "a foreign key name for the attribute 'id'" do
-        subject.foreign_key_name(:id).should == :project_user_id
+        subject.foreign_attribute_name(:id).should == :project_user_id
       end
       specify "a unique key name" do
         subject.unique_key_name([:first_name, :last_name]).should == ('pu_fn_ln_' + Digest::MD5.hexdigest('first_name::last_name')).to_sym

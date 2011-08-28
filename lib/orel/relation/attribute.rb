@@ -41,7 +41,7 @@ module Orel
         unless domain.respond_to?(:for_foreign_key)
           raise ForeignKeyTranslationError, "#{domain.inspect} does not support foreign keys. It must define `for_foreign_key`."
         end
-        fk_name = @namer.foreign_key_name(name)
+        fk_name = @namer.foreign_attribute_name(name)
         fk_domain = domain.for_foreign_key
         self.class.new(nil, nil, fk_name, fk_domain)
       end
