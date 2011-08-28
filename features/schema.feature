@@ -43,28 +43,6 @@ Feature: Create MySQL tables from relational definitions
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       """
 
-  Scenario: Create a namespaced table with surrogate keys
-    Given I have these class definitions:
-      """
-      module Something
-        class User
-          extend Orel::Relation
-          heading do
-            key { id }
-            att :id, Orel::Domains::Serial
-          end
-        end
-      end
-      """
-    When I use Orel to fill my database with tables
-    Then my database looks like:
-      """
-      CREATE TABLE `something_users` (
-        `id` int(11) NOT NULL AUTO_INCREMENT,
-        UNIQUE KEY `su_i_b80bb7740288fda1f201890375a60c8f` (`id`)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-      """
-
   Scenario: Create a table with basic column types
     Given I have these class definitions:
       """
@@ -189,10 +167,11 @@ Feature: Create MySQL tables from relational definitions
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       """
 
-  Scenario: Create child relation with a namespaced class.
+  Scenario: Create child relation with a namespaced class and table prefix.
     Given I have these class definitions:
       """
       module Something
+        def self.table_name_prefix; 'something_' end
         class User
           extend Orel::Relation
           heading do

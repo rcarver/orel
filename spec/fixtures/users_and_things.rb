@@ -1,4 +1,7 @@
 module UsersAndThings
+  def self.table_name_prefix
+    'users_and_things_'
+  end
 
   class User
     include Orel::Object
