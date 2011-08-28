@@ -1,9 +1,17 @@
 require 'set'
 require 'logger'
 
+# Choice bits of ActiveSupport.
 require 'active_support/inflector'
+require 'active_support/core_ext/module/introspection'
+
+# Orel is ActiveModel compatible.
 require 'active_model'
+
+# Arel does the low level relational algebra.
 require 'arel'
+
+# Allows fancy `key` syntax.
 require 'sourcify'
 
 # Database implementations may not be assumed in the future.
