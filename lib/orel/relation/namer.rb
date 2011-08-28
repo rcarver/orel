@@ -4,12 +4,8 @@ module Orel
   module Relation
     class Namer
 
-      # The maximum length of a mysql key.
-      MAX_MYSQL_KEY = 64.freeze
-
-      def self.transformer(&block)
-        @transformer = block
-      end
+      # The maximum string length of a mysql key.
+      MYSQL_MAX_KEY_LENGTH = 64.freeze
 
       # Internal: Get a namer for a class. The options on the name
       # are determined by introspecting the class hierarchy.
@@ -21,8 +17,7 @@ module Orel
         options = {
           :prefix => _find_prefix(klass),
           :suffix => _find_suffix(klass),
-          :pluralize => true,
-          :transformer => @transformer
+          :pluralize => true
         }
         name = klass.name.split("::").last.underscore
         Namer.new(name, options)
@@ -49,16 +44,11 @@ module Orel
       #           :suffix    - String to append to all names.
       #
       def initialize(name, options)
-        if options[:transformer] && (options[:prefix] || options[:suffix])
-          raise ArgumentError, "transformer is deprecated and cannot be used along with prefix or suffix"
-        end
         @name = name
         @options = options
         @pluralize = options[:pluralize]
-        @transformer = options[:transformer]
         @prefix = options[:prefix]
         @suffix = options[:suffix]
-        @name = @transformer.call(@name) if @transformer
       end
 
       # Internal: Get a new instance of Namer that creates names
@@ -85,6 +75,16 @@ module Orel
       #
       # attribute_name - Symbol name of the attribute.
       #
+      # Examples
+      #
+      #     namer = Namer.new("user")
+      #     namer.foreign_key_constraint_name(:id)
+      #     # => :user_id
+      #
+      #     namer = Namer.new("user")
+      #     namer.foreign_key_constraint_name(:name)
+      #     # => :name
+      #
       # Returns a Symbol.
       def foreign_attribute_name(attribute_name)
         if attribute_name == :id
@@ -95,9 +95,16 @@ module Orel
       end
 
       # Internal: Transform a set of attribute names into the name of
-      # a unique key constraint.
+      # a unique key constraint. The resulting name aims to be somewhat
+      # visibly descriptive while also unique within an entire database.
       #
       # attribute_names - Array of Symbol names of the attributes in the key.
+      #
+      # Examples
+      #
+      #     namer = Namer.new("user")
+      #     namer.unique_key_name([:first_name, :last_name])
+      #     # => :u_fn_ln_[MD5("first_name::last_name")]
       #
       # Returns a Symbol.
       def unique_key_name(attribute_names)
@@ -106,7 +113,7 @@ module Orel
           attribute_names.map { |a| shorten(a) },
           Digest::MD5.hexdigest(attribute_names.join('::'))
         ]
-        parts.join('_')[0, MAX_MYSQL_KEY].to_sym
+        parts.flatten.join('_')[0, MYSQL_MAX_KEY_LENGTH].to_sym
       end
 
       def foreign_key_constraint_name(this_name, other_name)

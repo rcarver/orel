@@ -74,15 +74,6 @@ describe Orel::Relation::Namer do
       its(:heading_name) { should == :user }
       it_should_behave_like "a Namer creating names for 'user'"
     end
-
-    context "with a transformer" do
-      let(:transformer) {
-        lambda { |n| n.sub(/namespaced_/, '') }
-      }
-      subject { described_class.new("namespaced_user", options.merge(:transformer => transformer)) }
-      its(:heading_name) { should == :user }
-      it_should_behave_like "a Namer creating names for 'user'"
-    end
   end
 
   context "with a prefix" do
@@ -122,17 +113,6 @@ describe Orel::Relation::Namer do
       subject { described_class.new("user", options.merge(:pluralize => false)) }
       its(:heading_name) { should == :project_user }
       it_should_behave_like "a Namer creating names for 'user' prefixed with 'project_'"
-    end
-
-    context "with a transformer" do
-      let(:transformer) {
-        lambda { |n| n.sub(/namespaced_/, '') }
-      }
-      it "is not allowed" do
-        expect {
-         described_class.new("namespaced_user", options.merge(:transformer => transformer))
-        }.to raise_error(ArgumentError)
-      end
     end
   end
 end

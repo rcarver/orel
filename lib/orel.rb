@@ -46,10 +46,6 @@ module Orel
   # to when it has been marked as readonly.
   ReadonlyError = Class.new(RuntimeError)
 
-  def self.name_transformer(&block)
-    Orel::Relation::Namer.transformer(&block)
-  end
-
   def self.finalize!
     return if @finalized
     @finalized = true
