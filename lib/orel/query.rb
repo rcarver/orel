@@ -110,7 +110,6 @@ module Orel
   #     | ...etc...          |
   #
   class Query
-    include Orel::SqlDebugging
 
     def initialize(klass, heading, connection)
       @klass = klass
@@ -143,7 +142,7 @@ module Orel
       yield query, relation if block_given?
 
       # Execute the query.
-      rows = execute(manager.to_sql, description || "#{self.class} on #{@klass}")
+      rows = @connection.execute(manager.to_sql, description || "#{self.class} on #{@klass}")
 
       # Extract objects from rows.
       if query.projected_joins.empty?
@@ -206,15 +205,6 @@ module Orel
         }
       }
       objects
-    end
-
-    def execute(statement, description=nil)
-      begin
-        @connection.execute(statement, description)
-      rescue StandardError => e
-        debug_sql_error(statement)
-        raise
-      end
     end
 
     class Select

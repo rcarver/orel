@@ -1,7 +1,6 @@
 module Orel
   # An Orel::Table lets you perform basic sql operations on a heading.
   class Table
-    include Orel::SqlDebugging
 
     def initialize(heading, connection)
       @heading = heading
@@ -60,7 +59,7 @@ module Orel
       manager = Arel::SelectManager.new(table.engine)
       manager.from table
       yield manager, table
-      execute(manager.to_sql, description || "#{self.class} Query #{@heading.name}").each(:as => :hash, :symbolize_keys => true)
+      @connection.execute(manager.to_sql, description || "#{self.class} Query #{@heading.name}").each(:as => :hash, :symbolize_keys => true)
     end
 
     # Public: Add another table to a query. You'll need to specify the
@@ -102,7 +101,7 @@ module Orel
     #
     # Returns nothing.
     def insert(attributes)
-      execute(insert_statement(attributes), "#{self.class} Insert into #{@heading.name}", :insert)
+      @connection.insert(insert_statement(attributes), "#{self.class} Insert into #{@heading.name}")
     end
 
     # Public: Insert data into the table but update one or more values
@@ -126,7 +125,7 @@ module Orel
     #
     # Returns nothing.
     def upsert(options)
-      execute(upsert_statement(options), "#{self.class} Upsert into #{@heading.name}")
+      @connection.execute(upsert_statement(options), "#{self.class} Upsert into #{@heading.name}")
     end
 
     # Public: Update data in the table.
@@ -144,7 +143,7 @@ module Orel
     #
     # Returns nothing.
     def update(options)
-      execute(update_statement(options), "#{self.class} Update #{@heading.name}")
+      @connection.execute(update_statement(options), "#{self.class} Update #{@heading.name}")
     end
 
     # Public: Delete data from the table.
@@ -157,14 +156,14 @@ module Orel
     #
     # Returns nothing.
     def delete(attributes)
-      execute(delete_statement(attributes), "#{self.class} Delete from #{@heading.name}")
+      @connection.execute(delete_statement(attributes), "#{self.class} Delete from #{@heading.name}")
     end
 
     # Public: Delete all data from the table.
     #
     # Returns nothing.
     def truncate!
-      execute "TRUNCATE TABLE `#{@heading.name}`"
+      @connection.execute "TRUNCATE TABLE `#{@heading.name}`"
     end
 
     def insert_statement(attributes)
@@ -223,19 +222,6 @@ module Orel
         sym = k.to_sym
         [sym, hash[sym]]
       }
-    end
-
-    def execute(statement, description=nil, op=:execute)
-      begin
-        case op
-        when :execute: @connection.execute(statement, description)
-        when :insert:  @connection.insert(statement, description)
-        else raise ArgumentError, "Unknown execution operation #{op.inspect}"
-        end
-      rescue StandardError => e
-        debug_sql_error(statement)
-        raise
-      end
     end
 
   end
