@@ -78,11 +78,11 @@ module Orel
       # Examples
       #
       #     namer = Namer.new("user")
-      #     namer.foreign_key_constraint_name(:id)
+      #     namer.foreign_attribute_name(:id)
       #     # => :user_id
       #
       #     namer = Namer.new("user")
-      #     namer.foreign_key_constraint_name(:name)
+      #     namer.foreign_attribute_name(:name)
       #     # => :name
       #
       # Returns a Symbol.
@@ -116,8 +116,8 @@ module Orel
         parts.flatten.join('_')[0, MYSQL_MAX_KEY_LENGTH].to_sym
       end
 
-      def foreign_key_constraint_name(this_name, other_name)
-        [this_name, other_name, 'fk'].join('_').to_sym
+      def foreign_key_constraint_name(attribute_name)
+        [heading_name, attribute_name, 'fk'].join('_').to_sym
       end
 
     protected

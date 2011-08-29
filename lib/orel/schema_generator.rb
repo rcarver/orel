@@ -80,7 +80,7 @@ module Orel
         }
       end
       def foreign_key_constraint_name(table_name)
-        @relation_namer.foreign_key_constraint_name(name, table_name)
+        @relation_namer.foreign_key_constraint_name(table_name)
       end
       def create_statement
         sql = []
