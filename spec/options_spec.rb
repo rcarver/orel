@@ -9,17 +9,30 @@ describe Orel::Options do
         {
           :relation_prefix => "rel_prefix",
           :relation_suffix => "rel_suffix",
+          :pluralize_relations => false,
           :attribute_prefix => "attr_prefix",
           :active_record => :active_record
         }
       end
     end
 
-    subject { described_class.new(Group) }
-    its(:relation_prefix) { should == "rel_prefix" }
-    its(:relation_suffix) { should == "rel_suffix" }
-    its(:attribute_prefix) { should == "attr_prefix" }
-    its(:active_record) { should == :active_record }
+    describe "by default" do
+      subject { described_class.new(Object) }
+      its(:relation_prefix) { should be_nil }
+      its(:relation_suffix) { should be_nil }
+      its(:pluralize_relations) { should be_true }
+      its(:attribute_prefix) { should be_nil }
+      its(:active_record) { should == Orel::AR }
+    end
+
+    describe "values set" do
+      subject { described_class.new(Group) }
+      its(:relation_prefix) { should == "rel_prefix" }
+      its(:relation_suffix) { should == "rel_suffix" }
+      its(:pluralize_relations) { should be_false }
+      its(:attribute_prefix) { should == "attr_prefix" }
+      its(:active_record) { should == :active_record }
+    end
   end
 
   context "class/module namespacing" do

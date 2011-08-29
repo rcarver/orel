@@ -7,31 +7,31 @@ describe Orel::Relation::Namer do
       module Thing; end
     end
     module BaseWithPrefix
-      def self.table_name_prefix; "prefixed_"; end
-      module Thing; end
-    end
-    module BaseWithSuffix
-      def self.table_name_suffix; "_suffixed"; end
+      def self.orel_options
+        {
+          :relation_prefix => "prefixed_"
+        }
+      end
       module Thing; end
     end
   end
 
   describe ".for_class" do
+    def build(klass)
+      options = Orel::Options.new(klass)
+      described_class.for_class(klass, options)
+    end
     it "turns a top level class into a namer" do
-      namer = described_class.for_class(Object)
+      namer = build(Object)
       namer.heading_name.should == :objects
     end
     it "turns a namespaced class into a namer" do
-      namer = described_class.for_class(NamerTestModules::Base::Thing)
+      namer = build(NamerTestModules::Base::Thing)
       namer.heading_name.should == :things
     end
-    it "uses `table_name_prefix`" do
-      namer = described_class.for_class(NamerTestModules::BaseWithPrefix::Thing)
+    it "uses options" do
+      namer = build(NamerTestModules::BaseWithPrefix::Thing)
       namer.heading_name.should == :prefixed_things
-    end
-    it "uses `table_name_suffix`" do
-      namer = described_class.for_class(NamerTestModules::BaseWithSuffix::Thing)
-      namer.heading_name.should == :things_suffixed
     end
   end
 

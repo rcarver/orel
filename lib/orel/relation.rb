@@ -13,7 +13,10 @@ module Orel
     #
     # Returns an Orel::Connection.
     def connection
-      @connection ||= Orel::Connection.new(Orel::AR.connection)
+      @connection ||= begin
+        active_record = Class.new(_orel_options.active_record)
+        Orel::Connection.new(active_record.connection)
+      end
     end
 
     # Public: Define a relation heading for this class. See
@@ -68,8 +71,12 @@ module Orel
       end
     end
 
+    def _orel_options
+      @_orel_options ||= Orel::Options.new(self)
+    end
+
     def relation_namer
-      @namer ||= Orel::Relation::Namer.for_class(self)
+      @namer ||= Orel::Relation::Namer.for_class(self, _orel_options)
     end
 
     def relation_set

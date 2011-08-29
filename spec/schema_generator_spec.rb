@@ -3,7 +3,7 @@ require 'helper'
 describe Orel::SchemaGenerator::Table do
 
   let(:klass) { UsersAndThings::User }
-  let(:namer) { Orel::Relation::Namer.for_class(klass) }
+  let(:namer) { Orel::Relation::Namer.new("name", :pluralize => true) }
 
   subject { described_class.new(namer, klass.get_heading) }
 

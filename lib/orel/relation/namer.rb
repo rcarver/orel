@@ -10,29 +10,18 @@ module Orel
       # Internal: Get a namer for a class. The options on the name
       # are determined by introspecting the class hierarchy.
       #
-      # klass - Class to name.
+      # klass        - Class to name.
+      # orel_options - Orel::Options that configure the naming.
       #
       # Returns an Orel::Relation::Namer.
-      def self.for_class(klass)
+      def self.for_class(klass, orel_options)
         options = {
-          :prefix => _find_prefix(klass),
-          :suffix => _find_suffix(klass),
-          :pluralize => true
+          :prefix => orel_options.relation_prefix,
+          :suffix => orel_options.relation_suffix,
+          :pluralize => orel_options.pluralize_relations
         }
         name = klass.name.split("::").last.underscore
         Namer.new(name, options)
-      end
-
-      def self._find_prefix(klass)
-        # parents is provided by ActiveSupport.
-        parent = klass.parents.find { |p| p.respond_to?(:table_name_prefix) }
-        parent.table_name_prefix if parent
-      end
-
-      def self._find_suffix(klass)
-        # parents is provided by ActiveSupport.
-        parent = klass.parents.find { |p| p.respond_to?(:table_name_suffix) }
-        parent.table_name_suffix if parent
       end
 
       # Internal: Initialize a new namer.

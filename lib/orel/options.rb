@@ -8,19 +8,23 @@ module Orel
     attr_reader :options
 
     def relation_prefix
-      @options[:relation_prefix] || nil
+      @options.fetch(:relation_prefix, nil)
     end
 
     def relation_suffix
-      @options[:relation_suffix] || nil
+      @options.fetch(:relation_suffix, nil)
     end
 
     def attribute_prefix
-      @options[:attribute_prefix] || nil
+      @options.fetch(:attribute_prefix, nil)
+    end
+
+    def pluralize_relations
+      @options.fetch(:pluralize_relations, true)
     end
 
     def active_record
-      @options[:active_record] || Orel::AR
+      @options.fetch(:active_record, Orel::AR)
     end
 
   protected
