@@ -9,6 +9,13 @@ module Orel
       Orel.classes << klass
     end
 
+    # Public: Get the database connection for this class.
+    #
+    # Returns an Orel::Connection.
+    def connection
+      @connection ||= Orel::Connection.new(Orel::AR.connection)
+    end
+
     # Public: Define a relation heading for this class. See
     # Orel::Relation::HeadingDSL for additional syntax.
     #
@@ -45,10 +52,6 @@ module Orel
     # Raises a RuntimeError if a heading cannot be found.
     def table(child_name=nil)
       Orel::Table.new(get_heading(child_name), connection)
-    end
-
-    def connection
-      @connection ||= Orel::Connection.new(Orel::AR.connection)
     end
 
     # Internal: Get the heading of this relation.
