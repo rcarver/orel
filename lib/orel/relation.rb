@@ -9,7 +9,10 @@ module Orel
       Orel.classes << klass
     end
 
-    # Public: Get the database connection for this class.
+    # Public: Get the database connection for this class. Each
+    # Orel::Relation uses separate instance of ActiveRecord::Base,
+    # which is subclassed from either ActiveRecord::Base itself,
+    # or an ActiveRecord::Base subclass found by Orel::Options.
     #
     # Returns an Orel::Connection.
     def connection
@@ -71,11 +74,8 @@ module Orel
       end
     end
 
-    def _orel_options
-      @_orel_options ||= Orel::Options.new(self)
-    end
-
     def relation_namer
+      # TODO: we could make the namer configurable via orel options.
       @namer ||= Orel::Relation::Namer.for_class(self, _orel_options)
     end
 
@@ -84,6 +84,10 @@ module Orel
     end
 
     alias_method :headings, :relation_set
+
+    def _orel_options
+      @_orel_options ||= Orel::Options.new(self)
+    end
 
   end
 end
