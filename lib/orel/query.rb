@@ -65,7 +65,7 @@ module Orel
   # to the `where` method. This adds restrictions to the query.
   #
   # Relation operations that return an association may be passed to the
-  # `join` method. This results in those associations being pre-loaded
+  # `project` method. This results in those associations being pre-loaded
   # into the resulting objects.
   #
   # Select examples
@@ -77,7 +77,7 @@ module Orel
   #   select.where relation[:logins][:ip].eq('127.0.0.1')
   #
   #   # Return users with all of their logins
-  #   select.join relation[:logins]
+  #   select.project relation[:logins]
   #
   #
   # Preload & Lock for Query
@@ -256,7 +256,10 @@ module Orel
       #        orel_table[Class or :simple_association].
       #
       # Returns nothing.
-      def join(join)
+      def project(join)
+        unless join.is_a?(Orel::Query::Join)
+          raise ArgumentError, "Projection must be a join (was a #{join.class})"
+        end
         add_join(join)
         @projected_joins << join
         join.project_attributes.each { |a|

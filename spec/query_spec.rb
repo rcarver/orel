@@ -49,9 +49,9 @@ describe Orel::Query do
   end
 
   context "1:M simple association" do
-    specify "a query that joins a M:1 simple association" do
+    specify "a query that projects a M:1 simple association" do
       results = user_query.query { |q, user|
-        q.join user[:ips]
+        q.project user[:ips]
       }
       results.first.should == @user2
       results.first[:ips].map { |r| r.to_hash }.should == [{ :ip => "127.0.0.1" }, { :ip => "192.168.0.1" }]
@@ -65,9 +65,9 @@ describe Orel::Query do
   end
 
   context "M:1 reference" do
-    specify "a query that joins a M:1 reference" do
+    specify "a query that projects a M:1 reference" do
       results = thing_query.query { |q, thing|
-        q.join thing[UsersAndThings::User]
+        q.project thing[UsersAndThings::User]
       }
       hash = Hash[*results.map { |r| [r, r[UsersAndThings::User]] }.flatten]
       hash.should == {
