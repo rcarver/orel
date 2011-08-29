@@ -79,8 +79,8 @@ module Orel
           )
         }
       end
-      def foreign_key_constraint_name(table_name)
-        @relation_namer.foreign_key_constraint_name(table_name)
+      def foreign_key_constraint_name(*args)
+        @relation_namer.foreign_key_constraint_name(*args)
       end
       def create_statement
         sql = []
@@ -136,12 +136,12 @@ module Orel
         @cascade = cascade
       end
       def alter_statement
-        name = @child_table.foreign_key_constraint_name(@parent_table.name)
+        fk_name = @child_table.foreign_key_constraint_name(@parent_table.name, @parent_attributes.map { |a| a.name })
         child_attribute_names = @child_attributes.map { |a| qc a.name }
         parent_attribute_names = @parent_attributes.map { |a| qc a.name }
         on_delete = "ON DELETE #{@cascade.on_delete}"
         on_update = "ON UPDATE #{@cascade.on_update}"
-        "ALTER TABLE #{qt @child_table.name} ADD CONSTRAINT #{qc name} FOREIGN KEY (#{child_attribute_names.join(',')}) REFERENCES #{qt @parent_table.name} (#{parent_attribute_names.join(',')}) #{on_delete} #{on_update}"
+        "ALTER TABLE #{qt @child_table.name} ADD CONSTRAINT #{qc fk_name} FOREIGN KEY (#{child_attribute_names.join(',')}) REFERENCES #{qt @parent_table.name} (#{parent_attribute_names.join(',')}) #{on_delete} #{on_update}"
       end
     end
 

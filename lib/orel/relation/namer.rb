@@ -116,8 +116,14 @@ module Orel
         parts.flatten.join('_')[0, MYSQL_MAX_KEY_LENGTH].to_sym
       end
 
-      def foreign_key_constraint_name(attribute_name)
-        [heading_name, attribute_name, 'fk'].join('_').to_sym
+      def foreign_key_constraint_name(heading_name, attribute_names)
+        parts = [
+          shorten(self.heading_name),
+          shorten(heading_name),
+          attribute_names.map { |a| shorten(a) },
+          Digest::MD5.hexdigest(attribute_names.join('::'))
+        ]
+        parts.flatten.join('_')[0, MYSQL_MAX_KEY_LENGTH].to_sym
       end
 
     protected

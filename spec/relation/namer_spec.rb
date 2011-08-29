@@ -50,6 +50,9 @@ describe Orel::Relation::Namer do
       specify "a unique key name" do
         subject.unique_key_name([:first_name, :last_name]).should == ('u_fn_ln_' + Digest::MD5.hexdigest('first_name::last_name')).to_sym
       end
+      specify "a foreign key constraint name" do
+        subject.foreign_key_constraint_name(:things, [:first_name, :last_name]).should == ('u_t_fn_ln_' + Digest::MD5.hexdigest('first_name::last_name')).to_sym
+      end
       specify "the namer for a singular child" do
         namer = subject.for_child(:status)
         namer.heading_name.should == :user_status
@@ -63,18 +66,12 @@ describe Orel::Relation::Namer do
     context "with pluralization" do
       subject { described_class.new("user", options.merge(:pluralize => true)) }
       its(:heading_name) { should == :users }
-      specify "a foreign key constraint name" do
-        subject.foreign_key_constraint_name("b").should == :users_b_fk
-      end
       it_should_behave_like "a Namer creating names for 'user'"
     end
 
     context "without pluralization" do
       subject { described_class.new("user", options.merge(:pluralize => false)) }
       its(:heading_name) { should == :user }
-      specify "a foreign key constraint name" do
-        subject.foreign_key_constraint_name("b").should == :user_b_fk
-      end
       it_should_behave_like "a Namer creating names for 'user'"
     end
   end
@@ -93,6 +90,9 @@ describe Orel::Relation::Namer do
       specify "a unique key name" do
         subject.unique_key_name([:first_name, :last_name]).should == ('pu_fn_ln_' + Digest::MD5.hexdigest('first_name::last_name')).to_sym
       end
+      specify "a foreign key constraint name" do
+        subject.foreign_key_constraint_name(:things, [:first_name, :last_name]).should == ('pu_t_fn_ln_' + Digest::MD5.hexdigest('first_name::last_name')).to_sym
+      end
       specify "the namer for a singular child" do
         namer = subject.for_child(:status)
         namer.heading_name.should == :project_user_status
@@ -106,18 +106,12 @@ describe Orel::Relation::Namer do
     context "with pluralization" do
       subject { described_class.new("user", options.merge(:pluralize => true)) }
       its(:heading_name) { should == :project_users }
-      specify "a foreign key constraint name" do
-        subject.foreign_key_constraint_name("b").should == :project_users_b_fk
-      end
       it_should_behave_like "a Namer creating names for 'user' prefixed with 'project_'"
     end
 
     context "without pluralization" do
       subject { described_class.new("user", options.merge(:pluralize => false)) }
       its(:heading_name) { should == :project_user }
-      specify "a foreign key constraint name" do
-        subject.foreign_key_constraint_name("b").should == :project_user_b_fk
-      end
       it_should_behave_like "a Namer creating names for 'user' prefixed with 'project_'"
     end
   end

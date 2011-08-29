@@ -105,14 +105,14 @@ Feature: Create MySQL tables from relational definitions
         `at` datetime NOT NULL,
         `user_id` int(11) NOT NULL,
         UNIQUE KEY `ud_ui_e8701ad48ba05a91604e480dd60899a3` (`user_id`),
-        CONSTRAINT `user_deleted_users_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
+        CONSTRAINT `ud_u_i_b80bb7740288fda1f201890375a60c8f` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
       CREATE TABLE `user_logins` (
         `at` datetime NOT NULL,
         `user_id` int(11) NOT NULL,
-        KEY `user_logins_users_fk` (`user_id`),
-        CONSTRAINT `user_logins_users_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
+        KEY `ul_u_i_b80bb7740288fda1f201890375a60c8f` (`user_id`),
+        CONSTRAINT `ul_u_i_b80bb7740288fda1f201890375a60c8f` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
       CREATE TABLE `users` (
@@ -149,15 +149,15 @@ Feature: Create MySQL tables from relational definitions
         `first_name` varchar(255) NOT NULL,
         `last_name` varchar(255) NOT NULL,
         UNIQUE KEY `ud_fn_ln_453236cc5833e48a53bb6efb24da3d77` (`first_name`,`last_name`),
-        CONSTRAINT `user_deleted_users_fk` FOREIGN KEY (`first_name`, `last_name`) REFERENCES `users` (`first_name`, `last_name`) ON DELETE CASCADE ON UPDATE CASCADE
+        CONSTRAINT `ud_u_fn_ln_453236cc5833e48a53bb6efb24da3d77` FOREIGN KEY (`first_name`, `last_name`) REFERENCES `users` (`first_name`, `last_name`) ON DELETE CASCADE ON UPDATE CASCADE
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
       CREATE TABLE `user_logins` (
         `at` datetime NOT NULL,
         `first_name` varchar(255) NOT NULL,
         `last_name` varchar(255) NOT NULL,
-        KEY `user_logins_users_fk` (`first_name`,`last_name`),
-        CONSTRAINT `user_logins_users_fk` FOREIGN KEY (`first_name`, `last_name`) REFERENCES `users` (`first_name`, `last_name`) ON DELETE CASCADE ON UPDATE CASCADE
+        KEY `ul_u_fn_ln_453236cc5833e48a53bb6efb24da3d77` (`first_name`,`last_name`),
+        CONSTRAINT `ul_u_fn_ln_453236cc5833e48a53bb6efb24da3d77` FOREIGN KEY (`first_name`, `last_name`) REFERENCES `users` (`first_name`, `last_name`) ON DELETE CASCADE ON UPDATE CASCADE
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
       CREATE TABLE `users` (
@@ -192,7 +192,7 @@ Feature: Create MySQL tables from relational definitions
         `at` datetime NOT NULL,
         `name` varchar(255) NOT NULL,
         UNIQUE KEY `sud_n_b068931cc450442b63f5b3d276ea4297` (`name`),
-        CONSTRAINT `something_user_deleted_something_users_fk` FOREIGN KEY (`name`) REFERENCES `something_users` (`name`) ON DELETE CASCADE ON UPDATE CASCADE
+        CONSTRAINT `sud_su_n_b068931cc450442b63f5b3d276ea4297` FOREIGN KEY (`name`) REFERENCES `something_users` (`name`) ON DELETE CASCADE ON UPDATE CASCADE
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
       CREATE TABLE `something_users` (
@@ -230,8 +230,8 @@ Feature: Create MySQL tables from relational definitions
         `name` varchar(255) NOT NULL,
         `user_id` int(11) NOT NULL,
         UNIQUE KEY `t_i_b80bb7740288fda1f201890375a60c8f` (`id`),
-        KEY `things_users_fk` (`user_id`),
-        CONSTRAINT `things_users_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+        KEY `t_u_i_b80bb7740288fda1f201890375a60c8f` (`user_id`),
+        CONSTRAINT `t_u_i_b80bb7740288fda1f201890375a60c8f` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
       CREATE TABLE `users` (
@@ -269,7 +269,7 @@ Feature: Create MySQL tables from relational definitions
         `first_name` varchar(255) NOT NULL,
         `last_name` varchar(255) NOT NULL,
         UNIQUE KEY `t_fn_ln_n_b7f37fdab28b11c9e42cccaee91cd8a3` (`first_name`,`last_name`,`name`),
-        CONSTRAINT `things_users_fk` FOREIGN KEY (`first_name`, `last_name`) REFERENCES `users` (`first_name`, `last_name`) ON DELETE NO ACTION ON UPDATE CASCADE
+        CONSTRAINT `t_u_fn_ln_453236cc5833e48a53bb6efb24da3d77` FOREIGN KEY (`first_name`, `last_name`) REFERENCES `users` (`first_name`, `last_name`) ON DELETE NO ACTION ON UPDATE CASCADE
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
       CREATE TABLE `users` (
@@ -308,7 +308,7 @@ Feature: Create MySQL tables from relational definitions
         `name` varchar(255) NOT NULL,
         `nickname` varchar(255) NOT NULL,
         UNIQUE KEY `f_n_n_8aa89beed2de25db76784f7e9e8f06ac` (`nickname`,`name`),
-        CONSTRAINT `friends_users_fk` FOREIGN KEY (`nickname`) REFERENCES `users` (`nickname`) ON DELETE NO ACTION ON UPDATE CASCADE
+        CONSTRAINT `f_u_n_e80674170aae03909a55625e9cc9cf97` FOREIGN KEY (`nickname`) REFERENCES `users` (`nickname`) ON DELETE NO ACTION ON UPDATE CASCADE
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
       CREATE TABLE `users` (
@@ -348,7 +348,7 @@ Feature: Create MySQL tables from relational definitions
         `first_name` varchar(255) NOT NULL,
         `last_name` varchar(255) NOT NULL,
         UNIQUE KEY `t_fn_ln_n_b7f37fdab28b11c9e42cccaee91cd8a3` (`first_name`,`last_name`,`name`),
-        CONSTRAINT `things_users_fk` FOREIGN KEY (`first_name`, `last_name`) REFERENCES `users` (`first_name`, `last_name`) ON DELETE CASCADE ON UPDATE CASCADE
+        CONSTRAINT `t_u_fn_ln_453236cc5833e48a53bb6efb24da3d77` FOREIGN KEY (`first_name`, `last_name`) REFERENCES `users` (`first_name`, `last_name`) ON DELETE CASCADE ON UPDATE CASCADE
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
       CREATE TABLE `users` (
@@ -401,9 +401,9 @@ Feature: Create MySQL tables from relational definitions
         `sno` varchar(255) NOT NULL,
         `pno` varchar(255) NOT NULL,
         UNIQUE KEY `s_s_p_c2051a7c46108e2d1104c78f78c9862e` (`sno`,`pno`),
-        KEY `shipments_parts_fk` (`pno`),
-        CONSTRAINT `shipments_parts_fk` FOREIGN KEY (`pno`) REFERENCES `parts` (`pno`) ON DELETE NO ACTION ON UPDATE CASCADE,
-        CONSTRAINT `shipments_suppliers_fk` FOREIGN KEY (`sno`) REFERENCES `suppliers` (`sno`) ON DELETE NO ACTION ON UPDATE CASCADE
+        KEY `s_p_p_a640dd405e21ee73d9ad0c1153971c0f` (`pno`),
+        CONSTRAINT `s_p_p_a640dd405e21ee73d9ad0c1153971c0f` FOREIGN KEY (`pno`) REFERENCES `parts` (`pno`) ON DELETE NO ACTION ON UPDATE CASCADE,
+        CONSTRAINT `s_s_s_96466301bed4aeef20378fe7bb5277e6` FOREIGN KEY (`sno`) REFERENCES `suppliers` (`sno`) ON DELETE NO ACTION ON UPDATE CASCADE
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
       CREATE TABLE `suppliers` (
