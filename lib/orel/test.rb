@@ -4,7 +4,7 @@ require 'stringio'
 Orel.logger = Logger.new(File.dirname(__FILE__) + "/../../log/test.log")
 Orel.logger.info "\n\nBeginning test #{Time.now}\n"
 
-ActiveRecord::Base.establish_connection(
+ActiveErecord::Base.establish_connection(
   :adapter => 'mysql2',
   :database => 'orel_test',
   :username => 'root'
@@ -12,6 +12,10 @@ ActiveRecord::Base.establish_connection(
 
 module Orel
   module Test
+
+    def self.connection
+      @connection ||= Orel::Connection.new(Orel::AR.connection)
+    end
 
     # Print '---' before and after the block is executed.
     def self.wrap
@@ -45,7 +49,7 @@ module Orel
     # a sql query.
     def self.show(*args)
       wrap {
-        Orel.query(*args).each { |row|
+        connection.query(*args).each { |row|
           puts row.join(',')
         }
       }

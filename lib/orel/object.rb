@@ -181,7 +181,7 @@ module Orel
       end
 
       def _query
-        @_query ||= Orel::Query.new(self, self.get_heading)
+        @_query ||= Orel::Query.new(self, self.get_heading, self.connection)
       end
     end
 
@@ -194,8 +194,8 @@ module Orel
       raise NoHeadingError unless @heading
       @attributes = Attributes.new(@heading, attributes)
       @class_associations = ClassAssociations.new(self.class, @attributes)
-      @simple_associations = SimpleAssociations.new(self, self.class.relation_set)
-      @operator = Operator.new(@heading, @attributes)
+      @simple_associations = SimpleAssociations.new(self, self.class.relation_set, self.class.connection)
+      @operator = Operator.new(@heading, self.class.connection, @attributes)
       @validator = Validator.new(self, @heading, @attributes)
     end
 

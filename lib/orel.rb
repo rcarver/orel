@@ -21,6 +21,7 @@ require 'mysql2'
 require 'orel/sql_debugging'
 require 'orel/attributes'
 require 'orel/class_associations'
+require 'orel/connection'
 require 'orel/domains'
 require 'orel/finder'
 require 'orel/object'
@@ -66,69 +67,39 @@ module Orel
     }
   end
 
+  AR = ActiveRecord::Base
+
   def self.logger=(logger)
-    active_record_base.logger = logger
+    AR.logger = logger
   end
 
   def self.logger
-    active_record_base.logger ||= Logger.new("/dev/null")
-  end
-
-  def self.active_record_base=(klass)
-    @active_record_base = klass
-  end
-
-  def self.current_database_name
-    connection.current_database
-  end
-
-  def self.query(*args)
-    connection.select_rows(*args)
-  end
-
-  def self.execute(*args)
-    connection.execute(*args)
-  end
-
-  def self.insert(*args)
-    connection.insert(*args)
+    AR.logger ||= Logger.new("/dev/null")
   end
 
   def self.recreate_database!
-    db_name = current_database_name
-    connection.recreate_database(db_name)
-    connection.execute("USE #{db_name}")
+    db_name = Orel::AR.connection.current_database
+    Orel::AR.connection.recreate_database(db_name)
+    Orel::AR.connection.execute("USE #{db_name}")
   end
 
   def self.create_tables!
-    finalize!
+    Orel.finalize!
     Orel::SchemaGenerator.class_creation_statements(classes).each { |statement|
-      Orel.execute(statement)
+      Orel::AR.connection.execute(statement)
     }
-  end
-
-  def self.get_database_structure
-    connection.structure_dump.strip
   end
 
   # Internal
   def self.arel_table(heading)
     @arel_tables ||= {}
-    @arel_tables[heading.name] ||= Arel::Table.new(heading.name, active_record_base)
-  end
-
-  def self.active_record_base
-    @active_record_base ||= ActiveRecord::Base
+    @arel_tables[heading.name] ||= Arel::Table.new(heading.name, AR)
   end
 
 protected
 
   def self.classes
     @classes ||= Set.new
-  end
-
-  def self.connection
-    active_record_base.connection
   end
 
 end

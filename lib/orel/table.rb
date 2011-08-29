@@ -3,8 +3,9 @@ module Orel
   class Table
     include Orel::SqlDebugging
 
-    def initialize(heading)
+    def initialize(heading, connection)
       @heading = heading
+      @connection = connection
     end
 
     # Public: Get all rows in the table. The results are ordered by the primary key.
@@ -227,8 +228,8 @@ module Orel
     def execute(statement, description=nil, op=:execute)
       begin
         case op
-        when :execute: Orel.execute(statement, description)
-        when :insert:  Orel.insert(statement, description)
+        when :execute: @connection.execute(statement, description)
+        when :insert:  @connection.insert(statement, description)
         else raise ArgumentError, "Unknown execution operation #{op.inspect}"
         end
       rescue StandardError => e

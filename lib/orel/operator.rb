@@ -8,12 +8,13 @@ module Orel
     # Internal: Create a new Operator
     #
     # heading    - Orel::Relation::Heading that describes the table.
+    # connection - Orel::Connection used to execute sql.
     # attributes - Orel::Attributes used to manipulate that heading.
     #
-    def initialize(heading, attributes)
+    def initialize(heading, connection, attributes)
       @heading = heading
       @attributes = attributes
-      @table = Orel::Table.new(heading)
+      @table = Orel::Table.new(heading, connection)
       @persisted = false
       @destroyed = false
       @readonly = false

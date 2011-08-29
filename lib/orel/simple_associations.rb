@@ -7,10 +7,12 @@ module Orel
     #
     # parent       - Orel::Object that is the parent.
     # relation_set - Orel::Relation::Set in which to find headings.
+    # connection   - Orel::Connection used to execute sql.
     #
-    def initialize(parent, relation_set)
+    def initialize(parent, relation_set, connection)
       @parent = parent
       @relation_set = relation_set
+      @connection = connection
       @associations = {}
     end
 
@@ -76,9 +78,9 @@ module Orel
 
         # If the heading's pk is the class's pk, it's a 1:1.
         if parent_attrs == heading_attrs
-          @associations[name] = OneProxy.new(@parent.class.relation_namer, @parent, heading)
+          @associations[name] = OneProxy.new(@parent.class.relation_namer, @parent, heading, @connection)
         else
-          @associations[name] = ManyProxy.new(@parent.class.relation_namer, @parent, heading)
+          @associations[name] = ManyProxy.new(@parent.class.relation_namer, @parent, heading, @connection)
         end
 
         # Populate the instance if this object is persisted.
@@ -118,7 +120,7 @@ module Orel
       # Query to find existing data belonging to the parent.
       def _find_existing_data(description)
         parent_data = _parent_key_data
-        results = Table.new(@heading).query("#{Orel::SimpleAssociations} #{description}") { |q, table|
+        results = Table.new(@heading, @connection).query("#{Orel::SimpleAssociations} #{description}") { |q, table|
           @heading.attributes.each { |a|
             q.project table[a.name]
           }
@@ -133,12 +135,13 @@ module Orel
     class OneProxy < Proxy
       include ProxyHelper
 
-      def initialize(relation_namer, parent, heading)
+      def initialize(relation_namer, parent, heading, connection)
         @relation_namer = relation_namer
         @parent = parent
         @heading = heading
+        @connection = connection
         @attributes = Attributes.new(@heading)
-        @operator = Operator.new(@heading, @attributes)
+        @operator = Operator.new(@heading, @connection, @attributes)
       end
 
       # Public: Determine existence of a record.
@@ -200,10 +203,11 @@ module Orel
         end
       end
 
-      def initialize(relation_namer, parent, heading)
+      def initialize(relation_namer, parent, heading, connection)
         @relation_namer = relation_namer
         @parent = parent
         @heading = heading
+        @connection = connection
         @records = []
       end
 
@@ -238,7 +242,7 @@ module Orel
       # Returns nothing.
       def <<(attributes)
         attrs = Attributes.new(@heading, attributes)
-        operator = Operator.new(@heading, attrs)
+        operator = Operator.new(@heading, @connection, attrs)
         @records << Record.new(@parent, attrs, operator)
         nil
       end

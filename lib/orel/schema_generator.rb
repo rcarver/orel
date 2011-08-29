@@ -47,10 +47,10 @@ module Orel
 
     module Quoting
       def quote_column_name(name)
-        Orel.connection.quote_column_name(name)
+        Orel::AR.connection.quote_column_name(name)
       end
       def quote_table_name(name)
-        Orel.connection.quote_table_name(name)
+        Orel::AR.connection.quote_table_name(name)
       end
       alias_method :qc, :quote_column_name
       alias_method :qt, :quote_table_name

@@ -19,7 +19,7 @@ Then /^my database looks like:$/ do |string|
     require 'orel/test'
     require 'classes'
     puts "begin"
-    puts Orel.get_database_structure
+    puts Orel::AR.connection.structure_dump.strip
     puts "end"
   EOF
   When %{I run `ruby -I ../lib show.rb`}

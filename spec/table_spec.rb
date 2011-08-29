@@ -4,9 +4,11 @@ describe Orel::Table do
 
   let(:klass) { UsersAndThings::User }
 
-  subject { described_class.new(klass.get_heading) }
+  subject { described_class.new(klass.get_heading, connection) }
 
   describe "public methods" do
+
+    let(:connection) { klass.connection }
 
     specify "#row_count" do
       subject.row_count.should == 0
@@ -113,6 +115,8 @@ describe Orel::Table do
   end
 
   describe "sql statements" do
+
+    let(:connection) { stub(:connection).as_null_object }
 
     specify "#insert_statement" do
       sql = subject.insert_statement(:first_name => "John", :last_name => "Smith", :age => 30)

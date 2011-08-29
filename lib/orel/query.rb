@@ -112,9 +112,10 @@ module Orel
   class Query
     include Orel::SqlDebugging
 
-    def initialize(klass, heading)
+    def initialize(klass, heading, connection)
       @klass = klass
       @heading = heading
+      @connection = connection
     end
 
     # Internal: Perform a query.
@@ -209,7 +210,7 @@ module Orel
 
     def execute(statement, description=nil)
       begin
-        Orel.execute(statement, description)
+        @connection.execute(statement, description)
       rescue StandardError => e
         debug_sql_error(statement)
         raise
@@ -295,7 +296,7 @@ module Orel
         @table = table
         @klass = klass
         @heading = heading
-        @simple_associations = SimpleAssociations.new(klass, klass.relation_set)
+        @simple_associations = SimpleAssociations.new(klass, klass.relation_set, klass.connection)
         @join_id = 0
         @joins = {}
       end

@@ -44,7 +44,11 @@ module Orel
     # Returns an Orel::Table.
     # Raises a RuntimeError if a heading cannot be found.
     def table(child_name=nil)
-      Orel::Table.new(get_heading(child_name))
+      Orel::Table.new(get_heading(child_name), connection)
+    end
+
+    def connection
+      @connection ||= Orel::Connection.new(Orel::AR.connection)
     end
 
     # Internal: Get the heading of this relation.
