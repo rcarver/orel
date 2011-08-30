@@ -199,7 +199,7 @@ Ryan Carver (@rcarver / ryan@typekit.com)
 
 ## License
 
-MIT
+Copyright © 2011 Ryan Carver. Licensed under Ruby/MIT, see LICENSE.
 
 [did]: http://www.amazon.com/Database-Depth-Relational-Theory-Practitioners/dp/0596100124
 
