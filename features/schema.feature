@@ -175,7 +175,8 @@ Feature: Create MySQL tables from relational definitions
         class User
           extend Orel::Relation
           heading do
-            key { name }
+            key { id }
+            att :id, Orel::Domains::Serial
             att :name, Orel::Domains::String
           end
           heading :deleted do
@@ -190,14 +191,15 @@ Feature: Create MySQL tables from relational definitions
       """
       CREATE TABLE `something_user_deleted` (
         `at` datetime NOT NULL,
-        `name` varchar(255) NOT NULL,
-        UNIQUE KEY `sud_n_b068931cc450442b63f5b3d276ea4297` (`name`),
-        CONSTRAINT `sud_su_n_b068931cc450442b63f5b3d276ea4297` FOREIGN KEY (`name`) REFERENCES `something_users` (`name`) ON DELETE CASCADE ON UPDATE CASCADE
+        `user_id` int(11) NOT NULL,
+        UNIQUE KEY `sud_ui_e8701ad48ba05a91604e480dd60899a3` (`user_id`),
+        CONSTRAINT `sud_su_i_b80bb7740288fda1f201890375a60c8f` FOREIGN KEY (`user_id`) REFERENCES `something_users` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
       CREATE TABLE `something_users` (
+        `id` int(11) NOT NULL AUTO_INCREMENT,
         `name` varchar(255) NOT NULL,
-        UNIQUE KEY `su_n_b068931cc450442b63f5b3d276ea4297` (`name`)
+        UNIQUE KEY `su_i_b80bb7740288fda1f201890375a60c8f` (`id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
       """
 

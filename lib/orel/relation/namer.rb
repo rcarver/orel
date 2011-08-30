@@ -77,7 +77,7 @@ module Orel
       # Returns a Symbol.
       def foreign_attribute_name(attribute_name)
         if attribute_name == :id
-          ix([@name, attribute_name].join('_')).to_sym
+          [@name, attribute_name].join('_').to_sym
         else
           attribute_name
         end

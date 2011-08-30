@@ -36,9 +36,7 @@ describe Orel::Relation::Namer do
   end
 
   context "without a prefix" do
-    let(:options) {
-      {}
-    }
+    let(:options) { {} }
 
     shared_examples_for "a Namer creating names for 'user'" do
       specify "a foreign key name" do
@@ -76,16 +74,15 @@ describe Orel::Relation::Namer do
     end
   end
 
-  context "with a prefix" do
-    let(:options) {
-      { :prefix => 'project_' }
-    }
+  context "with a relation prefix" do
+    let(:options) { { :prefix => 'project_' } }
+
     shared_examples_for "a Namer creating names for 'user' prefixed with 'project_'" do
       specify "a foreign key name" do
         subject.foreign_attribute_name(:name).should == :name
       end
       specify "a foreign key name for the attribute 'id'" do
-        subject.foreign_attribute_name(:id).should == :project_user_id
+        subject.foreign_attribute_name(:id).should == :user_id
       end
       specify "a unique key name" do
         subject.unique_key_name([:first_name, :last_name]).should == ('pu_fn_ln_' + Digest::MD5.hexdigest('first_name::last_name')).to_sym
