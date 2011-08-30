@@ -16,9 +16,9 @@ module Orel
       # Returns an Orel::Relation::Namer.
       def self.for_class(klass, orel_options)
         options = {
-          :prefix => orel_options.relation_prefix,
-          :suffix => orel_options.relation_suffix,
-          :pluralize => orel_options.pluralize_relations
+          :prefix => orel_options.prefix,
+          :suffix => orel_options.suffix,
+          :pluralize => orel_options.pluralize
         }
         name = klass.name.split("::").last.underscore
         Namer.new(name, options)

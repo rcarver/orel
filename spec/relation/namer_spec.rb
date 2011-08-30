@@ -9,7 +9,7 @@ describe Orel::Relation::Namer do
     module BaseWithPrefix
       def self.orel_options
         {
-          :relation_prefix => "prefixed_"
+          :prefix => "prefixed_"
         }
       end
       module Thing; end

@@ -7,20 +7,16 @@ module Orel
 
     attr_reader :options
 
-    def relation_prefix
-      @options.fetch(:relation_prefix, nil)
+    def prefix
+      @options.fetch(:prefix, nil)
     end
 
-    def relation_suffix
-      @options.fetch(:relation_suffix, nil)
+    def suffix
+      @options.fetch(:suffix, nil)
     end
 
-    def attribute_prefix
-      @options.fetch(:attribute_prefix, nil)
-    end
-
-    def pluralize_relations
-      @options.fetch(:pluralize_relations, true)
+    def pluralize
+      @options.fetch(:pluralize, true)
     end
 
     def active_record
@@ -38,10 +34,10 @@ module Orel
           options.update(k.orel_options)
         end
         if k.respond_to?(:table_name_prefix)
-          options.update(:relation_prefix => k.table_name_prefix)
+          options.update(:prefix => k.table_name_prefix)
         end
         if k.respond_to?(:table_name_suffix)
-          options.update(:relation_suffix => k.table_name_suffix)
+          options.update(:suffix => k.table_name_suffix)
         end
       }
       options

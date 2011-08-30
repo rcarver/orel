@@ -7,10 +7,9 @@ describe Orel::Options do
     module Group
       def self.orel_options
         {
-          :relation_prefix => "rel_prefix",
-          :relation_suffix => "rel_suffix",
-          :pluralize_relations => false,
-          :attribute_prefix => "attr_prefix",
+          :prefix => "rel_prefix",
+          :suffix => "rel_suffix",
+          :pluralize => false,
           :active_record => :active_record
         }
       end
@@ -18,19 +17,17 @@ describe Orel::Options do
 
     describe "by default" do
       subject { described_class.new(Object) }
-      its(:relation_prefix) { should be_nil }
-      its(:relation_suffix) { should be_nil }
-      its(:pluralize_relations) { should be_true }
-      its(:attribute_prefix) { should be_nil }
+      its(:prefix) { should be_nil }
+      its(:suffix) { should be_nil }
+      its(:pluralize) { should be_true }
       its(:active_record) { should == Orel::AR }
     end
 
     describe "values set" do
       subject { described_class.new(Group) }
-      its(:relation_prefix) { should == "rel_prefix" }
-      its(:relation_suffix) { should == "rel_suffix" }
-      its(:pluralize_relations) { should be_false }
-      its(:attribute_prefix) { should == "attr_prefix" }
+      its(:prefix) { should == "rel_prefix" }
+      its(:suffix) { should == "rel_suffix" }
+      its(:pluralize) { should be_false }
       its(:active_record) { should == :active_record }
     end
   end
@@ -39,12 +36,12 @@ describe Orel::Options do
 
     module GroupA
       def self.orel_options
-        { :relation_prefix => "group_a_", :group_a => true }
+        { :prefix => "group_a_", :group_a => true }
       end
       module LevelOne
         module LevelTwo
           def self.orel_options
-            { :relation_prefix => "level2_", :level2 => true }
+            { :prefix => "level2_", :level2 => true }
           end
         end
       end
@@ -55,20 +52,20 @@ describe Orel::Options do
       context "an inner class with its own options" do
         subject { described_class.new(GroupA::LevelOne::LevelTwo) }
         it "merges all keys in the hierarchy" do
-          subject.options.keys.should =~ [:relation_prefix, :group_a, :level2]
+          subject.options.keys.should =~ [:prefix, :group_a, :level2]
         end
         it "uses the value of the class" do
-          subject.relation_prefix.should == "level2_"
+          subject.prefix.should == "level2_"
         end
       end
 
       context "an inner class without its own options" do
         subject { described_class.new(GroupA::LevelOne) }
         it "merges all keys in the hierarchy" do
-          subject.options.keys.should =~ [:relation_prefix, :group_a]
+          subject.options.keys.should =~ [:prefix, :group_a]
         end
         it "uses the nearest parent value" do
-          subject.relation_prefix.should == "group_a_"
+          subject.prefix.should == "group_a_"
         end
       end
     end
@@ -77,7 +74,7 @@ describe Orel::Options do
 
       module GroupB
         def self.orel_options
-          { :relation_prefix => "group_a_", :relation_suffix => "_group_a" }
+          { :prefix => "group_a_", :suffix => "_group_a" }
         end
         def self.table_name_prefix
           "group_a_prefix_"
@@ -95,17 +92,17 @@ describe Orel::Options do
       context "within the same class" do
         subject { described_class.new(GroupB) }
         it "prefers table_name_prefix" do
-          subject.relation_prefix.should == "group_a_prefix_"
+          subject.prefix.should == "group_a_prefix_"
         end
         it "prefers table_name_suffix" do
-          subject.relation_suffix.should == "_suffix_group_a"
+          subject.suffix.should == "_suffix_group_a"
         end
       end
 
       context "an inner class with its own values" do
         subject { described_class.new(GroupB::LevelOne) }
         it "uses the local table_name_prefix" do
-          subject.relation_prefix.should == "level1_prefix_"
+          subject.prefix.should == "level1_prefix_"
         end
       end
     end

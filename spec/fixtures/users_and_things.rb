@@ -4,8 +4,7 @@ module UsersAndThings
 
   def self.orel_options
     {
-      :relation_prefix => "users_and_things_",
-      :attribute_prefix => "users_and_things_",
+      :prefix => "users_and_things_",
       :active_record => UsersAndThings::AR
     }
   end
