@@ -18,9 +18,9 @@ Gem::Specification.new do |s|
   s.rdoc_options     = ["--charset=UTF-8"]
   s.require_path     = "lib"
 
-  s.add_dependency 'activerecord', '~>3.0'
-  s.add_dependency 'activesupport', '~>3.0'
-  s.add_dependency 'activemodel', '~>3.0'
+  s.add_dependency 'activerecord', '~>3.0.0'
+  s.add_dependency 'activesupport', '~>3.0.0'
+  s.add_dependency 'activemodel', '~>3.0.0'
   s.add_dependency 'mysql2', '~>0.2.0'
   s.add_dependency 'arel'
   s.add_dependency 'sourcify'
