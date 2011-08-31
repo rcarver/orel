@@ -55,7 +55,7 @@ module Orel
     #
     # Returns an Array where each element is a Hash representing the row.
     def query(description=nil)
-      table = Orel.arel_table(@heading)
+      table = @connection.arel_table(@heading)
       manager = Arel::SelectManager.new(table.engine)
       manager.from table
       yield manager, table
@@ -81,7 +81,7 @@ module Orel
     #
     # Returns nil if a block is given, else returns the Arel::Table.
     def as(aliaz=nil)
-      table = Orel.arel_table(@heading)
+      table = @connection.arel_table(@heading)
       table = table.alias(aliaz.to_s) if aliaz
       if block_given?
         yield table
@@ -167,7 +167,7 @@ module Orel
     end
 
     def insert_statement(attributes)
-      table = Orel.arel_table(@heading)
+      table = @connection.arel_table(@heading)
       manager = Arel::InsertManager.new(table.engine);
       manager.into table
       manager.insert ordered_hash(attributes).map { |k, v| [table[k], v] }
@@ -194,7 +194,7 @@ module Orel
     def update_statement(options)
       find = options[:find] or raise ArgumentError, "Missing :find attributes"
       set  = options[:set] or raise ArgumentError, "Missing :set attributes"
-      table = Orel.arel_table(@heading)
+      table = @connection.arel_table(@heading)
       manager = Arel::UpdateManager.new(table.engine)
       manager.table table
       manager.set ordered_hash(set).map { |k, v| [table[k], v] }
@@ -205,7 +205,7 @@ module Orel
     end
 
     def delete_statement(attributes)
-      table = Orel.arel_table(@heading)
+      table = @connection.arel_table(@heading)
       manager = Arel::DeleteManager.new(table.engine)
       manager.from table
       ordered_hash(attributes).each { |k, v|

@@ -18,7 +18,7 @@ module Orel
     def connection
       @connection ||= begin
         active_record = Class.new(_orel_options.active_record)
-        Orel::Connection.new(active_record.connection)
+        Orel::Connection.new(active_record)
       end
     end
 

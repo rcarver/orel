@@ -90,12 +90,6 @@ module Orel
     }
   end
 
-  # Internal
-  def self.arel_table(heading)
-    @arel_tables ||= {}
-    @arel_tables[heading.name] ||= Arel::Table.new(heading.name, AR)
-  end
-
 protected
 
   def self.classes

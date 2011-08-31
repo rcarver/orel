@@ -1,8 +1,10 @@
 module Orel
   class Connection
 
-    def initialize(active_record_connection)
-      @active_record_connection = active_record_connection
+    def initialize(active_record)
+      @active_record = active_record
+      @active_record_connection = @active_record.connection
+      @arel_tables = {}
     end
 
     def execute(sql, description=nil)
@@ -30,6 +32,11 @@ module Orel
         debug_sql_error(sql)
         raise
       end
+    end
+
+    # Internal
+    def arel_table(heading)
+      @arel_tables[heading.name] ||= Arel::Table.new(heading.name, @active_record)
     end
 
   protected

@@ -126,13 +126,13 @@ module Orel
     # Returns an Array of Orel::Object.
     def query(description=nil)
       # Setup Arel query engine.
-      table = Orel.arel_table(@heading)
+      table = @connection.arel_table(@heading)
       manager = Arel::SelectManager.new(table.engine)
       manager.from table
 
       # Overlay Orel heading and association information.
       query = Select.new(manager, @heading)
-      relation = Relation.new(table, @klass, @heading)
+      relation = Relation.new(table, @klass, @heading, @connection)
 
       # Always project the full heading so that we can instantiate
       # fully valid objects.
@@ -282,10 +282,11 @@ module Orel
     end
 
     class Relation
-      def initialize(table, klass, heading)
+      def initialize(table, klass, heading, connection)
         @table = table
         @klass = klass
         @heading = heading
+        @connection = connection
         @simple_associations = SimpleAssociations.new(klass, klass.relation_set, klass.connection)
         @join_id = 0
         @joins = {}
@@ -308,12 +309,12 @@ module Orel
         when Class
           klass = key
           heading = key.get_heading
-          table = Orel.arel_table(heading)
+          table = key.connection.arel_table(heading)
           @joins[heading.name] ||= Join.new(make_join_id, @klass, @heading, @table, klass, heading, table)
         else
           if @simple_associations.include?(key)
             heading = @klass.get_heading(key)
-            table = Orel.arel_table(heading)
+            table = @connection.arel_table(heading)
             @joins[heading.name] ||= Join.new(make_join_id, @klass, @heading, @table, key, heading, table)
           else
             @table[key]
