@@ -14,7 +14,7 @@ module Orel
   module Test
 
     def self.connection
-      @connection ||= Orel::Connection.new(Orel::AR.connection)
+      @connection ||= Orel::Connection.new(Orel::AR)
     end
 
     # Print '---' before and after the block is executed.
