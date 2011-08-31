@@ -111,10 +111,10 @@ module Orel
   #
   class Query
 
-    def initialize(klass, heading, connection)
+    def initialize(klass)
       @klass = klass
-      @heading = heading
-      @connection = connection
+      @heading = @klass.get_heading
+      @connection = @klass.connection
     end
 
     # Internal: Perform a query.

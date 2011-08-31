@@ -13,20 +13,8 @@ describe Orel::Query do
     @user2.save
   end
 
-  let(:user_query) {
-    Orel::Query.new(
-      UsersAndThings::User,
-      UsersAndThings::User.get_heading,
-      UsersAndThings::User.connection
-    )
-  }
-  let(:thing_query) {
-    Orel::Query.new(
-      UsersAndThings::Thing,
-      UsersAndThings::Thing.get_heading,
-      UsersAndThings::Thing.connection
-    )
-  }
+  let(:user_query)  { Orel::Query.new(UsersAndThings::User) }
+  let(:thing_query) { Orel::Query.new(UsersAndThings::Thing) }
 
   specify "a query that returns everything" do
     results = user_query.query

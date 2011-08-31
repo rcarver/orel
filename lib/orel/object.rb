@@ -181,7 +181,7 @@ module Orel
       end
 
       def _query
-        @_query ||= Orel::Query.new(self, self.get_heading, self.connection)
+        @_query ||= Orel::Query.new(self)
       end
     end
 
