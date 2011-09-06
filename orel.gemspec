@@ -1,7 +1,9 @@
+$:.push File.expand_path("../lib", __FILE__)
+require "orel/version"
 
 Gem::Specification.new do |s|
   s.name        = "orel"
-  s.version     = "0.0.0"
+  s.version     = Orel::VERSION
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Ryan Carver"]
   s.email       = "ryan@ryancarver.com"

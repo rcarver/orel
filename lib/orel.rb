@@ -18,6 +18,8 @@ require 'sourcify'
 require 'active_record'
 require 'mysql2'
 
+require 'orel/version'
+
 require 'orel/attributes'
 require 'orel/class_associations'
 require 'orel/connection'
@@ -45,8 +47,6 @@ require 'orel/relation/reference'
 require 'orel/relation/set'
 
 module Orel
-  VERSION = "0.0.0"
-
   # Public: Exception thrown if an association is queried on an object
   # that has been marked as locked from querying.
   LockedForQueryError = Class.new(RuntimeError)
