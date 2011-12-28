@@ -184,7 +184,7 @@ module Orel
       when :increment
         values.map { |v| "#{v}=#{v}+VALUES(#{v})" }.join(',')
       when :replace
-        values.map { |v| "#{v}=VALUES(#{v})" }
+        values.map { |v| "#{v}=VALUES(#{v})" }.join(' ')
       else
         raise ArgumentError, "Unknown value for :with - #{with.inspect}"
       end
