@@ -10,7 +10,7 @@ When /^I use Orel to fill my database with tables$/ do
     Orel.create_tables!
     puts "tables created!"
   EOF
-  step %{I run `ruby -I ../lib create.rb`}
+  step %{I run `ruby -I ../lib -I . create.rb`}
   step %{the output should contain:}, "tables created!"
 end
 
@@ -22,7 +22,7 @@ Then /^my database looks like:$/ do |string|
     puts Orel::AR.connection.structure_dump.strip
     puts "end"
   EOF
-  step %{I run `ruby -I ../lib show.rb`}
+  step %{I run `ruby -I ../lib -I . show.rb`}
   step %{the output should contain:}, "begin\n#{string}\nend"
 end
 

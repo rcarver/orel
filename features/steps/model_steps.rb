@@ -7,7 +7,7 @@ When /^I run some Orel code:$/ do |string|
     #{string}
     puts "done running code"
   EOF
-  step %{I run `ruby -I ../lib runner.rb`}
+  step %{I run `ruby -I ../lib -I . runner.rb`}
   step %{the output should contain:}, "done running code"
 end
 
