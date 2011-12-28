@@ -163,7 +163,9 @@ module Orel
     #
     # Returns nothing.
     def truncate!
-      @connection.execute "TRUNCATE TABLE `#{@heading.name}`"
+      # MySQL no longer allows truncate on tables with fk's.
+      # See http://bugs.mysql.com/bug.php?id=54678
+      @connection.execute "DELETE FROM `#{@heading.name}`"
     end
 
     def insert_statement(attributes)
