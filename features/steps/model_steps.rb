@@ -1,5 +1,5 @@
 When /^I run some Orel code:$/ do |string|
-  Given %{a file named "runner.rb" with:}, <<-EOF
+  step %{a file named "runner.rb" with:}, <<-EOF
     require 'orel/test'
     require 'classes'
     Orel.recreate_database!
@@ -7,7 +7,7 @@ When /^I run some Orel code:$/ do |string|
     #{string}
     puts "done running code"
   EOF
-  When %{I run `ruby -I ../lib runner.rb`}
-  Then %{the output should contain:}, "done running code"
+  step %{I run `ruby -I ../lib runner.rb`}
+  step %{the output should contain:}, "done running code"
 end
 
