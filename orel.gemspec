@@ -27,7 +27,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'arel'
   s.add_dependency 'sourcify'
 
-  s.add_development_dependency "rake", '0.8.7'
+  s.add_development_dependency "rake"
   s.add_development_dependency "rspec"
   s.add_development_dependency "cucumber"
   s.add_development_dependency "aruba"
