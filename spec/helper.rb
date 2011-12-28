@@ -2,7 +2,10 @@ require 'orel'
 require 'rspec'
 require 'database_cleaner'
 
-Orel.logger = Logger.new(File.dirname(__FILE__) + "/../log/test.log")
+OREL_LOG_FILE = File.dirname(__FILE__) + "/../log/test.log"
+
+FileUtils.mkdir_p File.dirname(OREL_LOG_FILE)
+Orel.logger = Logger.new(OREL_LOG_FILE)
 Orel.logger.info "\n\nBeginning test #{Time.now}\n"
 
 ActiveRecord::Base.establish_connection(
