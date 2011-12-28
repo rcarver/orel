@@ -16,7 +16,7 @@ describe "Conformance to ActiveModel::Lint" do
   # Convert Lint's tests into RSpec examples.
   ActiveModel::Lint::Tests.public_instance_methods.each do |m|
     if m.to_s =~ /^test_/
-      example m.gsub('_',' ') do
+      example m.to_s.gsub('_',' ') do
         send m
       end
     end
