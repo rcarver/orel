@@ -133,8 +133,8 @@ module Orel
     # For ActiveModel::Dirty, which uses __send__.
     def method_missing(*args)
       case args.size
-      when 1: self[args.first]
-      when 2: self[args.first] = args.last
+      when 1 then self[args.first]
+      when 2 then self[args.first] = args.last
       else super
       end
     end

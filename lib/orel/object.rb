@@ -406,8 +406,8 @@ module Orel
       key, action = @attributes.extract_method_missing(message, args)
       if key && action
         case action
-        when :get: @attributes[key]
-        when :set: @attributes[key] = args.first
+        when :get then @attributes[key]
+        when :set then @attributes[key] = args.first
         end
       else
         super
