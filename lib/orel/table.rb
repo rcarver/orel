@@ -2,7 +2,8 @@ module Orel
   # An Orel::Table lets you perform basic sql operations on a heading.
   class Table
 
-    def initialize(heading, connection)
+    def initialize(table_name, heading, connection)
+      @table_name = table_name
       @heading = heading
       @connection = connection
     end
@@ -16,7 +17,7 @@ module Orel
     #
     # Returns an Array where each element is a Hash representing the row.
     def row_list
-      query("#{self.class} List rows in #{@heading.name}") { |q, table|
+      query("#{self.class} List rows in #{@table_name}") { |q, table|
         @heading.attributes.each { |a|
           q.project table[a.name]
         }
@@ -35,7 +36,7 @@ module Orel
     #
     # Returns an Integer.
     def row_count
-      rows = query("#{self.class} Count rows in #{@heading.name}") { |q, table|
+      rows = query("#{self.class} Count rows in #{@table_name}") { |q, table|
         q.project Arel::Nodes::SqlLiteral.new('COUNT(*) count')
       }
       rows.first[:count]
@@ -59,7 +60,7 @@ module Orel
       manager = Arel::SelectManager.new(table.engine)
       manager.from table
       yield manager, table
-      @connection.execute(manager.to_sql, description || "#{self.class} Query #{@heading.name}").each(:as => :hash, :symbolize_keys => true)
+      @connection.execute(manager.to_sql, description || "#{self.class} Query #{@table_name}").each(:as => :hash, :symbolize_keys => true)
     end
 
     # Public: Add another table to a query. You'll need to specify the
@@ -101,7 +102,7 @@ module Orel
     #
     # Returns nothing.
     def insert(attributes)
-      @connection.insert(insert_statement(attributes), "#{self.class} Insert into #{@heading.name}")
+      @connection.insert(insert_statement(attributes), "#{self.class} Insert into #{@table_name}")
     end
 
     # Public: Insert data into the table but update one or more values
@@ -125,7 +126,7 @@ module Orel
     #
     # Returns nothing.
     def upsert(options)
-      @connection.execute(upsert_statement(options), "#{self.class} Upsert into #{@heading.name}")
+      @connection.execute(upsert_statement(options), "#{self.class} Upsert into #{@table_name}")
     end
 
     # Public: Update data in the table.
@@ -143,7 +144,7 @@ module Orel
     #
     # Returns nothing.
     def update(options)
-      @connection.execute(update_statement(options), "#{self.class} Update #{@heading.name}")
+      @connection.execute(update_statement(options), "#{self.class} Update #{@table_name}")
     end
 
     # Public: Delete data from the table.
@@ -156,7 +157,7 @@ module Orel
     #
     # Returns nothing.
     def delete(attributes)
-      @connection.execute(delete_statement(attributes), "#{self.class} Delete from #{@heading.name}")
+      @connection.execute(delete_statement(attributes), "#{self.class} Delete from #{@table_name}")
     end
 
     # Public: Delete all data from the table.
@@ -165,7 +166,7 @@ module Orel
     def truncate!
       # MySQL no longer allows truncate on tables with fk's.
       # See http://bugs.mysql.com/bug.php?id=54678
-      @connection.execute "DELETE FROM `#{@heading.name}`"
+      @connection.execute "DELETE FROM `#{@table_name}`"
     end
 
     def insert_statement(attributes)

@@ -120,7 +120,7 @@ module Orel
       # Query to find existing data belonging to the parent.
       def _find_existing_data(description)
         parent_data = _parent_key_data
-        results = Table.new(@heading, @connection).query("#{Orel::SimpleAssociations} #{description}") { |q, table|
+        results = Table.new(@heading.name, @heading, @connection).query("#{Orel::SimpleAssociations} #{description}") { |q, table|
           @heading.attributes.each { |a|
             q.project table[a.name]
           }

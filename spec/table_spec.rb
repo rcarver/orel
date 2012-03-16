@@ -5,7 +5,7 @@ describe Orel::Table do
   let(:klass) { UsersAndThings::User }
   let(:connection) { klass.connection }
 
-  subject { described_class.new(klass.get_heading, connection) }
+  subject { described_class.new(klass.get_heading.name, klass.get_heading, connection) }
 
   describe "public methods" do
 
