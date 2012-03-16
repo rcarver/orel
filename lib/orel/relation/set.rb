@@ -5,7 +5,6 @@ module Orel
 
       def initialize(namer)
         @namer = namer
-        @name = namer.heading_name
         @headings = []
       end
 
@@ -24,7 +23,8 @@ module Orel
       end
 
       def base
-        @headings.find { |h| h.name == @name }
+        name = @namer.heading_name
+        @headings.find { |h| h.name == name }
       end
 
       def child(name)

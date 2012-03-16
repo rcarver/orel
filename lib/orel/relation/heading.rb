@@ -14,13 +14,20 @@ module Orel
         @foreign_keys = []
       end
 
-      attr_reader :namer
+      attr_accessor :namer
 
       # Public: Name of this heading.
       #
       # Returns a Symbol.
       def name
         @namer.heading_name
+      end
+
+      # Public: The name of the underlying table.
+      #
+      # Returns a Symbol.
+      def table_name
+        @namer.table_name
       end
 
       # Public: The relational attributes in this heading.

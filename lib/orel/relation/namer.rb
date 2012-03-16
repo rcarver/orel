@@ -59,6 +59,13 @@ module Orel
         end
       end
 
+      # Internal: The name of the table implementing the heading.
+      #
+      # Returns a Symbol.
+      def table_name
+        heading_name
+      end
+
       # Internal: Transform an attribute name so it can be used
       # on the other side of a relationship.
       #

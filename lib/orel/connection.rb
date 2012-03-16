@@ -36,7 +36,7 @@ module Orel
 
     # Internal
     def arel_table(heading)
-      @arel_tables[heading.name] ||= Arel::Table.new(heading.name, @active_record)
+      @arel_tables[heading.table_name] ||= Arel::Table.new(heading.table_name, @active_record)
     end
 
   protected
