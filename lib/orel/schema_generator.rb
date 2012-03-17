@@ -8,7 +8,7 @@ module Orel
     #
     # Returns an Array of Strings.
     def self.class_creation_statements(classes)
-      headings = classes.map { |klass| klass.relation_set.to_a }.flatten
+      headings = classes.map { |klass| headings = klass.relation_set.to_a }.flatten
       creation_statements(headings)
     end
 

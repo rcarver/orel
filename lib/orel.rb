@@ -32,6 +32,7 @@ require 'orel/relation'
 require 'orel/schema_generator'
 require 'orel/simple_associations'
 require 'orel/query'
+require 'orel/sharding'
 require 'orel/table'
 require 'orel/validator'
 
