@@ -35,8 +35,14 @@ module Orel
     end
 
     # Internal
-    def arel_table(heading)
-      @arel_tables[heading.table_name] ||= Arel::Table.new(heading.table_name, @active_record)
+    def arel_table(target)
+      name = case target
+      when Orel::Relation::Heading then target.namer.table_name
+      when Orel::Relation::Namer   then target.table_name
+      when Symbol                  then target
+      else raise ArgumentError, "Cannot convert #{target.inspect} to table name"
+      end
+      @arel_tables[name] ||= Arel::Table.new(name, @active_record)
     end
 
   protected
