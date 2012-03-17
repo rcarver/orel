@@ -27,11 +27,11 @@ Gem::Specification.new do |s|
   s.add_dependency 'arel'
   s.add_dependency 'sourcify'
 
-  s.add_development_dependency "rake"
-  s.add_development_dependency "rspec"
-  s.add_development_dependency "cucumber"
+  s.add_development_dependency "rake", ">=0.9.2"
+  s.add_development_dependency "rspec", ">=2.8.0"
+  s.add_development_dependency "cucumber", ">=1.1.9"
   s.add_development_dependency "aruba"
-  s.add_development_dependency 'database_cleaner'
+  s.add_development_dependency "database_cleaner"
 
 end
 
