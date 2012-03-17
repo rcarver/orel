@@ -8,6 +8,13 @@ module Orel
       @connection = connection
     end
 
+    # Public: The name of the table.
+    #
+    # Returns a Symbol.
+    def name
+      @table_name
+    end
+
     # Public: Get all rows in the table. The results are ordered by the primary key.
     #
     # Examples

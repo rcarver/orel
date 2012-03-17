@@ -23,11 +23,14 @@ module Orel
         @namer.heading_name
       end
 
-      # Public: The name of the underlying table.
-      #
-      # Returns a Symbol.
-      def table_name
-        @namer.table_name
+      # TEMPORARY
+      def with_namer(namer)
+        heading = self.class.new(namer)
+        heading.instance_variable_set(:@attributes, attributes)
+        heading.instance_variable_set(:@keys, keys)
+        heading.instance_variable_set(:@references, references)
+        heading.instance_variable_set(:@foreign_keys, foreign_keys)
+        heading
       end
 
       # Public: The relational attributes in this heading.

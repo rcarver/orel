@@ -64,7 +64,7 @@ module Orel
       end
       attr_reader :relation_namer
       def name
-        @heading.table_name
+        @relation_namer.table_name
       end
       def columns
         @heading.attributes.map { |attribute|

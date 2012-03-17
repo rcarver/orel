@@ -40,6 +40,13 @@ module Orel
         @suffix = options[:suffix]
       end
 
+      # Internal: Copy this namer.
+      #
+      # Returns an Orel::Relation::Namer.
+      def clone
+        Namer.new(@name, @options.clone)
+      end
+
       # Internal: Get a new instance of Namer that creates names
       # for a child heading.
       #
@@ -59,7 +66,7 @@ module Orel
         end
       end
 
-      # Internal: The name of the table implementing the heading.
+      # Internal: The name of the underlying table.
       #
       # Returns a Symbol.
       def table_name
