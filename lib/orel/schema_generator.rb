@@ -20,13 +20,15 @@ module Orel
     # Returns an Array of Strings.
     def self.creation_statements(headings)
       tables = headings.map { |heading|
-        Orel::SchemaGenerator::Table.new(heading.namer, heading)
+        Orel::SchemaGenerator::Table.new(heading, heading.namer)
       }
 
       foreign_keys = headings.map { |heading|
         heading.foreign_keys.map { |foreign_key|
-          parent_table = Orel::SchemaGenerator::Table.new(heading.namer, foreign_key.parent_heading)
-          child_table = Orel::SchemaGenerator::Table.new(heading.namer, foreign_key.child_heading)
+          parent_heading = foreign_key.parent_heading
+          child_heading = foreign_key.child_heading
+          parent_table = Orel::SchemaGenerator::Table.new(parent_heading, parent_heading.namer)
+          child_table = Orel::SchemaGenerator::Table.new(child_heading, child_heading.namer)
           parent_attributes = foreign_key.parent_key.attributes
           child_attributes = foreign_key.child_key.attributes
           Orel::SchemaGenerator::ForeignKey.new(
@@ -58,9 +60,9 @@ module Orel
 
     class Table
       include Quoting
-      def initialize(relation_namer, heading)
-        @relation_namer = relation_namer
+      def initialize(heading, relation_namer)
         @heading = heading
+        @relation_namer = relation_namer
       end
       attr_reader :relation_namer
       def name
