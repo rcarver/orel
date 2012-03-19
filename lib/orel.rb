@@ -32,7 +32,6 @@ require 'orel/relation'
 require 'orel/schema_generator'
 require 'orel/simple_associations'
 require 'orel/query'
-require 'orel/sharding'
 require 'orel/table'
 require 'orel/validator'
 
@@ -46,6 +45,11 @@ require 'orel/relation/key_dsl'
 require 'orel/relation/namer'
 require 'orel/relation/reference'
 require 'orel/relation/set'
+
+require 'orel/sharding'
+require 'orel/sharding/namer'
+require 'orel/sharding/partitioned_table'
+require 'orel/sharding/partitioner'
 
 module Orel
   # Public: Exception thrown if an association is queried on an object

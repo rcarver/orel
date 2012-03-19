@@ -14,9 +14,7 @@ Feature: Automatically shard data into multiple tables
           att :count, Orel::Domains::Integer
         end
         shard_table_on(:day) do |day|
-          {
-            :append_table_name => day[0, 6]
-          }
+          day[0, 6]
         end
       end
       """
@@ -33,13 +31,12 @@ Feature: Automatically shard data into multiple tables
     When I run some Orel code:
       """
       days = %w(20120101 20120102 20120201)
-      months = %w(201201 201202)
       days.each do |day|
         Count.table.insert(:day => day, :thing => "ideas", :count => 10)
       end
-      months.each do |month|
-        shard = Count.shard(month)
-        puts [month, shard.row_count].join(", ")
+      days.each do |day|
+        table = Count.partition_for(:day => day)
+        puts [day, table.name, table.row_count].join(", ")
       end
       rows = Count.table.query { |q, table|
         q.project table[:day], table[:thing], table[:count]
@@ -51,8 +48,9 @@ Feature: Automatically shard data into multiple tables
       """
     Then the output should contain:
       """
-      201201, 2
-      201202, 1
+      20120101, counts_201201, 2
+      20120102, counts_201201, 2
+      20120201, counts_201202, 1
       """
     And my database looks like:
       """
