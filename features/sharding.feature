@@ -51,6 +51,9 @@ Feature: Automatically shard data into multiple tables
       20120101, counts_201201, 2
       20120102, counts_201201, 2
       20120201, counts_201202, 1
+      20120101, ideas, 10
+      20120102, ideas, 10
+      20120201, ideas, 10
       """
     And my database looks like:
       """

@@ -15,13 +15,14 @@ ActiveRecord::Base.establish_connection(
 )
 
 require 'fixtures/users_and_things'
+require 'fixtures/daily_accumulation'
 
 RSpec.configure do |config|
   config.before(:suite) do
     Orel.finalize!
     Orel.recreate_database!
     Orel.create_tables!
-    DatabaseCleaner.strategy = :transaction
+    DatabaseCleaner.strategy = :truncation
   end
   config.before(:each) do
     DatabaseCleaner.start

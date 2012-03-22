@@ -2,10 +2,10 @@ module Orel
   module Sharding
     class Partitioner
 
-      def initialize(heading, connection, sharded_attribute)
+      def initialize(heading, connection, partitioned_attribute)
         @heading = heading
         @connection = connection
-        @sharded_attribute = sharded_attribute
+        @partitioned_attribute = partitioned_attribute
       end
 
       def suffix_heading(suffix)
@@ -17,17 +17,29 @@ module Orel
         @shard_block = block
       end
 
+      def get_all_partitions
+        @connection.query("SHOW TABLES LIKE '#{@table_namer.table_name}_%'").flatten.map { |row|
+          name = row.to_sym
+          unless name == @heading.namer.table_name
+            Table.new(name, @heading, @connection)
+          end
+        }.compact
+      end
+
       def get_partition_for_attributes(attributes, create=false)
         namer = get_namer_for_attributes(attributes)
         create_table(namer) if create
         Table.new(namer.table_name, @heading, @connection)
       end
 
+      attr_reader :partitioned_attribute
+      attr_reader :connection
+
     protected
 
       def get_namer_for_attributes(attributes)
-        value = attributes[@sharded_attribute]
-        raise ArgumentError, "Missing value for #{@sharded_attribute}" unless value
+        value = attributes[@partitioned_attribute]
+        raise ArgumentError, "Missing value for #{@partitioned_attribute}" unless value
         suffix = @shard_block.call(value)
         Orel::Sharding::Namer.new(@table_namer, suffix)
       end

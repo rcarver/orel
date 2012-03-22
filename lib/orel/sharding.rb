@@ -3,9 +3,11 @@ module Orel
   # data from multiple database tables for one logical heading.
   module Sharding
 
-    def self.included(base)
-      #raise ArgumentError, "Orel::Sharding requires Orel::Relation"
+    def self.extended(base)
       #raise ArgumentError, "Orel::Sharding is not supported for Orel::Object"
+      base.class_eval do
+        extend Orel::Relation
+      end
     end
 
     # Public: Partition records in this heading into multiple underlying tables.
@@ -36,7 +38,7 @@ module Orel
     # Returns an Orel::Sharding::ParitionedTable.
     def table(child_name=nil)
       raise ArgumentError, "Child table is not supported" if child_name
-      Sharding::ParitionedTable.new(@shard_partitioner)
+      Sharding::PartitionedTable.new(@shard_partitioner)
     end
 
     # Public: Get access to a single table partition.
@@ -48,6 +50,8 @@ module Orel
     def partition_for(attributes)
       @shard_partitioner.get_partition_for_attributes(attributes, false)
     end
+
+    attr_reader :shard_partitioner
 
   end
 end

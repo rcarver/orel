@@ -39,8 +39,9 @@ module Orel
       name = case target
       when Orel::Relation::Heading then target.namer.table_name
       when Orel::Relation::Namer   then target.table_name
+      when Orel::Table             then target.name
       when Symbol                  then target
-      else raise ArgumentError, "Cannot convert #{target.inspect} to table name"
+      else raise ArgumentError, "Cannot convert #{target.class} to table name"
       end
       @arel_tables[name] ||= Arel::Table.new(name, @active_record)
     end

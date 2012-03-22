@@ -49,6 +49,7 @@ require 'orel/relation/set'
 require 'orel/sharding'
 require 'orel/sharding/namer'
 require 'orel/sharding/partitioned_table'
+require 'orel/sharding/partitioned_query'
 require 'orel/sharding/partitioner'
 
 module Orel
@@ -73,6 +74,9 @@ module Orel
   end
 
   AR = ActiveRecord::Base
+  def AR.inspect
+    "[AR]"
+  end
 
   def self.logger=(logger)
     AR.logger = logger
