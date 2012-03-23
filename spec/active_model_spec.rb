@@ -69,4 +69,10 @@ describe "ActiveModel details" do
       user.to_key.should == ["John", "Smith"]
     end
   end
+
+  describe "#to_partial_path" do
+    it "returns a useful path" do
+      user.to_partial_path.should == "users_and_things/users/user"
+    end
+  end
 end
