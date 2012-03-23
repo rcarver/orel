@@ -224,6 +224,16 @@ module Orel
       manager.to_sql
     end
 
+    def eql?(other)
+      other.name == name
+    end
+
+    alias == eql?
+
+    def hash
+      name.hash
+    end
+
   protected
 
     def ordered_hash(hash)

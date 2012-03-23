@@ -19,20 +19,19 @@ module Orel
           @partitioner.partitioned_attribute == name
         end
 
-        def add_value(name, values)
-          @values.concat values
+        def add_value(name, *values)
+          @values.concat Array(values).flatten
         end
 
         def get_partitions
+          all_partitions = @partitioner.get_all_partitions
           if @values.empty?
-            @partitioner.get_all_partitions
+            all_partitions
           else
-            partitions = {}
-            @values.each { |value|
-              partition = @partitioner.get_partition_for_attributes(@partitioner.partitioned_attribute => value)
-              partitions[partition.name] = partition
+            chosen_partitions = @values.map { |value|
+              @partitioner.get_partition_for_attributes(@partitioner.partitioned_attribute => value)
             }
-            partitions.values
+            all_partitions & chosen_partitions
           end
         end
       end
@@ -88,6 +87,12 @@ module Orel
       # Quacks like an Arel::Attribute.
       class AttributeProxy
 
+        # The predicate functions that are sane to perform on
+        # a partitioned attribute.
+        PREDICATES = [
+          :eq, :in
+        ]
+
         def initialize(partition_accumulator, name)
           @partition_accumulator = partition_accumulator
           @name = name
@@ -96,17 +101,18 @@ module Orel
 
         def method_missing(message, *args, &block)
           if @partition_accumulator.attr?(@name)
-            # TODO: only allow sane predicates like eq and in
-            # TODO: and ensure that we pass good values here.
+            unless PREDICATES.include?(message)
+              raise ArgumentError, "Partitioned attributes may only be constrained with [#{PREDICATES.join(', ')}]"
+            end
             @partition_accumulator.add_value(@name, args.first)
           end
-          @commands << ([message] << args)
+          @commands.push :message => message, :args => args
           self
         end
 
         def dereference(arel_table)
           attr = Arel::Attribute.new(arel_table, @name)
-          @commands.inject(attr) { |node, c| node.send(*c) }
+          @commands.inject(attr) { |node, c| node.send c[:message], *c[:args] }
         end
       end
 

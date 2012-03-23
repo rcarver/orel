@@ -72,5 +72,32 @@ describe Orel::Sharding::PartitionedTable do
         { :day => "20120201", :thing => "that", :count => 1 }
       ]
     end
+    it "queries against a non-existant partition, returning nothing" do
+      result = subject.query { |q, table|
+        q.project table[:day]
+        q.where   table[:day].eq("30120101")
+      }
+      result.should == []
+    end
+    it "only allows simple expressions on the partitioned attribute" do
+      expect {
+        subject.query { |q, table|
+          q.project table[:day]
+          q.where   table[:day].eq("20120101")
+        }
+      }.not_to raise_error
+      expect {
+        subject.query { |q, table|
+          q.project table[:day]
+          q.where   table[:day].in(["20120101"])
+        }
+      }.not_to raise_error
+      expect {
+        subject.query { |q, table|
+          q.project table[:day]
+          q.where   table[:day].gt("20120101")
+        }
+      }.to raise_error(ArgumentError, "Partitioned attributes may only be constrained with [eq, in]")
+    end
   end
 end
