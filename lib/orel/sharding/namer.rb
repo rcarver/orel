@@ -1,6 +1,6 @@
 module Orel
   module Sharding
-    # Decorates a namer to add a suffix.
+    # Decorates a Namer to add a suffix.
     class Namer
 
       def initialize(namer, suffix)

@@ -1,22 +1,34 @@
 module Orel
   module Sharding
-    # Decorates a Table so that all operations act on the appropriate shard.
+    # An implementation of Orel::Table for operating on a logical table
+    # that is partitioned into many physical tables. Operations performed
+    # by this class hide the underlying partitions from the user.
     class PartitionedTable
 
       def initialize(partitioner)
         @partitioner = partitioner
       end
 
+      # Public: See Orel::Table#insert.
+      #
+      # Returns nothing.
       def insert(attributes)
         table = @partitioner.get_partition_for_attributes(attributes, true)
         table.insert(attributes)
       end
 
+      # Public: See Orel::Table#upsert.
+      #
+      # Returns nothing.
       def upsert(options)
         table = @partitioner.get_partition_for_attributes(options[:insert], true)
         table.upsert(options)
       end
 
+      # Public: See Orel::Table#query with caveats that not all queries are
+      # appropriate on sharded data.
+      #
+      # Returns an Array.
       def query(description=nil, &block)
         accumulator = PartitionedQuery::PartitionAccumulator.new(@partitioner)
         table_proxy = PartitionedQuery::TableProxy.new(accumulator)
