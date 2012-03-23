@@ -52,9 +52,12 @@ module Orel
     end
 
     def self.included(base)
-      base.extend Orel::Relation
-      base.extend ClassMethods
-      base.extend ActiveModel::Naming
+      base.class_eval do
+        extend Orel::Relation
+        extend ClassMethods
+        extend ActiveModel::Naming
+        extend ActiveModel::Conversion::ClassMethods
+      end
     end
 
     module ClassMethods
@@ -328,6 +331,14 @@ module Orel
       else
         nil
       end
+    end
+
+    # Public: Get a string representing the standard Rails partial path
+    # for this object.
+    #
+    # Returns a String.
+    def to_partial_path
+      self.class._to_partial_path
     end
 
     # Special handling of `id` to do the right thing in spite of Ruby defining Object#id.
