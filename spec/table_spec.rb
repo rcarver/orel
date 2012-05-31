@@ -128,12 +128,20 @@ describe Orel::Table do
       sql.should == %{INSERT INTO `users_and_things_users` (`age`, `first_name`, `last_name`) VALUES (30, 'John', 'Smith') ON DUPLICATE KEY UPDATE age=age+VALUES(age)}
     end
 
-    specify "#upsert_statement with :replace" do
+    specify "#upsert_statement with :increment and multiple updates" do
       sql = subject.upsert_statement(
         :insert => { :first_name => "John", :last_name => "Smith", :age => 30 },
-        :update => { :values => [:age], :with => :replace }
+        :update => { :values => [:age, :last_name], :with => :increment }
       )
-      sql.should == %{INSERT INTO `users_and_things_users` (`age`, `first_name`, `last_name`) VALUES (30, 'John', 'Smith') ON DUPLICATE KEY UPDATE age=VALUES(age)}
+      sql.should == %{INSERT INTO `users_and_things_users` (`age`, `first_name`, `last_name`) VALUES (30, 'John', 'Smith') ON DUPLICATE KEY UPDATE age=age+VALUES(age),last_name=last_name+VALUES(last_name)}
+    end
+
+    specify "#upsert_statement with :replace and multiple updates" do
+      sql = subject.upsert_statement(
+        :insert => { :first_name => "John", :last_name => "Smith", :age => 30 },
+        :update => { :values => [:age, :last_name], :with => :replace }
+      )
+      sql.should == %{INSERT INTO `users_and_things_users` (`age`, `first_name`, `last_name`) VALUES (30, 'John', 'Smith') ON DUPLICATE KEY UPDATE age=VALUES(age),last_name=VALUES(last_name)}
     end
 
     specify "#update_statement" do
