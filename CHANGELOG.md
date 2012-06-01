@@ -1,3 +1,8 @@
+0.1.4 / 2012-05-31 
+==================
+
+  * upsert with :replace and more than one column to update was generating invalid SQL
+  * implement _to_partial_path per ActiveModel
 
 0.1.3 / 2011-12-28 
 ==================
