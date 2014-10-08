@@ -138,8 +138,8 @@ describe Orel::Query, "#query with batch enumeration" do
 
   let(:user_query)  { Orel::Query.new(UsersAndThings::User) }
 
-  it "enumerates in batches" do
-    results = user_query.query(:batch_size => 2) { |q, user|
+  it "queries batches, yielding batches" do
+    results = user_query.query(:batch_size => 2, :group => true) { |q, user|
       # nothing
     }
     expect(results).to be_instance_of(Enumerator)
@@ -160,8 +160,30 @@ describe Orel::Query, "#query with batch enumeration" do
     expect(actual_batches).to eq(expect_batches.size)
   end
 
-  it "enumerates in batches with conditions" do
+  it "queries batches, yielding each object" do
     results = user_query.query(:batch_size => 2) { |q, user|
+      # nothing
+    }
+    expect(results).to be_instance_of(Enumerator)
+    expect_users = [
+      "a",
+      "b",
+      "c",
+      "d",
+      "e",
+      "f",
+      "g"
+    ]
+    actual_users = 0
+    results.each.with_index do |u, i|
+      actual_users += 1
+      expect(u.first_name).to eql(expect_users[i])
+    end
+    expect(actual_users).to eq(expect_users.size)
+  end
+
+  it "queries batches with conditions" do
+    results = user_query.query(:batch_size => 2, :group => true) { |q, user|
       q.where user[:first_name].lteq("d")
       q.where user[:first_name].gteq("b")
     }
@@ -185,6 +207,9 @@ describe Orel::Query, "#query with batch enumeration" do
     results = user_query.query("testing", :batch_size => 2) { |q, user|
       # nothing
     }
+    results.each do |u|
+      # nothing
+    end
     expect(results).to be_instance_of(Enumerator)
   end
 end

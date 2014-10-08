@@ -158,6 +158,7 @@ module Orel
         # and end position.
         start = 0
         count = options[:batch_size]
+        group = options[:group] || false
         # Always order by the key.
         @heading.attributes.each { |a|
           manager.order table[a.name]
@@ -166,7 +167,13 @@ module Orel
           loop do
             objects = batch.read_batch(start, count)
             start += count
-            e.yield objects
+            if group
+              e.yield objects
+            else
+              objects.each do |obj|
+                e.yield obj
+              end
+            end
             if objects.size < count
               break
             end
