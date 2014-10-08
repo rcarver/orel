@@ -23,21 +23,33 @@ module Orel
   # over very large sets of data. The  result of a batch query is an Enumerator
   # object.
   #
-  # Specify `batch_size` to the max number of records to return.
+  # Specify `size` to the max number of records to return.
   #
-  #     users = User.query(:batch_size => 1000)
+  #     users = User.query { |q, user|
+  #       q.query_batches :size => 1000
+  #     }
   #     users.each do |user|
   #     end
   #
-  # Specify `group` to give each batch as an Array, rather than each object one
-  # at a time.
+  # Specify `group => true` to give each batch as an Array, rather than each
+  # object one at a time.
   #
-  #     users = User.query(:batch_size => 1000, :group => true)
+  #     users = User.query { |q, user|
+  #       q.query_batches :size => 1000, :group => true
+  #     }
   #     users.each do |batch|
   #       batch.size # => 1000
   #       batch.each do |user|
   #       end
   #     end
+  #
+  # Specify `order => false` in order to *not* use the primary key as the
+  # order.  This may be useful if you want to do consistent nonblocking read.
+  # http://dev.mysql.com/doc/refman/5.0/en/innodb-consistent-read.html
+  #
+  #     users = User.query { |q, user|
+  #       q.query_batches :size => 1000, :order => false
+  #     }
   #
   # Relation
   #
@@ -140,20 +152,12 @@ module Orel
     # Internal: Perform a query.
     #
     # description - String description of the query for logging (default: none).
-    # options     - Specify batching options:
-    #               :batch_size - Number max records per batch.
-    #               :group      - Boolean whether yield batches or objects.
     #
     # Yields Orel::Query::Select, Orel::Query::Relation
     #
     # Returns an Array of Orel::Object. If batching is enabled, returns an
-    #   Enumerator which yields batches of objects.
-    def query(description=nil, options={})
-      if description.is_a?(Hash)
-        options = description
-        description = nil
-      end
-
+    #   Enumerator which yields objects or batches of objects.
+    def query(description=nil)
       # Setup Arel query engine.
       table = @connection.arel_table(@heading)
       manager = Arel::SelectManager.new(table.engine)
@@ -174,21 +178,18 @@ module Orel
       # it into chunks.
       batch = Batch.new(@klass, @heading, @connection, query, manager, description)
 
-      if options[:batch_size]
+      if query.batch_size
         # Passing start is not supported. Use conditions to specify the start
         # and end position.
         start = 0
-        count = options[:batch_size]
-        group = options[:group] || false
-        # Always order by the key.
-        # NOTE: it may be desirable to not set this, or optionally set it in
-        # order to do Consistent Nonlocking Reads. I can't think of a way to
-        # start/end the transaction within the Enumerator though, so the caller
-        # would need to do it.
-        # http://dev.mysql.com/doc/refman/5.0/en/innodb-consistent-read.html
-        @heading.attributes.each { |a|
-          manager.order table[a.name]
-        }
+        count = query.batch_size
+        group = query.batch_group
+        order = query.batch_order
+        if order
+          @heading.attributes.each { |a|
+            manager.order table[a.name]
+          }
+        end
         Enumerator.new do |e|
           loop do
             objects = batch.read_batch(start, count)
@@ -206,9 +207,6 @@ module Orel
           end
         end
       else
-        if options.any?
-          raise ArgumentError, "Options were set, but not :batch_size"
-        end
         batch.read_all
       end
     end
@@ -316,6 +314,9 @@ module Orel
 
       attr_reader :projected_joins
       attr_reader :locked_for_query
+      attr_reader :batch_size
+      attr_reader :batch_group
+      attr_reader :batch_order
 
       # Public: Specify a condition on the query.
       #
@@ -367,6 +368,21 @@ module Orel
       def unlock_for_query!
         @locked_for_query = false
         nil
+      end
+
+      # Public: Specify that you want the results to be queried in batches.
+      #
+      # options - Hash of options.
+      #           :size  - Number of rows to query in each batch (default: 1000).
+      #           :group - Boolean whether to enumerate results individually or by batch.
+      #           :order - Boolean whether to order the query by the key, or leave to natural order.
+      #
+      # Returns nothing.
+      def query_batches(options)
+        @batch_size = options.delete(:size) || 1000
+        @batch_group = options.delete(:group) || false
+        @batch_order = options.key?(:order) ? options.delete(:order) : true
+        raise ArgumentError, "Unknown options: #{options.keys.inspect}" if options.any?
       end
 
     protected

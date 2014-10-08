@@ -139,8 +139,8 @@ describe Orel::Query, "#query with batch enumeration" do
   let(:user_query)  { Orel::Query.new(UsersAndThings::User) }
 
   it "queries batches, yielding each object" do
-    results = user_query.query(:batch_size => 2) { |q, user|
-      # nothing
+    results = user_query.query { |q, user|
+      q.query_batches :size => 2
     }
     expect(results).to be_instance_of(Enumerator)
     expect_users = [
@@ -161,8 +161,8 @@ describe Orel::Query, "#query with batch enumeration" do
   end
 
   it "queries batches, yielding groups" do
-    results = user_query.query(:batch_size => 2, :group => true) { |q, user|
-      # nothing
+    results = user_query.query { |q, user|
+      q.query_batches :size => 2, :group => true
     }
     expect(results).to be_instance_of(Enumerator)
     expect_batches = [
@@ -182,16 +182,33 @@ describe Orel::Query, "#query with batch enumeration" do
     expect(actual_batches).to eq(expect_batches.size)
   end
 
-  it "is an error to specify :group without :batch_size" do
-    expect {
-      user_query.query(:group => true)
-    }.to raise_error(ArgumentError)
+  it "queries batches, excluding order" do
+    results = user_query.query { |q, user|
+      q.query_batches :size => 2, :order => false
+    }
+    expect(results).to be_instance_of(Enumerator)
+    expect_users = [
+      "a",
+      "b",
+      "c",
+      "d",
+      "e",
+      "f",
+      "g"
+    ]
+    actual_users = 0
+    results.each.with_index do |u, i|
+      actual_users += 1
+      expect(u.first_name).to eql(expect_users[i])
+    end
+    expect(actual_users).to eq(expect_users.size)
   end
 
   it "queries batches with conditions" do
-    results = user_query.query(:batch_size => 2, :group => true) { |q, user|
+    results = user_query.query { |q, user|
       q.where user[:first_name].lteq("d")
       q.where user[:first_name].gteq("b")
+      q.query_batches :size => 2, :group => true
     }
     expect(results).to be_instance_of(Enumerator)
     expect_batches = [
@@ -209,13 +226,11 @@ describe Orel::Query, "#query with batch enumeration" do
     expect(actual_batches).to eq(expect_batches.size)
   end
 
-  it "allows a description enumerates in batches with offset" do
-    results = user_query.query("testing", :batch_size => 2) { |q, user|
-      # nothing
-    }
-    results.each do |u|
-      # nothing
-    end
-    expect(results).to be_instance_of(Enumerator)
+  it "is an error to specify any other batch options" do
+    expect {
+      user_query.query { |q, user|
+        q.query_batches :foo => 1
+      }
+    }.to raise_error(ArgumentError)
   end
 end
