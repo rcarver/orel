@@ -138,7 +138,29 @@ describe Orel::Query, "#query with batch enumeration" do
 
   let(:user_query)  { Orel::Query.new(UsersAndThings::User) }
 
-  it "queries batches, yielding batches" do
+  it "queries batches, yielding each object" do
+    results = user_query.query(:batch_size => 2) { |q, user|
+      # nothing
+    }
+    expect(results).to be_instance_of(Enumerator)
+    expect_users = [
+      "a",
+      "b",
+      "c",
+      "d",
+      "e",
+      "f",
+      "g"
+    ]
+    actual_users = 0
+    results.each.with_index do |u, i|
+      actual_users += 1
+      expect(u.first_name).to eql(expect_users[i])
+    end
+    expect(actual_users).to eq(expect_users.size)
+  end
+
+  it "queries batches, yielding groups" do
     results = user_query.query(:batch_size => 2, :group => true) { |q, user|
       # nothing
     }
@@ -160,26 +182,10 @@ describe Orel::Query, "#query with batch enumeration" do
     expect(actual_batches).to eq(expect_batches.size)
   end
 
-  it "queries batches, yielding each object" do
-    results = user_query.query(:batch_size => 2) { |q, user|
-      # nothing
-    }
-    expect(results).to be_instance_of(Enumerator)
-    expect_users = [
-      "a",
-      "b",
-      "c",
-      "d",
-      "e",
-      "f",
-      "g"
-    ]
-    actual_users = 0
-    results.each.with_index do |u, i|
-      actual_users += 1
-      expect(u.first_name).to eql(expect_users[i])
-    end
-    expect(actual_users).to eq(expect_users.size)
+  it "is an error to specify :group without :batch_size" do
+    expect {
+      user_query.query(:group => true)
+    }.to raise_error(ArgumentError)
   end
 
   it "queries batches with conditions" do

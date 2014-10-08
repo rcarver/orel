@@ -141,7 +141,8 @@ module Orel
     #
     # description - String description of the query for logging (default: none).
     # options     - Specify batching options:
-    #               :batch_size - Number.
+    #               :batch_size - Number max records per batch.
+    #               :group      - Boolean whether yield batches or objects.
     #
     # Yields Orel::Query::Select, Orel::Query::Relation
     #
@@ -200,6 +201,9 @@ module Orel
           end
         end
       else
+        if options.any?
+          raise ArgumentError, "Options were set, but not :batch_size"
+        end
         batch.read_all
       end
     end
