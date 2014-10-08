@@ -181,6 +181,11 @@ module Orel
         count = options[:batch_size]
         group = options[:group] || false
         # Always order by the key.
+        # NOTE: it may be desirable to not set this, or optionally set it in
+        # order to do Consistent Nonlocking Reads. I can't think of a way to
+        # start/end the transaction within the Enumerator though, so the caller
+        # would need to do it.
+        # http://dev.mysql.com/doc/refman/5.0/en/innodb-consistent-read.html
         @heading.attributes.each { |a|
           manager.order table[a.name]
         }
