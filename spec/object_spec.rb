@@ -128,7 +128,7 @@ describe Orel::Object do
         klass.table.row_count.should == 1
       end
       specify "#save! returns true and persists the record" do
-        expect { subject.save! }.not_to raise_error(Orel::Object::InvalidRecord)
+        expect { subject.save! }.not_to raise_error
         klass.table.row_count.should == 1
       end
     end
