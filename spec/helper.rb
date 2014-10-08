@@ -1,6 +1,8 @@
 require 'orel'
 require 'rspec'
+require 'rspec/its'
 require 'database_cleaner'
+require 'fileutils'
 
 OREL_LOG_FILE = File.dirname(__FILE__) + "/../log/test.log"
 
@@ -17,6 +19,12 @@ ActiveRecord::Base.establish_connection(
 require 'fixtures/users_and_things'
 
 RSpec.configure do |config|
+  config.expect_with :rspec do |c|
+    c.syntax = [:should, :expect]
+  end
+  config.mock_with :rspec do |mocks|
+    mocks.syntax = :should
+  end
   config.before(:suite) do
     Orel.finalize!
     Orel.recreate_database!
