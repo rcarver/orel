@@ -18,6 +18,38 @@ module Orel
   # Following is a description of how to use the select and relation objects
   # to construct a query.
   #
+  # Queries can be returned in one or many result sets. By specifying "batch"
+  # options, the number of results is limited. This is useful for iterating
+  # over very large sets of data. The  result of a batch query is an Enumerator
+  # object.
+  #
+  # Specify `size` to the max number of records to return.
+  #
+  #     users = User.query { |q, user|
+  #       q.query_batches :size => 1000
+  #     }
+  #     users.each do |user|
+  #     end
+  #
+  # Specify `group => true` to give each batch as an Array, rather than each
+  # object one at a time.
+  #
+  #     users = User.query { |q, user|
+  #       q.query_batches :size => 1000, :group => true
+  #     }
+  #     users.each do |batch|
+  #       batch.size # => 1000
+  #       batch.each do |user|
+  #       end
+  #     end
+  #
+  # Specify `order => false` in order to *not* use the primary key as the
+  # order.  This may be useful if you want to do consistent nonblocking read.
+  # http://dev.mysql.com/doc/refman/5.0/en/innodb-consistent-read.html
+  #
+  #     users = User.query { |q, user|
+  #       q.query_batches :size => 1000, :order => false
+  #     }
   #
   # Relation
   #
@@ -123,7 +155,8 @@ module Orel
     #
     # Yields Orel::Query::Select, Orel::Query::Relation
     #
-    # Returns an Array of Orel::Object.
+    # Returns an Array of Orel::Object. If batching is enabled, returns an
+    #   Enumerator which yields objects or batches of objects.
     def query(description=nil)
       # Setup Arel query engine.
       table = @connection.arel_table(@heading)
@@ -141,70 +174,133 @@ module Orel
       # Yield to customize the query.
       yield query, relation if block_given?
 
-      # Execute the query.
-      rows = @connection.execute(manager.to_sql, description || "#{self.class} on #{@klass}")
+      # Initialize a Batch which can either read everything at once, or break
+      # it into chunks.
+      batch = Batch.new(@klass, @heading, @connection, query, manager, description)
 
-      # Extract objects from rows.
-      if query.projected_joins.empty?
-        objects = extract_objects_without_joins(rows)
+      if query.batch_size
+        # Passing start is not supported. Use conditions to specify the start
+        # and end position.
+        start = 0
+        count = query.batch_size
+        group = query.batch_group
+        order = query.batch_order
+        if order
+          @heading.attributes.each { |a|
+            manager.order table[a.name]
+          }
+        end
+        Enumerator.new do |e|
+          loop do
+            objects = batch.read_batch(start, count)
+            start += count
+            if group
+              e.yield objects
+            else
+              objects.each do |obj|
+                e.yield obj
+              end
+            end
+            if objects.size < count
+              break
+            end
+          end
+        end
       else
-        objects = extract_objects_with_joins(query.projected_joins, rows)
+        batch.read_all
       end
-
-      # Finalize and return the objects.
-      objects.each { |object|
-        # The object is persisited because it came from the databse.
-        object.persisted!
-
-        # The object is readonly because it's a complex relation
-        object.readonly!
-
-        # The object is locked for query because you should get all
-        # of the data you're interested in one shot.
-        object.locked_for_query! if query.locked_for_query
-      }
     end
 
   protected
 
-    def extract_objects_without_joins(rows)
-      rows.each(:as => :hash).map { |row|
-        @klass.new(row)
-      }
-    end
+    class Batch
 
-    def extract_objects_with_joins(projected_joins, rows)
-      objects = []
-      objects_hash = {}
-      rows.each(:as => :hash) { |row|
+      def initialize(klass, heading, connection, query, select_manager, description)
+        @klass = klass
+        @heading = heading
+        @connection = connection
+        @query = query
+        @select_manager = select_manager
+        @description = description
+      end
 
-        # Extract association projections from the row.
-        association_projections = {}
-        projected_joins.each { |join|
-          join_id = join.join_id
-          association_projections[join.join_class] = {}
-          row.each { |key, value|
-            if key[0, join_id.size] == join_id
-              name = key[(join_id.size)..-1]
-              row.delete(key)
-              association_projections[join.join_class][name] = value
-            end
-          }
-        }
+      def read_all
+        read @description || "#{Orel::Query} on #{@klass}"
+      end
 
-        # Only instantiate the object once.
-        if objects_hash[row]
-          object = objects_hash[row]
+      def read_batch(start, count)
+        @select_manager.take count
+        @select_manager.skip start
+        batch_desc = "(batch rows: #{start}-#{start + count})"
+        read @description ? "#{@description} #{batch_desc}" : "#{Orel::Query} #{batch_desc} on #{@klass}"
+      end
+
+    protected
+
+      def read(description)
+        # Execute the query.
+        rows = @connection.execute(@select_manager.to_sql, description)
+
+        # Extract objects from rows.
+        if @query.projected_joins.empty?
+          objects = extract_objects_without_joins(rows)
         else
-          object = objects_hash[row] = @klass.new(row)
-          objects << object
+          objects = extract_objects_with_joins(@query.projected_joins, rows)
         end
 
-        projected_joins.each { |join|
-          object._store_association(join.join_class, association_projections[join.join_class])
+        # Finalize and return the objects.
+        objects.each { |object|
+          # The object is persisited because it came from the databse.
+          object.persisted!
+
+          # The object is readonly because it's a complex relation
+          object.readonly!
+
+          # The object is locked for query because you should get all
+          # of the data you're interested in one shot.
+          object.locked_for_query! if @query.locked_for_query
         }
-      }
-      objects
+      end
+
+      def extract_objects_without_joins(rows)
+        rows.each(:as => :hash).map { |row|
+          @klass.new(row)
+        }
+      end
+
+      def extract_objects_with_joins(projected_joins, rows)
+        objects = []
+        objects_hash = {}
+        rows.each(:as => :hash) { |row|
+
+          # Extract association projections from the row.
+          association_projections = {}
+          projected_joins.each { |join|
+            join_id = join.join_id
+            association_projections[join.join_class] = {}
+            row.each { |key, value|
+              if key[0, join_id.size] == join_id
+                name = key[(join_id.size)..-1]
+                row.delete(key)
+                association_projections[join.join_class][name] = value
+              end
+            }
+          }
+
+          # Only instantiate the object once.
+          if objects_hash[row]
+            object = objects_hash[row]
+          else
+            object = objects_hash[row] = @klass.new(row)
+            objects << object
+          end
+
+          projected_joins.each { |join|
+            object._store_association(join.join_class, association_projections[join.join_class])
+          }
+        }
+        objects
+      end
     end
 
     class Select
@@ -218,6 +314,9 @@ module Orel
 
       attr_reader :projected_joins
       attr_reader :locked_for_query
+      attr_reader :batch_size
+      attr_reader :batch_group
+      attr_reader :batch_order
 
       # Public: Specify a condition on the query.
       #
@@ -269,6 +368,21 @@ module Orel
       def unlock_for_query!
         @locked_for_query = false
         nil
+      end
+
+      # Public: Specify that you want the results to be queried in batches.
+      #
+      # options - Hash of options.
+      #           :size  - Number of rows to query in each batch (default: 1000).
+      #           :group - Boolean whether to enumerate results individually or by batch.
+      #           :order - Boolean whether to order the query by the key, or leave to natural order.
+      #
+      # Returns nothing.
+      def query_batches(options)
+        @batch_size = options.delete(:size) || 1000
+        @batch_group = options.delete(:group) || false
+        @batch_order = options.key?(:order) ? options.delete(:order) : true
+        raise ArgumentError, "Unknown options: #{options.keys.inspect}" if options.any?
       end
 
     protected
