@@ -43,7 +43,7 @@ describe Orel::ClassAssociations do
       end
       it "does not throw locked for query errors" do
         subject.locked_for_query = true
-        expect { subject[UsersAndThings::Thing] }.not_to raise_error(Orel::LockedForQueryError)
+        expect { subject[UsersAndThings::Thing] }.not_to raise_error
       end
     end
     context "when records have been stored" do
@@ -56,7 +56,7 @@ describe Orel::ClassAssociations do
       end
       it "does not throw locked for query errors" do
         subject.locked_for_query = true
-        expect { subject[UsersAndThings::Thing] }.not_to raise_error(Orel::LockedForQueryError)
+        expect { subject[UsersAndThings::Thing] }.not_to raise_error
       end
     end
   end
@@ -93,7 +93,7 @@ describe Orel::ClassAssociations do
       end
       it "does not throw locked for query errors" do
         subject.locked_for_query = true
-        expect { subject[UsersAndThings::User] }.not_to raise_error(Orel::LockedForQueryError)
+        expect { subject[UsersAndThings::User] }.not_to raise_error
       end
     end
     context "when records have been stored" do
@@ -105,7 +105,7 @@ describe Orel::ClassAssociations do
       end
       it "does not throw locked for query errors" do
         subject.locked_for_query = true
-        expect { subject[UsersAndThings::User] }.not_to raise_error(Orel::LockedForQueryError)
+        expect { subject[UsersAndThings::User] }.not_to raise_error
       end
     end
   end

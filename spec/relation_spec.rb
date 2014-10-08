@@ -9,9 +9,11 @@ describe Orel::Relation do
     end
     it "uses the base active record connection by default" do
       pending
+      fail
     end
     it "uses a configured active record connection" do
       pending
+      fail
     end
   end
 
@@ -21,6 +23,7 @@ describe Orel::Relation do
     end
     it "returns a child heading" do
       pending
+      fail
     end
     it "raises an error if asking for a non-existent child" do
       expect {
@@ -35,6 +38,7 @@ describe Orel::Relation do
     end
     it "returns a table for a child heading" do
       pending
+      fail
     end
     it "raises an error if asking for a non-existent child" do
       expect {

@@ -19,7 +19,7 @@ describe Orel::Options do
       subject { described_class.new(Object) }
       its(:prefix) { should be_nil }
       its(:suffix) { should be_nil }
-      its(:pluralize) { should be_true }
+      its(:pluralize) { should be_truthy }
       its(:active_record) { should == Orel::AR }
     end
 
@@ -27,7 +27,7 @@ describe Orel::Options do
       subject { described_class.new(Group) }
       its(:prefix) { should == "rel_prefix" }
       its(:suffix) { should == "rel_suffix" }
-      its(:pluralize) { should be_false }
+      its(:pluralize) { should be_falsey }
       its(:active_record) { should == :active_record }
     end
   end

@@ -31,8 +31,8 @@ describe Orel::Attributes do
       subject.should_not be_empty
     end
     it "can tell you if it has an attribute or not" do
-      subject.att?(:name).should be_true
-      subject.att?(:foo).should be_false
+      subject.att?(:name).should be_truthy
+      subject.att?(:foo).should be_falsey
     end
     it "can get and set the value of an attribute" do
       subject[:name].should be_nil
@@ -78,7 +78,7 @@ describe Orel::Attributes do
   describe "conformance to ActiveModel::Dirty" do
     describe "at first, without default values" do
       subject { Orel::Attributes.new(thing_heading) }
-      its(:changed?) { should be_false }
+      its(:changed?) { should be_falsey }
       its(:changed) { should be_empty }
       its(:changes) { should be_empty }
       its(:previous_changes) { should be_empty }
@@ -86,7 +86,7 @@ describe Orel::Attributes do
     end
     describe "at first, with default values" do
       subject { Orel::Attributes.new(thing_heading, :name => "John") }
-      its(:changed?) { should be_false }
+      its(:changed?) { should be_falsey }
       its(:changed) { should be_empty }
       its(:changes) { should be_empty }
       its(:previous_changes) { should be_empty }
@@ -97,7 +97,7 @@ describe Orel::Attributes do
       before do
         subject[:name] = "Bob"
       end
-      its(:changed?) { should be_true }
+      its(:changed?) { should be_truthy }
       its(:changed) { should == [:name] }
       its(:changes) { should == { :name => [nil, 'Bob'] } }
       its(:previous_changes) { should be_empty }
@@ -108,7 +108,7 @@ describe Orel::Attributes do
       before do
         subject[:name] = "Bob"
       end
-      its(:changed?) { should be_true }
+      its(:changed?) { should be_truthy }
       its(:changed) { should == [:name] }
       its(:changes) { should == { :name => ['John', 'Bob'] } }
       its(:previous_changes) { should be_empty }
