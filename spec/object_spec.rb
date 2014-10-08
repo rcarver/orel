@@ -113,7 +113,7 @@ describe Orel::Object do
   describe "saving records" do
     shared_examples "an invalid record being saved" do
       specify "#save returns false and does not persist the record" do
-        subject.save.should be_false
+        subject.save.should be_falsey
         klass.table.row_count.should == 0
       end
       specify "#save! raises an error and does not persist the record" do
@@ -124,7 +124,7 @@ describe Orel::Object do
 
     shared_examples "a valid record being saved" do
       specify "#save returns true and persists the record" do
-        subject.save.should be_true
+        subject.save.should be_truthy
         klass.table.row_count.should == 1
       end
       specify "#save! returns true and persists the record" do
@@ -165,7 +165,7 @@ describe Orel::Object do
         subject.first_name = nil
       end
       specify "#save returns false and does not update the record" do
-        subject.save.should be_false
+        subject.save.should be_falsey
         UsersAndThings::User.table.row_count.should == 1
         UsersAndThings::User.table.row_list.first[:first_name].should == "John"
       end
@@ -177,7 +177,7 @@ describe Orel::Object do
         subject.first_name = "Dave"
       end
       specify "#save returns true and persists the record" do
-        subject.save.should be_true
+        subject.save.should be_truthy
         UsersAndThings::User.table.row_count.should == 1
         UsersAndThings::User.table.row_list.first[:first_name].should == "Dave"
       end
