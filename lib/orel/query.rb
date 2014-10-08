@@ -18,6 +18,26 @@ module Orel
   # Following is a description of how to use the select and relation objects
   # to construct a query.
   #
+  # Queries can be returned in one or many result sets. By specifying "batch"
+  # options, the number of results is limited. This is useful for iterating
+  # over very large sets of data. The  result of a batch query is an Enumerator
+  # object.
+  #
+  # Specify `batch_size` to the max number of records to return.
+  #
+  #     users = User.query(:batch_size => 1000)
+  #     users.each do |user|
+  #     end
+  #
+  # Specify `group` to give each batch as an Array, rather than each object one
+  # at a time.
+  #
+  #     users = User.query(:batch_size => 1000, :group => true)
+  #     users.each do |batch|
+  #       batch.size # => 1000
+  #       batch.each do |user|
+  #       end
+  #     end
   #
   # Relation
   #
