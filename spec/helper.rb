@@ -27,7 +27,15 @@ RSpec.configure do |config|
   end
   config.before(:suite) do
     Orel.finalize!
-    Orel.recreate_database!
+    begin
+      # This used to work, but now mysql2 throws an error during connect if the
+      # database does not exist. That means there's no way to create the db via
+      # the AR connection.
+      Orel.recreate_database!
+    rescue => e
+      STDERR.puts "Creating DB via CLI. If this fails, you may need to manually create orel_test. (#{e})"
+      `echo 'create database orel_test' | mysql -uroot`
+    end
     Orel.create_tables!
     DatabaseCleaner.strategy = :transaction
   end
