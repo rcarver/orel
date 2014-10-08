@@ -9,7 +9,7 @@ module Orel
 
     def execute(sql, description=nil)
       begin
-        @active_record_connection.execute(sql, description=nil)
+        @active_record_connection.execute(sql, description)
       rescue StandardError => e
         debug_sql_error(sql)
         raise
@@ -18,7 +18,7 @@ module Orel
 
     def insert(sql, description=nil)
       begin
-        @active_record_connection.insert(sql, description=nil)
+        @active_record_connection.insert(sql, description)
       rescue StandardError => e
         debug_sql_error(sql)
         raise
@@ -27,7 +27,7 @@ module Orel
 
     def query(sql, description=nil)
       begin
-        @active_record_connection.select_rows(sql, description=nil)
+        @active_record_connection.select_rows(sql, description)
       rescue StandardError => e
         debug_sql_error(sql)
         raise
