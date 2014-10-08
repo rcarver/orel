@@ -1,3 +1,10 @@
+0.2.0 / 2014-10-08 
+==================
+
+  * fix that sql names weren't actually logged
+  * add 'batch' support to #query
+  * fix specs to run with rspec 3
+
 0.1.4 / 2012-05-31 
 ==================
 
