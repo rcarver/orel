@@ -120,11 +120,19 @@ module Orel
     # Internal: Perform a query.
     #
     # description - String description of the query for logging (default: none).
+    # options     - Specify batching options:
+    #               :batch_size - Number.
     #
     # Yields Orel::Query::Select, Orel::Query::Relation
     #
-    # Returns an Array of Orel::Object.
-    def query(description=nil)
+    # Returns an Array of Orel::Object. If batching is enabled, returns an
+    #   Enumerator which yields batches of objects.
+    def query(description=nil, options={})
+      if description.is_a?(Hash)
+        options = description
+        description = nil
+      end
+
       # Setup Arel query engine.
       table = @connection.arel_table(@heading)
       manager = Arel::SelectManager.new(table.engine)
@@ -141,70 +149,124 @@ module Orel
       # Yield to customize the query.
       yield query, relation if block_given?
 
-      # Execute the query.
-      rows = @connection.execute(manager.to_sql, description || "#{self.class} on #{@klass}")
+      # Initialize a Batch which can either read everything at once, or break
+      # it into chunks.
+      batch = Batch.new(@klass, @heading, @connection, query, manager, description)
 
-      # Extract objects from rows.
-      if query.projected_joins.empty?
-        objects = extract_objects_without_joins(rows)
+      if options[:batch_size]
+        # Passing start is not supported. Use conditions to specify the start
+        # and end position.
+        start = 0
+        count = options[:batch_size]
+        # Always order by the key.
+        @heading.attributes.each { |a|
+          manager.order table[a.name]
+        }
+        Enumerator.new do |e|
+          loop do
+            objects = batch.read_batch(start, count)
+            start += count
+            e.yield objects
+            if objects.size < count
+              break
+            end
+          end
+        end
       else
-        objects = extract_objects_with_joins(query.projected_joins, rows)
+        batch.read_all
       end
-
-      # Finalize and return the objects.
-      objects.each { |object|
-        # The object is persisited because it came from the databse.
-        object.persisted!
-
-        # The object is readonly because it's a complex relation
-        object.readonly!
-
-        # The object is locked for query because you should get all
-        # of the data you're interested in one shot.
-        object.locked_for_query! if query.locked_for_query
-      }
     end
 
   protected
 
-    def extract_objects_without_joins(rows)
-      rows.each(:as => :hash).map { |row|
-        @klass.new(row)
-      }
-    end
+    class Batch
 
-    def extract_objects_with_joins(projected_joins, rows)
-      objects = []
-      objects_hash = {}
-      rows.each(:as => :hash) { |row|
+      def initialize(klass, heading, connection, query, select_manager, description)
+        @klass = klass
+        @heading = heading
+        @connection = connection
+        @query = query
+        @select_manager = select_manager
+        @description = description
+      end
 
-        # Extract association projections from the row.
-        association_projections = {}
-        projected_joins.each { |join|
-          join_id = join.join_id
-          association_projections[join.join_class] = {}
-          row.each { |key, value|
-            if key[0, join_id.size] == join_id
-              name = key[(join_id.size)..-1]
-              row.delete(key)
-              association_projections[join.join_class][name] = value
-            end
-          }
-        }
+      def read_all
+        read @description || "#{Orel::Query} on #{@klass}"
+      end
 
-        # Only instantiate the object once.
-        if objects_hash[row]
-          object = objects_hash[row]
+      def read_batch(start, count)
+        @select_manager.take count
+        @select_manager.skip start
+        batch_desc = "(batch rows: #{start}-#{start + count})"
+        read @description ? "#{@description} #{batch_desc}" : "#{Orel::Query} #{batch_desc} on #{@klass}"
+      end
+
+    protected
+
+      def read(description)
+        # Execute the query.
+        rows = @connection.execute(@select_manager.to_sql, description)
+
+        # Extract objects from rows.
+        if @query.projected_joins.empty?
+          objects = extract_objects_without_joins(rows)
         else
-          object = objects_hash[row] = @klass.new(row)
-          objects << object
+          objects = extract_objects_with_joins(@query.projected_joins, rows)
         end
 
-        projected_joins.each { |join|
-          object._store_association(join.join_class, association_projections[join.join_class])
+        # Finalize and return the objects.
+        objects.each { |object|
+          # The object is persisited because it came from the databse.
+          object.persisted!
+
+          # The object is readonly because it's a complex relation
+          object.readonly!
+
+          # The object is locked for query because you should get all
+          # of the data you're interested in one shot.
+          object.locked_for_query! if @query.locked_for_query
         }
-      }
-      objects
+      end
+
+      def extract_objects_without_joins(rows)
+        rows.each(:as => :hash).map { |row|
+          @klass.new(row)
+        }
+      end
+
+      def extract_objects_with_joins(projected_joins, rows)
+        objects = []
+        objects_hash = {}
+        rows.each(:as => :hash) { |row|
+
+          # Extract association projections from the row.
+          association_projections = {}
+          projected_joins.each { |join|
+            join_id = join.join_id
+            association_projections[join.join_class] = {}
+            row.each { |key, value|
+              if key[0, join_id.size] == join_id
+                name = key[(join_id.size)..-1]
+                row.delete(key)
+                association_projections[join.join_class][name] = value
+              end
+            }
+          }
+
+          # Only instantiate the object once.
+          if objects_hash[row]
+            object = objects_hash[row]
+          else
+            object = objects_hash[row] = @klass.new(row)
+            objects << object
+          end
+
+          projected_joins.each { |join|
+            object._store_association(join.join_class, association_projections[join.join_class])
+          }
+        }
+        objects
+      end
     end
 
     class Select

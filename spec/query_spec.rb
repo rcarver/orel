@@ -1,6 +1,6 @@
 require 'helper'
 
-describe Orel::Query do
+describe Orel::Query, "#query" do
 
   before do
     @user1 = UsersAndThings::User.create!(:first_name => "John", :last_name => "Doe", :age => 30)
@@ -126,4 +126,65 @@ describe Orel::Query do
     end
   end
 
+end
+
+describe Orel::Query, "#query with batch enumeration" do
+
+  before do
+    ("a".."g").to_a.reverse.each do |x|
+      UsersAndThings::User.create!(:first_name => x, :last_name => "Doe", :age => 30)
+    end
+  end
+
+  let(:user_query)  { Orel::Query.new(UsersAndThings::User) }
+
+  it "enumerates in batches" do
+    results = user_query.query(:batch_size => 2) { |q, user|
+      # nothing
+    }
+    expect(results).to be_instance_of(Enumerator)
+    expect_batches = [
+      ["a", "b"],
+      ["c", "d"],
+      ["e", "f"],
+      ["g"]
+    ]
+    actual_batches = 0
+    results.each.with_index do |batch, i|
+      expect(batch.size).to eql(expect_batches[i].size)
+      actual_batches += 1
+      batch.each.with_index do |u, j|
+        expect(u.first_name).to eql(expect_batches[i][j])
+      end
+    end
+    expect(actual_batches).to eq(expect_batches.size)
+  end
+
+  it "enumerates in batches with conditions" do
+    results = user_query.query(:batch_size => 2) { |q, user|
+      q.where user[:first_name].lteq("d")
+      q.where user[:first_name].gteq("b")
+    }
+    expect(results).to be_instance_of(Enumerator)
+    expect_batches = [
+      ["b", "c"],
+      ["d"]
+    ]
+    actual_batches = 0
+    results.each.with_index do |batch, i|
+      expect(batch.size).to eql(expect_batches[i].size)
+      actual_batches += 1
+      batch.each.with_index do |u, j|
+        expect(u.first_name).to eql(expect_batches[i][j])
+      end
+    end
+    expect(actual_batches).to eq(expect_batches.size)
+  end
+
+  it "allows a description enumerates in batches with offset" do
+    results = user_query.query("testing", :batch_size => 2) { |q, user|
+      # nothing
+    }
+    expect(results).to be_instance_of(Enumerator)
+  end
 end
