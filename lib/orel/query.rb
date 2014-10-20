@@ -178,37 +178,7 @@ module Orel
       # it into chunks.
       batch = Batch.new(@klass, @heading, @connection, query, manager, description)
 
-      if query.batch_size
-        # Passing start is not supported. Use conditions to specify the start
-        # and end position.
-        start = 0
-        count = query.batch_size
-        group = query.batch_group
-        order = query.batch_order
-        if order
-          @heading.attributes.each { |a|
-            manager.order table[a.name]
-          }
-        end
-        Enumerator.new do |e|
-          loop do
-            objects = batch.read_batch(start, count)
-            start += count
-            if group
-              e.yield objects
-            else
-              objects.each do |obj|
-                e.yield obj
-              end
-            end
-            if objects.size < count
-              break
-            end
-          end
-        end
-      else
-        batch.read_all
-      end
+      BatchQuery.new(query, batch, @heading, manager, table).results
     end
 
   protected

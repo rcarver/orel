@@ -21,6 +21,7 @@ require 'mysql2'
 require 'orel/version'
 
 require 'orel/attributes'
+require 'orel/batch_query'
 require 'orel/class_associations'
 require 'orel/connection'
 require 'orel/domains'
