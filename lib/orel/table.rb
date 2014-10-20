@@ -58,8 +58,63 @@ module Orel
       table = @connection.arel_table(@heading)
       manager = Arel::SelectManager.new(table.engine)
       manager.from table
-      yield manager, table
-      @connection.execute(manager.to_sql, description || "#{self.class} Query #{@heading.name}").each(:as => :hash, :symbolize_keys => true)
+      select = Select.new(manager)
+      yield select, table if block_given?
+
+      batch = Batch.new(select, @heading, @connection)
+
+      BatchQuery.new(select, batch, @heading, manager, table).results
+    end
+
+    class Batch
+      def initialize(manager, heading, connection)
+        @connection = connection
+        @manager = manager
+        @heading = heading
+      end
+
+      def read_all
+        read
+      end
+
+      def read_batch(start, count)
+        @manager.take count
+        @manager.skip start
+        read
+      end
+
+      def read
+        @connection.execute(@manager.to_sql, @description || "#{self.class} Query #{@heading.name}").each(:as => :hash, :symbolize_keys => true)
+      end
+    end
+
+    class Select
+      attr_reader :batch_size
+      attr_reader :batch_group
+      attr_reader :batch_order
+
+      def initialize(select_manager)
+        @select_manager = select_manager
+      end
+
+      # Public: Specify that you want the results to be queried in batches.
+      #
+      # options - Hash of options.
+      #           :size  - Number of rows to query in each batch (default: 1000).
+      #           :group - Boolean whether to enumerate results individually or by batch.
+      #           :order - Boolean whether to order the query by the key, or leave to natural order.
+      #
+      # Returns nothing.
+      def query_batches(options)
+        @batch_size = options.delete(:size) || 1000
+        @batch_group = options.delete(:group) || false
+        @batch_order = options.key?(:order) ? options.delete(:order) : true
+        raise ArgumentError, "Unknown options: #{options.keys.inspect}" if options.any?
+      end
+
+      def method_missing(message, *args, &block)
+        @select_manager.send(message, *args, &block)
+      end
     end
 
     # Public: Add another table to a query. You'll need to specify the
