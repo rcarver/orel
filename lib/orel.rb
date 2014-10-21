@@ -50,6 +50,9 @@ require 'orel/relation/set'
 require 'orel/table/batch'
 require 'orel/table/select'
 
+require 'orel/query/batch'
+require 'orel/query/select'
+
 module Orel
   # Public: Exception thrown if an association is queried on an object
   # that has been marked as locked from querying.
