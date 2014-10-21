@@ -1,6 +1,12 @@
 module Orel
   class Query
     class Select
+      attr_reader :projected_joins
+      attr_reader :locked_for_query
+      attr_reader :batch_size
+      attr_reader :batch_group
+      attr_reader :batch_order
+
       def initialize(select_manager, heading)
         @select_manager = select_manager
         @heading = heading
@@ -8,12 +14,6 @@ module Orel
         @projected_joins = []
         @locked_for_query = true
       end
-
-      attr_reader :projected_joins
-      attr_reader :locked_for_query
-      attr_reader :batch_size
-      attr_reader :batch_group
-      attr_reader :batch_order
 
       # Public: Specify a condition on the query.
       #
