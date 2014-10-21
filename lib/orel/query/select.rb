@@ -5,9 +5,6 @@ module Orel
 
       attr_reader :projected_joins
       attr_reader :locked_for_query
-      attr_reader :batch_size
-      attr_reader :batch_group
-      attr_reader :batch_order
 
       def initialize(select_manager, heading)
         @select_manager = select_manager
