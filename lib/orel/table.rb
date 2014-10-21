@@ -59,6 +59,7 @@ module Orel
       manager = Arel::SelectManager.new(table.engine)
       manager.from table
       select = Select.new(manager)
+
       yield select, table if block_given?
 
       batch = Batch.new(select, @heading, @connection)
