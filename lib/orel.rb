@@ -48,6 +48,7 @@ require 'orel/relation/reference'
 require 'orel/relation/set'
 
 require 'orel/table/batch'
+require 'orel/table/select'
 
 module Orel
   # Public: Exception thrown if an association is queried on an object
