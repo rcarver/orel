@@ -47,6 +47,8 @@ require 'orel/relation/namer'
 require 'orel/relation/reference'
 require 'orel/relation/set'
 
+require 'orel/table/batch'
+
 module Orel
   # Public: Exception thrown if an association is queried on an object
   # that has been marked as locked from querying.
