@@ -1,6 +1,6 @@
 module Orel
   class Table
-    class Batch
+    class Reader
 
       def initialize(manager, heading, connection, description = nil)
         @manager = manager
