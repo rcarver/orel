@@ -1,12 +1,10 @@
 module Orel
+  # Orel::QueryBatches provides the interface to add "batch" support to a query.
   module QueryBatches
+
     attr_reader :batch_size
     attr_reader :batch_group
     attr_reader :batch_order
-
-    def initialize(select_manager)
-      @select_manager = select_manager
-    end
 
     # Public: Specify that you want the results to be queried in batches.
     #
@@ -21,12 +19,6 @@ module Orel
       @batch_group = options.delete(:group) || false
       @batch_order = options.key?(:order) ? options.delete(:order) : true
       raise ArgumentError, "Unknown options: #{options.keys.inspect}" if options.any?
-    end
-
-    protected
-
-    def method_missing(message, *args, &block)
-      @select_manager.send(message, *args, &block) if @select_manager
     end
   end
 end

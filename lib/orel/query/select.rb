@@ -1,5 +1,6 @@
 module Orel
   class Query
+    # Orel::Query::Select defines a custom DSL for querying objects.
     class Select
       include Orel::QueryBatches
 

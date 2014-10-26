@@ -1,6 +1,7 @@
 module Orel
   class Table
     class Batch
+
       def initialize(manager, heading, connection, description = nil)
         @manager = manager
         @heading = heading
@@ -18,6 +19,8 @@ module Orel
 
         read
       end
+
+    protected
 
       def read
         @connection.execute(

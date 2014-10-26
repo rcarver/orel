@@ -1,6 +1,7 @@
 module Orel
   class Query
     class Batch
+
       def initialize(klass, heading, connection, query, select_manager, description)
         @klass = klass
         @heading = heading
