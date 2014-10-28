@@ -113,5 +113,48 @@ describe Orel::QueryReader do
         end
       end
     end
+
+    describe "batching edge cases" do
+
+      specify "when results do not divide evenly into batches" do
+
+        allow(fake_options).to receive(:batch_size) { 2 }
+        allow(fake_options).to receive(:batch_group) { true }
+        allow(fake_options).to receive(:batch_order) { false }
+        allow(fake_options).to receive(:description) { "Super" }
+
+        expect(fake_reader).to receive(:read).with("Super (batch rows: 0-2)") { [1, 2] }
+        expect(fake_reader).to receive(:read).with("Super (batch rows: 2-4)") { [3] }
+
+        expect(fake_manager).to receive(:skip).with(0).ordered
+        expect(fake_manager).to receive(:skip).with(2).ordered
+        expect(fake_manager).to receive(:take).with(2).exactly(2).times
+
+        results = query_reader.read
+        expect(results).to be_instance_of(Enumerator)
+        expect(results.to_a).to eql([[1, 2], [3]])
+      end
+
+      specify "when results divide evenly into batches" do
+
+        allow(fake_options).to receive(:batch_size) { 2 }
+        allow(fake_options).to receive(:batch_group) { true }
+        allow(fake_options).to receive(:batch_order) { false }
+        allow(fake_options).to receive(:description) { "Super" }
+
+        expect(fake_reader).to receive(:read).with("Super (batch rows: 0-2)") { [1, 2] }
+        expect(fake_reader).to receive(:read).with("Super (batch rows: 2-4)") { [3, 4] }
+        expect(fake_reader).to receive(:read).with("Super (batch rows: 4-6)") { [] }
+
+        expect(fake_manager).to receive(:skip).with(0).ordered
+        expect(fake_manager).to receive(:skip).with(2).ordered
+        expect(fake_manager).to receive(:skip).with(4).ordered
+        expect(fake_manager).to receive(:take).with(2).exactly(3).times
+
+        results = query_reader.read
+        expect(results).to be_instance_of(Enumerator)
+        expect(results.to_a).to eql([[1, 2], [3, 4]])
+      end
+    end
   end
 end

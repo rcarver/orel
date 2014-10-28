@@ -64,6 +64,9 @@ module Orel
           set_batch_limit(start, count)
           objects = @reader.read describe_batch(start, count)
           start += count
+          if objects.empty?
+            break
+          end
           if group
             e.yield objects
           else
