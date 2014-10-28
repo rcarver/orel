@@ -60,11 +60,13 @@ module Orel
       manager = Arel::SelectManager.new(table.engine)
       manager.from table
       select = Orel::Table::Select.new(manager)
+      select.description = description || "#{self.class} on #{@heading.name}"
 
       yield select, table if block_given?
 
-      reader = Orel::Table::Reader.new(select, @heading, @connection)
-      QueryReader.new(select, reader, @heading, manager, table).results
+      reader = Orel::Table::Reader.new(manager, @connection)
+      query_reader = QueryReader.new(select, reader, @heading, manager, table)
+      query_reader.each
     end
 
     # Public: Add another table to a query. You'll need to specify the

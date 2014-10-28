@@ -165,6 +165,7 @@ module Orel
 
       # Overlay Orel heading and association information.
       query = Orel::Query::Select.new(manager, @heading)
+      query.description = description || "#{self.class} on #{@klass}"
       relation = Relation.new(table, @klass, @heading, @connection)
 
       # Always project the full heading so that we can instantiate
@@ -175,7 +176,8 @@ module Orel
       yield query, relation if block_given?
 
       reader = Orel::Query::Reader.new(@klass, @heading, @connection, query, manager, description)
-      QueryReader.new(query, reader, @heading, manager, table).results
+      query_reader = QueryReader.new(query, reader, @heading, manager, table)
+      query_reader.each
     end
 
   protected

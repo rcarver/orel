@@ -1,5 +1,6 @@
 module Orel
-  # Orel::QueryBatches provides the interface to add "batch" support to a query.
+  # Orel::QueryBatches provides the interface to add "batch" support to a query
+  # by implementing Orel::QueryReader::Options.
   module QueryBatches
 
     attr_reader :batch_size

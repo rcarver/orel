@@ -11,19 +11,7 @@ module Orel
         @description = description
       end
 
-      def read_all
-        read @description || "#{Orel::Query} on #{@klass}"
-      end
-
-      def read_batch(start, count)
-        @select_manager.take count
-        @select_manager.skip start
-        batch_desc = "(batch rows: #{start}-#{start + count})"
-        read @description ? "#{@description} #{batch_desc}" : "#{Orel::Query} #{batch_desc} on #{@klass}"
-      end
-
-    protected
-
+      # Implements Orel::QueryReader::Reader.
       def read(description)
         # Execute the query.
         rows = @connection.execute(@select_manager.to_sql, description)
