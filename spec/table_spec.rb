@@ -96,60 +96,31 @@ describe Orel::Table do
       ]
     end
 
-    describe "#query with batch enumeration" do
-
-      before do
-        ("a".."g").to_a.reverse.each do |x|
-          subject.insert(:first_name => x, :last_name => "Doe", :age => 30)
-        end
+    specify "#query with batch enumeration" do
+      ("a".."g").to_a.reverse.each do |x|
+        subject.insert(:first_name => x, :last_name => "Doe", :age => 30)
       end
 
-      it "queries batches, yielding each object" do
-        results = subject.query { |q, table|
-          q.project table[:first_name]
-          q.query_batches :size => 2
-        }
-        expect(results).to be_instance_of(Enumerator)
-        expect_users = [
-          "a",
-          "b",
-          "c",
-          "d",
-          "e",
-          "f",
-          "g"
-        ]
-        actual_users = 0
-        results.each.with_index do |row, i|
-          actual_users += 1
-          expect(row[:first_name]).to eql(expect_users[i])
-        end
-        expect(actual_users).to eq(expect_users.size)
+      results = subject.query { |q, table|
+        q.project table[:first_name]
+        q.query_batches :size => 2
+      }
+      expect(results).to be_instance_of(Enumerator)
+      expect_rows = [
+        { :first_name => "a" },
+        { :first_name => "b" },
+        { :first_name => "c" },
+        { :first_name => "d" },
+        { :first_name => "e" },
+        { :first_name => "f" },
+        { :first_name => "g" }
+      ]
+      actual_rows = 0
+      results.each.with_index do |row, i|
+        actual_rows += 1
+        expect(row).to eql(expect_rows[i])
       end
-
-      it "queries batches with conditions" do
-        results = subject.query { |q, table|
-          q.project table[:first_name]
-          q.where table[:first_name].lteq("d")
-          q.where table[:first_name].gteq("b")
-          q.query_batches :size => 2, :group => true
-        }
-        expect(results).to be_instance_of(Enumerator)
-        expect_batches = [
-          ["b", "c"],
-          ["d"]
-        ]
-        actual_batches = 0
-        results.each.with_index do |batch, i|
-          expect(batch.size).to eql(expect_batches[i].size)
-          actual_batches += 1
-          batch.each.with_index do |row, j|
-            expect(row[:first_name]).to eql(expect_batches[i][j])
-          end
-        end
-        expect(actual_batches).to eq(expect_batches.size)
-      end
-
+      expect(actual_rows).to eq(expect_rows.size)
     end
 
     describe "#as" do
