@@ -177,7 +177,7 @@ module Orel
 
       reader = Orel::Query::Reader.new(@klass, @heading, @connection, query, manager, description)
       query_reader = QueryReader.new(query, reader, @heading, manager, table)
-      query_reader.each
+      query_reader.read
     end
 
   protected

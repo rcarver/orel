@@ -23,7 +23,7 @@ RSpec.configure do |config|
     c.syntax = [:should, :expect]
   end
   config.mock_with :rspec do |mocks|
-    mocks.syntax = :should
+    mocks.syntax = [:should, :expect]
   end
   config.before(:suite) do
     Orel.finalize!

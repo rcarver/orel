@@ -44,7 +44,7 @@ module Orel
       @table = table
     end
 
-    def each
+    def read
       if @options.batch_size.nil?
         return @reader.read @options.description
       end
@@ -64,6 +64,9 @@ module Orel
           set_batch_limit(start, count)
           objects = @reader.read describe_batch(start, count)
           start += count
+          if objects.empty?
+            break
+          end
           if group
             e.yield objects
           else
@@ -92,7 +95,7 @@ module Orel
     end
 
     def describe_batch(start, count)
-      "#{@options.description} (batch rows: #{start}-#{start + count})"
+      "#{@options.description} (batch rows: #{start}-#{start + count - 1})"
     end
   end
 end
