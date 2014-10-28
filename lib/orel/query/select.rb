@@ -1,7 +1,7 @@
 module Orel
   class Query
+    # Orel::Query::Select defines a custom DSL for querying objects.
     class Select
-      include Orel::QueryBatches
 
       attr_reader :projected_joins
       attr_reader :locked_for_query
@@ -13,6 +13,10 @@ module Orel
         @projected_joins = []
         @locked_for_query = true
       end
+
+      # Implement Orel::QueryReader::Options
+      include Orel::QueryBatches
+      attr_accessor :description
 
       # Public: Specify a condition on the query.
       #

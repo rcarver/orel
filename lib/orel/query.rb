@@ -164,7 +164,8 @@ module Orel
       manager.from table
 
       # Overlay Orel heading and association information.
-      query = Select.new(manager, @heading)
+      query = Orel::Query::Select.new(manager, @heading)
+      query.description = description || "#{self.class} on #{@klass}"
       relation = Relation.new(table, @klass, @heading, @connection)
 
       # Always project the full heading so that we can instantiate
@@ -174,11 +175,9 @@ module Orel
       # Yield to customize the query.
       yield query, relation if block_given?
 
-      # Initialize a Batch which can either read everything at once, or break
-      # it into chunks.
-      batch = Batch.new(@klass, @heading, @connection, query, manager, description)
-
-      BatchQuery.new(query, batch, @heading, manager, table).results
+      reader = Orel::Query::Reader.new(@klass, @heading, @connection, query, manager, description)
+      query_reader = QueryReader.new(query, reader, @heading, manager, table)
+      query_reader.each
     end
 
   protected

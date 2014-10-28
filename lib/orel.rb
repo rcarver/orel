@@ -21,7 +21,6 @@ require 'mysql2'
 require 'orel/version'
 
 require 'orel/attributes'
-require 'orel/batch_query'
 require 'orel/class_associations'
 require 'orel/connection'
 require 'orel/domains'
@@ -31,6 +30,7 @@ require 'orel/operator'
 require 'orel/options'
 require 'orel/query'
 require 'orel/query_batches'
+require 'orel/query_reader'
 require 'orel/relation'
 require 'orel/schema_generator'
 require 'orel/simple_associations'
@@ -48,10 +48,10 @@ require 'orel/relation/namer'
 require 'orel/relation/reference'
 require 'orel/relation/set'
 
-require 'orel/table/batch'
+require 'orel/table/reader'
 require 'orel/table/select'
 
-require 'orel/query/batch'
+require 'orel/query/reader'
 require 'orel/query/select'
 
 module Orel
