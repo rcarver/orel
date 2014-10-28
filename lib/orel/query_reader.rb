@@ -95,7 +95,7 @@ module Orel
     end
 
     def describe_batch(start, count)
-      "#{@options.description} (batch rows: #{start}-#{start + count})"
+      "#{@options.description} (batch rows: #{start}-#{start + count - 1})"
     end
   end
 end

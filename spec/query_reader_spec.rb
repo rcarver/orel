@@ -43,9 +43,9 @@ describe Orel::QueryReader do
         allow(fake_options).to receive(:batch_size) { 4 }
         allow(fake_options).to receive(:description) { "Super" }
 
-        expect(fake_reader).to receive(:read).with("Super (batch rows: 0-4)") { [1, 2, 3, 4] }
-        expect(fake_reader).to receive(:read).with("Super (batch rows: 4-8)") { [5, 6, 7, 8] }
-        expect(fake_reader).to receive(:read).with("Super (batch rows: 8-12)") { [9] }
+        expect(fake_reader).to receive(:read).with("Super (batch rows: 0-3)") { [1, 2, 3, 4] }
+        expect(fake_reader).to receive(:read).with("Super (batch rows: 4-7)") { [5, 6, 7, 8] }
+        expect(fake_reader).to receive(:read).with("Super (batch rows: 8-11)") { [9] }
 
         expect(fake_manager).to receive(:skip).with(0).ordered
         expect(fake_manager).to receive(:skip).with(4).ordered
@@ -123,8 +123,8 @@ describe Orel::QueryReader do
         allow(fake_options).to receive(:batch_order) { false }
         allow(fake_options).to receive(:description) { "Super" }
 
-        expect(fake_reader).to receive(:read).with("Super (batch rows: 0-2)") { [1, 2] }
-        expect(fake_reader).to receive(:read).with("Super (batch rows: 2-4)") { [3] }
+        expect(fake_reader).to receive(:read).with("Super (batch rows: 0-1)") { [1, 2] }
+        expect(fake_reader).to receive(:read).with("Super (batch rows: 2-3)") { [3] }
 
         expect(fake_manager).to receive(:skip).with(0).ordered
         expect(fake_manager).to receive(:skip).with(2).ordered
@@ -142,9 +142,9 @@ describe Orel::QueryReader do
         allow(fake_options).to receive(:batch_order) { false }
         allow(fake_options).to receive(:description) { "Super" }
 
-        expect(fake_reader).to receive(:read).with("Super (batch rows: 0-2)") { [1, 2] }
-        expect(fake_reader).to receive(:read).with("Super (batch rows: 2-4)") { [3, 4] }
-        expect(fake_reader).to receive(:read).with("Super (batch rows: 4-6)") { [] }
+        expect(fake_reader).to receive(:read).with("Super (batch rows: 0-1)") { [1, 2] }
+        expect(fake_reader).to receive(:read).with("Super (batch rows: 2-3)") { [3, 4] }
+        expect(fake_reader).to receive(:read).with("Super (batch rows: 4-5)") { [] }
 
         expect(fake_manager).to receive(:skip).with(0).ordered
         expect(fake_manager).to receive(:skip).with(2).ordered
