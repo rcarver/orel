@@ -66,7 +66,7 @@ module Orel
 
       reader = Orel::Table::Reader.new(manager, @connection)
       query_reader = QueryReader.new(select, reader, @heading, manager, table)
-      query_reader.each
+      query_reader.read
     end
 
     # Public: Add another table to a query. You'll need to specify the

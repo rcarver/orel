@@ -44,7 +44,7 @@ module Orel
       @table = table
     end
 
-    def each
+    def read
       if @options.batch_size.nil?
         return @reader.read @options.description
       end
