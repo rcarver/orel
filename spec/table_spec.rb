@@ -103,24 +103,24 @@ describe Orel::Table do
 
       results = subject.query { |q, table|
         q.project table[:first_name]
-        q.query_batches :size => 2
+        q.where table[:first_name].gteq("b")
+        q.query_batches :size => 2, :group => true
       }
       expect(results).to be_instance_of(Enumerator)
-      expect_rows = [
-        { :first_name => "a" },
-        { :first_name => "b" },
-        { :first_name => "c" },
-        { :first_name => "d" },
-        { :first_name => "e" },
-        { :first_name => "f" },
-        { :first_name => "g" }
-      ]
-      actual_rows = 0
-      results.each.with_index do |row, i|
-        actual_rows += 1
-        expect(row).to eql(expect_rows[i])
-      end
-      expect(actual_rows).to eq(expect_rows.size)
+      expect(results.to_a).to eql([
+        [
+          { :first_name => "b" },
+          { :first_name => "c" }
+        ],
+        [
+          { :first_name => "d" },
+          { :first_name => "e" }
+        ],
+        [
+          { :first_name => "f" },
+          { :first_name => "g" }
+        ]
+      ])
     end
 
     describe "#as" do
