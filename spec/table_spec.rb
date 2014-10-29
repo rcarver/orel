@@ -96,6 +96,33 @@ describe Orel::Table do
       ]
     end
 
+    specify "#query with batch enumeration" do
+      ("a".."g").to_a.reverse.each do |x|
+        subject.insert(:first_name => x, :last_name => "Doe", :age => 30)
+      end
+
+      results = subject.query { |q, table|
+        q.project table[:first_name]
+        q.where table[:first_name].gteq("b")
+        q.query_batches :size => 2, :group => true
+      }
+      expect(results).to be_instance_of(Enumerator)
+      expect(results.to_a).to eql([
+        [
+          { :first_name => "b" },
+          { :first_name => "c" }
+        ],
+        [
+          { :first_name => "d" },
+          { :first_name => "e" }
+        ],
+        [
+          { :first_name => "f" },
+          { :first_name => "g" }
+        ]
+      ])
+    end
+
     describe "#as" do
       it "returns an Arel table" do
         subject.as.should be_an_instance_of(Arel::Table)

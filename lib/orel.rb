@@ -28,10 +28,12 @@ require 'orel/finder'
 require 'orel/object'
 require 'orel/operator'
 require 'orel/options'
+require 'orel/query'
+require 'orel/query_batches'
+require 'orel/query_reader'
 require 'orel/relation'
 require 'orel/schema_generator'
 require 'orel/simple_associations'
-require 'orel/query'
 require 'orel/table'
 require 'orel/validator'
 
@@ -45,6 +47,12 @@ require 'orel/relation/key_dsl'
 require 'orel/relation/namer'
 require 'orel/relation/reference'
 require 'orel/relation/set'
+
+require 'orel/table/reader'
+require 'orel/table/select'
+
+require 'orel/query/reader'
+require 'orel/query/select'
 
 module Orel
   # Public: Exception thrown if an association is queried on an object

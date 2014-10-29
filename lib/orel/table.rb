@@ -41,7 +41,8 @@ module Orel
       rows.first[:count]
     end
 
-    # Public: Use Arel to query the table.
+    # Public: Use Arel to query the table. In addition to Arel, this method also supports
+    # batch queries.
     #
     # yields the Arel::SelectManager and the Arel::Table.
     #
@@ -58,8 +59,14 @@ module Orel
       table = @connection.arel_table(@heading)
       manager = Arel::SelectManager.new(table.engine)
       manager.from table
-      yield manager, table
-      @connection.execute(manager.to_sql, description || "#{self.class} Query #{@heading.name}").each(:as => :hash, :symbolize_keys => true)
+      select = Orel::Table::Select.new(manager)
+      select.description = description || "#{self.class} on #{@heading.name}"
+
+      yield select, table if block_given?
+
+      reader = Orel::Table::Reader.new(manager, @connection)
+      query_reader = QueryReader.new(select, reader, @heading, manager, table)
+      query_reader.read
     end
 
     # Public: Add another table to a query. You'll need to specify the

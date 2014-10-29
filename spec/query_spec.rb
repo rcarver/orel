@@ -225,12 +225,4 @@ describe Orel::Query, "#query with batch enumeration" do
     end
     expect(actual_batches).to eq(expect_batches.size)
   end
-
-  it "is an error to specify any other batch options" do
-    expect {
-      user_query.query { |q, user|
-        q.query_batches :foo => 1
-      }
-    }.to raise_error(ArgumentError)
-  end
 end
