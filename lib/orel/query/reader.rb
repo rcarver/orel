@@ -1,5 +1,7 @@
 module Orel
   class Query
+    # Orel::Query::Reader converts rows of data into objects and their
+    # associations.
     class Reader
 
       def initialize(klass, heading, connection, query, select_manager, description)
@@ -36,6 +38,8 @@ module Orel
           object.locked_for_query! if @query.locked_for_query
         }
       end
+
+    protected
 
       def extract_objects_without_joins(rows)
         rows.each(:as => :hash).map { |row|
