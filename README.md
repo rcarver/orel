@@ -193,33 +193,6 @@ directly with tables, the other lets you interact with objects. Both
 defer to Arel to construct the underlying SQL query, and ActiveRecord to
 execute and return the raw data.
 
-#### Retrieving objects
-
-Orel provides simple finders, and a powerful query interface. The
-result of all object finders are full objects.
-
-    # Find record by its "primary" key.
-    User.find_by_primary_key(:first_name => "John", :last_name => "Doe")
-
-    # Find a record by another key.
-    User.find_by_key(:other, :attr => "value")
-
-    # Find all records matching a simple condition.
-    User.find_all(:first_name => "John")
-
-Much more powerful queries, including joins, can be performed using the
-`Orel::Query` interface.
-
-    # Query users across multiple headings.
-    User.query do |q, user|
-      # Specify a condition on the user table.
-      q.where user[:first_name].eq('John')
-      # Specify a condition on a join table.
-      q.where user[:logins][:ip].eq('127.0.0.1')
-      # Return objects with `logins` data also populated.
-      q.project user[:logins]
-    end
-
 #### Working with tables
 
 `Orel::Table` provides a simple interface for CRUD operations.
@@ -264,6 +237,33 @@ Here are some examples of inserting and updating data in the table.
     # Delete records.
     User.table.delete(:first_name => "John")
 
+#### Retrieving objects
+
+Orel provides simple finders, and a powerful query interface. The
+result of all object finders are full objects.
+
+    # Find record by its "primary" key.
+    User.find_by_primary_key(:first_name => "John", :last_name => "Doe")
+
+    # Find a record by another key.
+    User.find_by_key(:other, :attr => "value")
+
+    # Find all records matching a simple condition.
+    User.find_all(:first_name => "John")
+
+Much more powerful queries, including joins, can be performed using the
+`Orel::Query` interface.
+
+    # Query users across multiple headings.
+    User.query do |q, user|
+      # Specify a condition on the user table.
+      q.where user[:first_name].eq('John')
+      # Specify a condition on a join table.
+      q.where user[:logins][:ip].eq('127.0.0.1')
+      # Return objects with `logins` data also populated.
+      q.project user[:logins]
+    end
+
 #### Query in batches.
 
 In both the Table and Object `query` methods it's possible to iterate
@@ -275,7 +275,7 @@ large data sets.
 
 Batch queries are performed using `LIMIT, OFFSET` in MySQL. You should
 be aware of the characteristics of these types of queries before using.
-)For example, read about [nonblocking read](http://dev.mysql.com/doc/refman/5.0/en/innodb-consistent-read.html)
+For example, read about [nonblocking read](http://dev.mysql.com/doc/refman/5.0/en/innodb-consistent-read.html).
 
     # Query 1000 users at a time
     User.query do |q, user|
