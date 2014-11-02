@@ -12,7 +12,7 @@ design. Specifically:
 
 * The basic structure and syntax emphasizes keys. Emphasis on a "primary
   key" is reduced.
-* Attributes are NOT NULL by default.
+* Attributes are always NOT NULL.
 * There is no strict table/class relationship. This reduces the overhead
   and object complexity of using higher forms of normalization.
 * Domains (types) are a core part of the model. Though implemented in
