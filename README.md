@@ -186,9 +186,107 @@ one-to-many relationships without the overhead of defining whole
 classes. As well, they are the only place that Orel cascades the `save`
 operation to children.
 
-#### Retreiving
+#### Retreiving data
 
-First we need to implement this...
+Orel provides two type of query interfaces. One lets you interact
+directly with tables, the other lets you interact with objects. Both
+defer to Arel to construct the underlying SQL query, and ActiveRecord to
+execute and return the raw data.
+
+#### Retrieving objects
+
+Orel provides simple finders, and a powerful query interface. The
+result of all object finders are full objects.
+
+    # Find record by its "primary" key.
+    User.find_by_primary_key(:first_name => "John", :last_name => "Doe")
+
+    # Find a record by another key.
+    User.find_by_key(:other, :attr => "value")
+
+    # Find all records matching a simple condition.
+    User.find_all(:first_name => "John")
+
+Much more powerful queries, including joins, can be performed using the
+`Orel::Query` interface.
+
+    # Query users across multiple headings.
+    User.query do |q, user|
+      # Specify a condition on the user table.
+      q.where user[:first_name].eq('John')
+      # Specify a condition on a join table.
+      q.where user[:logins][:ip].eq('127.0.0.1')
+      # Return objects with `logins` data also populated.
+      q.project user[:logins]
+    end
+
+#### Working with tables
+
+`Orel::Table` provides a simple interface for CRUD operations.
+Operations can be run directly against the table heading without any
+objects.
+
+Here are some examples of retrieving data. Records are returned as Hash
+with Symbol keys.
+
+    # Get all records in the table.
+    User.table.row_list
+
+    # Get the number of records in the table.
+    User.table.row_count
+
+    # Perform an Arel query against the table.
+    User.table.query do |q, table|
+      q.project table[:first_name]
+      q.where table[:first_name].gte("c")
+    end
+
+    # Access the table of a simple association.
+    User.table(:ip_address).row_list
+
+Here are some examples of inserting and updating data in the table.
+
+    # Insert a new record.
+    User.table.insert(:first_name => "John" ...)
+
+    # Batch update records.
+    User.table.update(
+      :find => { :first_name => "John" },
+      :set  => { :last_name => "Doe" }
+    )
+
+    # Upsert (insert or append new data)
+    User.table.upsert(
+      :insert { :first_name => "John" ... },
+      :update { :values => [:age], :with => :increment }
+    )
+
+    # Delete records.
+    User.table.delete(:first_name => "John")
+
+#### Query in batches.
+
+In both the Table and Object `query` methods it's possible to iterate
+through a large table by querying for batches of records at a time. This
+is done by specifying the "size" of the batch to return. The result of a
+batch query is an `Enumerator` object. You can treat this object like
+any `Enumerable` and call `each` on it to efficiently move through very
+large data sets.
+
+Batch queries are performed using `LIMIT, OFFSET` in MySQL. You should
+be aware of the characteristics of these types of queries before using.
+)For example, read about [nonblocking read](http://dev.mysql.com/doc/refman/5.0/en/innodb-consistent-read.html)
+
+    # Query 1000 users at a time
+    User.query do |q, user|
+      q.query_batches :size => 1000
+    end
+
+    # Query 1000 records at a time
+    User.table.query do |q, user|
+      q.project user[:first_name]
+      q.query_batches :size => 1000
+    end
 
 ## Inspiration
 
