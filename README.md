@@ -26,7 +26,9 @@ for other basic functionality from ActiveModel.
 
 ## Status
 
-Orel is experimnental and not at all ready to use. See the [cucumber
+Orel has been used in a production environment for several years.
+However, the Object interface is lightly used. You may find the APIs
+lacking if you are using the Object interface. See the [cucumber
 stories](./features) for up a look at what's supported.
 
 ## Features
