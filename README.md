@@ -1,5 +1,6 @@
 # Orel
 
+[![Build Status](https://travis-ci.org/rcarver/orel.svg?branch=master)](https://travis-ci.org/rcarver/orel)
 [![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/rcarver/orel)
 
 An object-relational mapper. It focuses on the relational model more
