@@ -7,6 +7,15 @@ Feature: Automatically shard data into multiple tables
       class Count
         extend Orel::Relation
         extend Orel::Sharding
+
+        C2012 = Class.new(ActiveRecord::Base)
+        C2012.establish_connection
+
+        self.choose_connection(partition)
+          year = partition.value[0, 4]
+          CONNECTIONS[year] || CONNECTIONS[:default]
+        end
+
         heading do
           key { day / thing }
           att :day, Orel::Domains::String
@@ -15,6 +24,10 @@ Feature: Automatically shard data into multiple tables
         end
         shard_table_on(:day) do |day|
           day[0, 6]
+        end
+        choose_connection(:day) do |day|
+          year = day[0, 4]
+          CONNECTIONS[year] || CONNECTIONS[:default]
         end
       end
       """
